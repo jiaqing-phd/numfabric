@@ -1,0 +1,229 @@
+#include "declarations.h"
+
+void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes)
+{
+  // Create a packet sink on the star "hub" to receive these packets
+  Address anyAddress = InetSocketAddress (Ipv4Address::GetAny (), port);
+  PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", anyAddress);
+  ApplicationContainer sinkAppContainer = sinkHelper.Install (sinkNodes.Get(sinkN));
+  sinkAppContainer.Start(Seconds(0.0));
+  sinkApps.Add(sinkAppContainer);
+
+
+  NS_LOG_UNCOND("sink apps installed on node "<<(sinkNodes.Get(sinkN))->GetId());
+  Ptr<PacketSink> pSink = StaticCast <PacketSink> (sinkAppContainer.Get(0));
+  pSink->SetAttribute("numBytes", UintegerValue(numBytes));
+  pSink->SetAttribute("flowid", UintegerValue(flow_id));
+  pSink->SetAttribute("nodeid", UintegerValue(sinkNodes.Get(sinkN)->GetId()));
+  pSink->SetAttribute("peernodeid", UintegerValue(sourceNodes.Get(sourceN)->GetId()));
+
+
+  /* Debug... Check what we set */
+  UintegerValue nb, fid, n1, n2;
+  pSink->GetAttribute("numBytes", nb);
+  pSink->GetAttribute("flowid", fid);
+  pSink->GetAttribute("nodeid", n1);
+  pSink->GetAttribute("peernodeid", n2);
+  NS_LOG_UNCOND("sink attributed set : numbytes "<<nb.Get()<<" flowid "<<fid.Get()<<" nodeid "<<n1.Get()<<" source nodeid "<<n2.Get());
+  
+  /* Debug end */
+
+//  Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
+}
+
+void
+CheckQueueSize (Ptr<Queue> queue)
+{
+  uint32_t qSize = StaticCast<PrioQueue> (queue)->GetCurSize ();
+  uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
+  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
+  std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
+  checkTimes++;
+  std::cout<<"QueueStats "<<nid<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<qPrice<<" qname "<<qname<<std::endl;
+  std::map<std::string, uint32_t>::iterator it;
+  for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
+    double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
+    std::cout<<"QueueStats1 "<<nid<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<std::endl;
+   }
+  Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+  if(Simulator::Now().GetSeconds() >= sim_time) {
+    Simulator::Stop();
+  }
+}
+
+CommandLine addCmdOptions(CommandLine cmd)
+{
+   
+  cmd.AddValue ("nNodes", "Number of nodes to place in the star", N);
+  cmd.AddValue ("prefix", "Output prefix", prefix);
+  cmd.AddValue ("queuetype", "Queue Type", queue_type);
+  cmd.AddValue ("epoch_update_time", "Epoch Update", epoch_update_time);
+  cmd.AddValue("pkt_tag","pkt_tag",pkt_tag);
+  cmd.AddValue ("onlydctcp", "onlydctcp", onlydctcp);
+  cmd.AddValue ("dctcp_mark", "dctcp_mark", dctcp_mark);
+  cmd.AddValue ("wfq", "wfq", wfq);
+  cmd.AddValue ("sim_time", "sim_time", sim_time);
+  cmd.AddValue ("pkt_size", "pkt_size", pkt_size);
+  cmd.AddValue ("link_rate","link_rate",link_rate);
+  cmd.AddValue ("link_delay","link_delay",link_delay);
+  cmd.AddValue ("ecn_thresh", "ecn_thresh", max_ecn_thresh);
+  cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
+  cmd.AddValue ("rate_update_time", "rate_update_time", rate_update_time);
+  cmd.AddValue ("flow2_stoptime", "flow2_stoptime", flow2_stoptime);
+  cmd.AddValue ("flow2_starttime", "flow2_starttime", flow2_starttime);
+
+  cmd.AddValue ("flow1_stoptime", "flow1_stoptime", flow1_stoptime);
+  cmd.AddValue ("flow1_starttime", "flow1_starttime", flow1_starttime);
+
+  cmd.AddValue ("flow3_stoptime", "flow3_stoptime", flow3_stoptime);
+  cmd.AddValue ("flow3_starttime", "flow3_starttime", flow3_starttime);
+
+  cmd.AddValue("gamma", "gamma", gamma_value);
+  cmd.AddValue("margin_util_price", "margin_util_price", margin_util_price);
+  cmd.AddValue("strawmancc", "strawmancc", strawmancc);
+
+  return cmd;
+}
+
+void common_config(void)
+{
+  double total_rtt = link_delay * 4.0;
+  uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
+  uint32_t initcwnd = (bdproduct / max_segment_size)+1;
+  uint32_t ssthresh = initcwnd * max_segment_size;
+
+  NS_LOG_UNCOND("Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd);  
+
+  Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
+  Config::SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue(max_segment_size));
+//  Config::SetDefault ("ns3::TcpSocket::InitialSlowStartThreshold", UintegerValue(ssthresh_value));
+  Config::SetDefault ("ns3::TcpSocketBase::Timestamp", BooleanValue(false));
+  Config::SetDefault ("ns3::TcpSocketBase::ReceiverWillMark", BooleanValue(false));
+//  Config::SetDefault ("ns3::RttEstimator::MinRTO", TimeValue(Seconds(0.001)));
+  Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue (recv_buf_size));
+  Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (send_buf_size));
+  Config::SetDefault ("ns3::TcpSocket::InitialSlowStartThreshold", UintegerValue(ssthresh));
+  Config::SetDefault ("ns3::TcpSocket::InitialCwnd", UintegerValue(initcwnd));
+
+  // Disable delayed ack
+  Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
+  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(true));
+  Config::SetDefault("ns3::TcpNewReno::smoother_dctcp", BooleanValue(false));
+  Config::SetDefault("ns3::TcpNewReno::strawmancc", BooleanValue(strawmancc));
+
+  Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
+  Config::SetDefault("ns3::PrioQueue::fluid_model", BooleanValue(false));
+  Config::SetDefault("ns3::PrioQueue::running_min", BooleanValue(false));
+  Config::SetDefault("ns3::PrioQueue::SubtractPrio", BooleanValue(false));
+  Config::SetDefault("ns3::PrioQueue::ReceiverMarks", BooleanValue(false));
+  Config::SetDefault("ns3::PrioQueue::MinPrioUpdateTime", TimeValue(Seconds(prio_q_min_update_time)));
+  Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
+
+  Config::SetDefault("ns3::PrioQueue::alpha", DoubleValue(alpha_value));
+  Config::SetDefault("ns3::PrioQueue::gamma", DoubleValue(gamma_value));
+  Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
+
+  Config::SetDefault("ns3::PrioQueue::m_onlydctcp", BooleanValue(onlydctcp));
+  Config::SetDefault("ns3::PrioQueue::dctcp_mark", BooleanValue(dctcp_mark));
+
+
+ Config::SetDefault("ns3::PrioQueue::gamma1", DoubleValue(gamma1_value));
+ Config::SetDefault("ns3::PrioQueue::margin_util_price", BooleanValue(margin_util_price));
+ Config::SetDefault("ns3::PrioQueue::scen2", BooleanValue(false));
+ Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(pkt_tag));
+ Config::SetDefault("ns3::PrioQueue::strawmancc",BooleanValue(strawmancc));
+
+
+  Config::SetDefault ("ns3::DropTailQueue::Mode" , StringValue("QUEUE_MODE_BYTES"));
+  Config::SetDefault ("ns3::DropTailQueue::MaxBytes", UintegerValue(max_queue_size));
+  
+  Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
+  Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
+
+  Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
+  Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
+  Config::SetDefault("ns3::Ipv4L3Protocol::m_wfq", BooleanValue(wfq));
+  Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
+
+  return;
+
+}
+
+void setUpMonitoring(void)
+{
+  
+  uint32_t Ntrue = allNodes.GetN(); 
+  for(uint32_t nid=0; nid<Ntrue; nid++)
+  {
+     Ptr<Ipv4> ipv4 = (allNodes.Get(nid))->GetObject<Ipv4> ();
+     NS_LOG_UNCOND("Setting flows up... "); 
+     //StaticCast<Ipv4L3Protocol> (ipv4)->setFlows(flowids);
+     //StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(0.000004);
+     //StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0/128.0);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(rate_update_time);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0);
+     //StaticCast<Ipv4L3Protocol> (ipv4)->setEpochUpdate(epoch_update_time);
+     //StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);
+  }
+     
+  //apps.Start (Seconds (1.0));
+  //apps.Stop (Seconds (sim_time));
+
+  Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
+}
+
+void
+CheckIpv4Rates (NodeContainer &allNodes)
+{
+  double current_rate = 0.0;
+  uint32_t N = allNodes.GetN(); 
+  for(uint32_t nid=0; nid < N ; nid++)
+  {
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+    std::map<std::string,uint32_t>::iterator it;
+    for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
+    {
+    
+      double rate = ipv4->GetStoreRate (it->first);
+
+      uint32_t s = it->second;
+
+
+      /* check if this flowid is from this source */
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
+//         std::cout<<"RatePrio flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate << " "<<prio<<std::endl;
+         current_rate += rate;
+      }
+    }
+  }
+  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
+  
+  // check queue size every 1/1000 of a second
+  Simulator::Schedule (Seconds (sampling_interval), &CheckIpv4Rates, allNodes);
+  if(Simulator::Now().GetSeconds() >= sim_time) {
+    Simulator::Stop();
+  }
+}
+
+void printlink(Ptr<Node> n1, Ptr<Node> n2)
+{
+  NS_LOG_UNCOND("printlink: link setup between node "<<n1->GetId()<<" and node "<<n2->GetId());
+} 
+
+Ipv4InterfaceContainer assignAddress(NetDeviceContainer dev, uint32_t subnet_index)
+{
+    /** assigining ip address **/
+
+    Ipv4InterfaceContainer intf;
+
+    std::ostringstream subnet;
+    Ipv4AddressHelper ipv4;
+    NS_LOG_UNCOND("Assigning subnet index "<<subnet_index);
+    subnet<<"10.1."<<subnet_index<<".0";
+    ipv4.SetBase (subnet.str ().c_str (), "255.255.255.0");
+    intf = ipv4.Assign (dev);
+    return intf;
+
+}
+
+
