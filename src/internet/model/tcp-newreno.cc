@@ -28,6 +28,7 @@
 #include "ns3/abort.h"
 #include "ns3/node.h"
 #include "ns3/ipv4-end-point.h"
+#include "ns3/ipv4-l3-protocol.h"
 
 NS_LOG_COMPONENT_DEFINE ("TcpNewReno");
 
@@ -185,6 +186,24 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
   TcpSocketBase::NewAck (seq);
 }
 
+uint32_t 
+TcpNewReno::getFlowId(std::string flowkey)
+{
+  uint32_t fid = 0;
+  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+  if((ipv4->flowids).find(flowkey) != (ipv4->flowids).end()) {
+    fid = ipv4->flowids[flowkey];
+  }
+   
+//  std::map<std::string, uint32_t>::iterator it;
+//  for (it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it) {
+//    std::cout<<it->first<<" "<<it->second<<std::endl;
+//  }
+ 
+//  std::cout<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl; 
+  return fid;
+}
+ 
 void
 TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 {
@@ -195,7 +214,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 
   /* On every ACK, we want to estimate new window for strawman CC */
   std::stringstream ss;
-  ss<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerPort();
+  ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
   //std::cout<<Simulator::Now().GetSeconds()<<"node "<<m_node->GetId()<<" flow "<<flowkey<<" rtt "<<lastRtt_usable.GetSeconds()<<std::endl;
 
@@ -217,7 +236,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
        dctcp_alpha = (1.0 - beta)*dctcp_alpha + beta* new_alpha;
        total_bytes_acked = 0;
        bytes_with_ecn = 0; 
-       std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<std::endl;
+       std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<std::endl;
      }
      last_outstanding_num = m_highTxMark;
    }

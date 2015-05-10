@@ -19,12 +19,17 @@ using namespace ns3;
 extern std::map<uint32_t, double> flow_sizes;
 extern int checkTimes;
 extern std::map<uint32_t, std::vector<uint32_t> > source_flow;
+extern std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 extern ApplicationContainer sinkApps;
 
 extern double sim_time;
 extern double measurement_starttime ;
 extern double prio_q_min_update_time ;
 extern double gamma1_value ;
+extern uint32_t flows_per_host;
+extern std::string application_datarate;
+extern bool delay_mark_value;
+
 
 extern double price_update_time ;
 extern double rate_update_time ;
@@ -97,5 +102,6 @@ extern void CheckIpv4Rates (NodeContainer &allNodes);
 extern void printlink(Ptr<Node> n1, Ptr<Node> n2);
 extern Ipv4InterfaceContainer assignAddress(NetDeviceContainer dev, uint32_t subnet_index);
 extern void CheckQueueSize (Ptr<Queue> queue);
+void setuptracing(uint32_t sindex, Ptr<Socket> skt);
 
 #endif 

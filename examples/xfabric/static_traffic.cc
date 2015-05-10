@@ -24,9 +24,8 @@ void createTopology(void)
   NS_LOG_INFO ("Create channels.");
   PointToPointHelper p2pbottleneck;
   p2pbottleneck.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
-  p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(7.5)));
-  //p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string));
-  p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"));
+  p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(5.0)));
+  p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string));
 
   // Create links between all sourcenodes and bottleneck switch
   //
@@ -126,13 +125,13 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
 {
   ports[sinkN]++;
   // Socket at the source
-  Ptr<Ipv4> sink_node_ipv4 = (sinkNodes.Get(sinkN))->GetObject<Ipv4> ();
+  Ptr<Ipv4L3Protocol> sink_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sinkNodes.Get(sinkN))->GetObject<Ipv4> ());
   Ipv4Address remoteIp = sink_node_ipv4->GetAddress (1,0).GetLocal();
   Address remoteAddress = (InetSocketAddress (remoteIp, ports[sinkN]));
   sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size);
 
   // Get source address
-  Ptr<Ipv4> source_node_ipv4 = (sourceNodes.Get(sinkN))->GetObject<Ipv4> (); 
+  Ptr<Ipv4L3Protocol> source_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); 
   Ipv4Address sourceIp = source_node_ipv4->GetAddress (1,0).GetLocal();
   Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
 
@@ -142,27 +141,31 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
 //  NS_LOG_UNCOND("number of sockets at node "<<sourceNodes.Get(sourceN)->GetId()<<" = "<<ns3TcpSockets.size());
   Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
   //SendingApp->Setup (ns3TcpSocket, remoteAddress, pkt_size, DataRate ("1Gbps"), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN));
-  SendingApp->Setup (remoteAddress, pkt_size, DataRate (link_rate_string), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN));
+  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN));
   //apps.Add(SendingApp);
   (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
       
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); // Get Ipv4 instance of the node
   Ipv4Address addr = ipv4->GetAddress (1, 0).GetLocal();
 
-  std::cout<<"FLOW_INFO source_node "<<(sourceNodes.Get(sourceN))->GetId()<<" sink_node "<<(sinkNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<ports[sinkN]<<" flow_size "<<flow_size<<std::endl;
+  std::cout<<"FLOW_INFO source_node "<<(sourceNodes.Get(sourceN))->GetId()<<" sink_node "<<(sinkNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<ports[sinkN]<<" flow_size "<<flow_size<<" flow_weight" <<flow_weight<<std::endl;
   (source_flow[(sourceNodes.Get(sourceN))->GetId()]).push_back(flow_id);
+  (dest_flow[(sinkNodes.Get(sinkN))->GetId()]).push_back(flow_id);
   std::stringstream ss;
   ss<<addr<<":"<<remoteIp<<":"<<ports[sinkN];
   std::string s = ss.str(); 
   flowids[s] = flow_id;
   
   ipv4->setFlow(s, flow_id, flow_size, flow_weight);
+  sink_node_ipv4->setFlow(s, flow_id, flow_size, flow_weight);
+  
   //flow_id++;
 }
 
 void changeWeights(void)
 {
   uint32_t N = allNodes.GetN(); 
+  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
   for(uint32_t nid=0; nid < N ; nid++)
   {
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
@@ -174,13 +177,16 @@ void changeWeights(void)
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-        ipv4->setFlowWeight(s, random_weight);
+        uint32_t rand_num = uv->GetInteger(1.0, 10.0);
+        double new_weight = rand_num*1.0;
+        std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
+        ipv4->setFlowWeight(s, new_weight);
       }
     }
   }
   
   // check queue size every 1/1000 of a second
-  Simulator::Schedule (Seconds (sampling_interval), &changeWeights);
+  Simulator::Schedule (Seconds (0.2), &changeWeights);
 }
 
 
@@ -213,7 +219,7 @@ void startFlowsDynamic(Ptr<EmpiricalRandomVariable> empirical_rand)
         NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
         time_now = flow_start_time; // is this right ?
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
-        uint32_t flow_weight = 1.0;
+        uint32_t flow_weight = 1.0 * flow_num;
 
         startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight); 
         flow_num++;
@@ -239,21 +245,20 @@ void startFlowsStatic(void)
     {
       double flow_start_time = 0.0;
       double time_now = 1.0;
+      uint32_t flow_counter = 0;
      
-      while(flow_num < 3)
+      while(flow_counter < flows_per_host)
+      //while(flow_num < 3)
       {
         // flow size 
-        double flow_size = 125000000; 
-        flow_start_time = time_now;
+        double flow_size = 12500000000; 
+        flow_start_time = time_now + 0.0001*flow_counter;
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
-        uint32_t flow_weight = 1.0;
-
-        if(flow_num == 2) {
-          flow_weight = 2.0;
-        }
+        uint32_t flow_weight = 1.0 * flow_num;
 
         startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight); 
         flow_num++;
+        flow_counter++;
       }
     }
   }
@@ -262,8 +267,9 @@ void startFlowsStatic(void)
   std::cout<<"num_ports "<<num_ports<<std::endl;
   std::cout<<"num_flows "<<(flow_num-1)<<std::endl;
 
-  Simulator::Schedule (Seconds (1.0), &changeWeights, flow_num-1);
+  Simulator::Schedule (Seconds (1.0), &changeWeights);
 }
+
 void setUpTraffic()
 {
   NS_LOG_UNCOND("EmpiricalRandSetup : file "<<empirical_dist_file);
@@ -312,6 +318,8 @@ main(int argc, char *argv[])
   cmd.Parse (argc, argv);
   common_config(); 
 
+  std::cout<<*argv<<std::endl;
+   std::cout<<"set prefix to "<<prefix<<std::endl;
  // initAll();
   createTopology();
   setUpTraffic();

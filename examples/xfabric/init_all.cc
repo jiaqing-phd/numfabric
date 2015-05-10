@@ -20,6 +20,7 @@ std::map<uint32_t, double> flow_sizes;
 int checkTimes = 0;
 
 std::map<uint32_t, std::vector<uint32_t> > source_flow;
+std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 ApplicationContainer sinkApps;
 
 double sim_time = 2.0;
@@ -33,6 +34,7 @@ uint32_t pkt_size = 1040;
 uint32_t max_ecn_thresh = 30000;
 uint32_t max_queue_size = 450000000;
 std::string queue_type;
+bool delay_mark_value = true;
 
 /* TCP variables */
 uint32_t max_segment_size = 1402;
@@ -42,11 +44,14 @@ uint32_t send_buf_size = 1310720;
 
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
-double link_delay = 7.0; //in microseconds
+double link_delay = 5.0; //in microseconds
 
 
 /* Overall simulation parameters */
-uint32_t N = 6; //number of nodes in the star
+uint32_t N = 4; //number of nodes in the star
+uint32_t flows_per_host = 2;
+std::string application_datarate = "10Gbps";
+
 bool pkt_tag = true;
 std::string empirical_dist_file="DCTCP_CDF";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);

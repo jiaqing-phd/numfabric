@@ -127,7 +127,6 @@ void Ipv4L3Protocol::updateRate(std::string fkey)
   
 //  double deq_rate = deq_bytes * 8.0/(1000000.0 * QUERY_TIME);
   deq_bytes = 0;
-
   
   double instant_rate = totalbytes[fkey] * 8.0 /(1000000.0 *QUERY_TIME); // rate is in Mbps
   double cur_rate = (1 - alpha) * store_rate[fkey] + alpha * instant_rate;
@@ -142,6 +141,7 @@ void Ipv4L3Protocol::updateRate(std::string fkey)
   destination_bytes[fkey] = 0;
   store_dest_rate[fkey] = dest_cur_rate;
 
+//  std::cout<<"updating rate "<<fkey<<" "<<Simulator::Now().GetSeconds()<<" drate "<<dest_cur_rate<<" srate "<<cur_rate<<" node "<<m_node->GetId()<<" "<<Simulator::Now().GetMicroSeconds()<<std::endl;
 
 }
 
@@ -165,7 +165,7 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   QUERY_TIME = 0.0001;
   alpha = 1.0/16.0;
     
-  kay = 0.1;
+  kay = 120000;
   next_deadline = 0.0;
   last_deadline = 0.0;
 
@@ -982,6 +982,11 @@ double Ipv4L3Protocol::GetStoreRate(std::string fkey)
   return store_rate[fkey];
 }
 
+double Ipv4L3Protocol::GetCSFQRate(std::string fkey)
+{
+  return old_rate[fkey];
+}
+
 double Ipv4L3Protocol::GetStoreDestRate(std::string fkey)
 {
   //NS_LOG_UNCOND("GetStoreRate: for key "<<fkey);
@@ -1048,9 +1053,34 @@ double Ipv4L3Protocol::get_wfq_weight(Ptr<Packet> packet, Ipv4Header &ipHeader)
    return ((packet->GetSize()+46)*8.0) / fweight;
 }
 
+void Ipv4L3Protocol::updateFlowRate(std::string flowkey, uint32_t pktsize)
+{
+
+  if (last_arrival.find(flowkey) == last_arrival.end()) {
+    last_arrival[flowkey] = 0.0;
+    old_rate[flowkey] = 0.0;
+  }
+//  std::cout<<"pkt arrived at "<<Simulator::Now().GetNanoSeconds()<<" nodeid "<<m_node->GetId()<<std::endl;   
+  double inter_arrival = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
+  double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
+
+  double epower = exp((-1.0*inter_arrival)/kay);
+  double first_term = (1.0 - epower)*pkt_rate;
+  double second_term = epower * old_rate[flowkey];
+ 
+  double new_rate = first_term + second_term;
+
+  old_rate[flowkey] = new_rate;
+  last_arrival[flowkey] = Simulator::Now().GetNanoSeconds();
+
+//  std::cout<<"updateFlowRate "<<flowkey<<" "<<Simulator::Now().GetNanoSeconds()<<" drate "<<GetStoreDestRate(flowkey)<<" srate "<<GetStoreRate(flowkey)<<" csfq_rate "<<new_rate<<" first_term "<<first_term<<" second_term "<<second_term<<" epower "<<epower<<" old_rate "<<old_rate[flowkey]<<" last_arrived "<<last_arrival[flowkey]<<"interarrival "<<inter_arrival<<" pktsize "<<pktsize<<" nodeid "<<m_node->GetId()<<std::endl;
+
+} 
+  
 
 PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader)
 {
+
   /* What flow does this packet represnt ?*/
   TcpHeader tcph;
   uint16_t sourcePort, destPort;  
@@ -1067,9 +1097,12 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
   ss <<source<<":"<<destination<<":"<<destPort;
   std::string flowkey = ss.str(); 
 
+
   // Calculate the rate corresponding to this price
   // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
-   uint32_t pktsize = packet->GetSize() + 46; //adding IP + PrioHeader + ppp header sizes
+  uint32_t pktsize = packet->GetSize() + 46; //adding IP + PrioHeader + ppp header sizes
+  updateFlowRate(flowkey, pktsize);
+
    totalbytes[flowkey] += pktsize;
   
 
@@ -1371,7 +1404,9 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
     std::string flowkey = ss.str(); 
     
     destination_bytes[flowkey] += pktsize;
-    
+   
+    updateFlowRate(flowkey, pktsize);
+//    std::cout<<"delivered pkt of pktsize "<<pktsize<<" "<<flowkey<<" "<<Simulator::Now().GetNanoSeconds()<<" "<<destination_bytes[flowkey]<<" time "<<Simulator::Now().GetMicroSeconds()<<" node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl; 
     
   } else {
  //   NS_LOG_UNCOND("LocalDeliver "<<Simulator::Now().GetSeconds()<<" node id "<<m_node->GetId()<<" Looks like an ACK packet.. leave it alone "<<tcp_header.GetCWR());

@@ -66,6 +66,7 @@ protected:
   virtual void Retransmit (void); // Exit fast recovery upon retransmit timeout
 
   virtual void ProcessECN(const TcpHeader &tcpheader);
+  uint32_t getFlowId(std::string fkey);
   SequenceNumber32 ecn_highest;
   SequenceNumber32 last_outstanding_num;
 

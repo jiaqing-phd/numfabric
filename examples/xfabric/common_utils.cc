@@ -100,11 +100,36 @@ void common_config(void)
   Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
+  Config::SetDefault ("ns3::PrioQueue::delay_mark", BooleanValue(delay_mark_value));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
 
   return;
 
+}
+
+static void
+CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
+{
+//  NS_LOG_UNCOND (Simulator::Now ().GetSeconds () << "\t" << newCwnd);
+  *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldCwnd << "\t" << newCwnd << std::endl;
+}
+
+void setuptracing(uint32_t sindex, Ptr<Socket> skt)
+{
+  
+    //configure tracing
+    std::string one = ".cwnd";
+    std::stringstream ss;
+    ss << "."<<sindex;
+    std::string str = ss.str();
+    std::string hname1 = prefix+one+str;
+    std::cout<<"cwnd output in "<<hname1<<std::endl;
+   
+    AsciiTraceHelper asciiTraceHelper;
+    Ptr<OutputStreamWrapper> stream0 = asciiTraceHelper.CreateFileStream (hname1);
+    skt->TraceConnectWithoutContext ("CongestionWindow", MakeBoundCallback (&CwndChange, stream0));
+  
 }
 
 void setUpMonitoring(void)
@@ -133,7 +158,7 @@ void setUpMonitoring(void)
 void
 CheckIpv4Rates (NodeContainer &allNodes)
 {
-  double current_rate = 0.0;
+  double current_rate = 0.0, current_dest_rate = 0.0;
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
   {
@@ -143,18 +168,24 @@ CheckIpv4Rates (NodeContainer &allNodes)
     {
     
       double rate = ipv4->GetStoreRate (it->first);
+      double destRate = ipv4->GetStoreDestRate (it->first);
+      double csfq_rate = ipv4->GetCSFQRate (it->first);
 
       uint32_t s = it->second;
-
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
          std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
          current_rate += rate;
       }
+//      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
+      if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<std::endl;
+         current_dest_rate += rate;
+      }
     }
   }
-  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
+  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_dest_rate<<std::endl;
   
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (sampling_interval), &CheckIpv4Rates, allNodes);

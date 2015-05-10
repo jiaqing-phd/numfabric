@@ -62,7 +62,7 @@ MyApp::StartApplication (void)
   m_totBytes = 0;
   Ptr<Socket> ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
   //ns3TcpSockets.push_back(ns3TcpSocket);
-  //setuptracing(m_fid, ns3TcpSocket);
+  setuptracing(m_fid, ns3TcpSocket);
   m_socket = ns3TcpSocket;
   //NS_LOG_UNCOND("number of sockets at node "<<srcNode->GetId()<<" = "<<ns3TcpSockets.size());
   if (InetSocketAddress::IsMatchingType (m_peer))

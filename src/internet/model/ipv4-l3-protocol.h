@@ -129,6 +129,7 @@ public:
   double GetStoreDestRate(std::string fkey);
   double GetStorePrio(std::string fkey);
   double GetStoreDestPrio(std::string fkey);
+  double GetCSFQRate(std::string fkey);
   void setFlow(std::string flow, uint32_t fid, double size=0.0, uint32_t weight = 1.0);
   void setFlows(FlowId_ flowid_set);
   void setFlowUtils(std::vector<double> futils);
@@ -534,6 +535,9 @@ private:
   std::map<std::string, double> last_residue;
   std::map<std::string, int> total_samples;
 
+  std::map<std::string, double> last_arrival;
+  std::map<std::string, double> old_rate;
+
 
   double QUERY_TIME;
   double alpha;
@@ -542,6 +546,7 @@ private:
   void updateRate(std::string fkey);
   void updateAllRates(void);
   void updateCurrentEpoch(void);
+  void updateFlowRate(std::string flowkey, uint32_t pktsize);
 
   /// Trace of sent packets
   TracedCallback<const Ipv4Header &, Ptr<const Packet>, uint32_t> m_sendOutgoingTrace;

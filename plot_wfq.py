@@ -17,9 +17,12 @@ y = {}
 rtime = []
 trate = []
 
+stimes = {}
+srates = {}
 dtimes = {}
 drates = {}
-dprios = {}
+crates = {}
+
 total_capacity=10000
 
 qtimes = {}
@@ -43,24 +46,40 @@ def ewma(values, g=1.0/8):
         ret.append(prev)
     return ret
 
+num_flows=1
 
 for line in f:
   l1 = line.rstrip();
   xy = l1.split(' ');
-#  if(len(xy) > 1 and xy[0]=="num_flows"):
-#    num_flows=int(xy[1])
-  
+  if(len(xy) > 1 and xy[0]=="num_flows"):
+    num_flows=int(xy[1])
   if(xy[0] == "Rate"):
+    sflow_id=int(xy[2])
+    st1 = float(xy[3])
+    srate=float(xy[4])
+
+    if(sflow_id not in stimes):
+      stimes[sflow_id] = []
+      srates[sflow_id] = []
+
+    stimes[sflow_id].append(st1)
+    srates[sflow_id].append(srate)
+  
+  if(xy[0] == "DestRate"):
     flow_id=int(xy[2])
     t1 = float(xy[3])
     rate=float(xy[4])
+    csfq_rate = float(xy[5])
 
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
+      crates[flow_id] = []
 
     dtimes[flow_id].append(t1)
     drates[flow_id].append(rate)
+    crates[flow_id].append(csfq_rate)
+
   if(len(xy)> 2 and xy[1] == "TotalRate"):
     rtime.append(float(xy[0]))
     trate.append(float(xy[2])/total_capacity)
@@ -80,14 +99,13 @@ for line in f:
 
   if(len(xy) > 5):
     if(xy[3] == "DCTCP_DEBUG"):
-      dctcp_nid = int(xy[2])
-      dctcp_time = xy[0]
-      dctcp_alpha = xy[7]
+      dctcp_nid = xy[10]
+      dctcp_time = float(xy[0])
+      dctcp_alpha = float(xy[7])
       if(dctcp_nid not in dctcp_times):
         dctcp_times[dctcp_nid] = []
-      (dctcp_times[dctcp_nid]).append(dctcp_time)
-      if(dctcp_nid not in dctcp_alphas):
         dctcp_alphas[dctcp_nid] = []
+      (dctcp_times[dctcp_nid]).append(dctcp_time)
       (dctcp_alphas[dctcp_nid]).append(dctcp_alpha) 
 
   if(xy[0] == "QueueStats1"):
@@ -97,7 +115,7 @@ for line in f:
     qfdeadline = float(xy[4])
     qnid = int(xy[5])
 
-    if(qnid == 0):
+    if(queue_id == "0_0_1"):
       if(qfid not in q0times):
         q0times[qfid] = []
         q0deadlines[qfid] = []
@@ -117,35 +135,63 @@ for key in qsizes:
 plt.xlabel('Time in seconds')
 plt.ylabel('Queue occupancy in Bytes')
 plt.legend(loc='lower right')
-plt.savefig('%s/%s.%s.jpg' %(pre,pre,"queue_occupancy"))
+plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_occupancy"))
 plt.draw()
 
-plt.figure(2)
-plt.title("Sum of all sending rates / total sending capacity")
+#plt.figure(2)
+#plt.title("Sum of all sending rates / total sending capacity")
 
-plt.plot(rtime, trate, colors[i]) 
-plt.xlabel('Time in seconds')
-plt.ylabel('Fraction of total capacity')
-plt.legend(loc='upper right')
-plt.savefig('%s/%s.%s.jpg' %(pre,pre,"load"))
+#plt.plot(rtime, trate, colors[i]) 
+#plt.xlabel('Time in seconds')
+#plt.ylabel('Fraction of total capacity')
+#plt.legend(loc='upper right')
+#plt.savefig('%s/%s.%s.png' %(pre,pre,"load"))
 
-plt.draw()
+#plt.draw()
 
 
-plt.figure(3)
-plt.title("Sending rates")
+#plt.figure(3)
+#plt.title("Sending rates at sender")
+#i=0
+#for key in stimes:
+#  plt.plot(stimes[key], ewma(srates[key], 1.0), colors[i]) 
+#  i = (i+1)%len(colors)
+
+#plt.xlabel('Time in seconds')
+#plt.ylabel('Rates in Mbps')
+#plt.legend(loc='upper right')
+#plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
+
+#plt.draw()
+
+#plt.figure(6)
+#plt.title("Sending rates at destination")
+#i=0
+#for key in dtimes:
+#  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i]) 
+#  i = (i+1)%len(colors)
+
+#plt.xlabel('Time in seconds')
+#plt.ylabel('Rates in Mbps')
+#plt.legend(loc='upper right')
+#plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates"))
+
+#plt.draw()
+
+
+plt.figure(7)
+plt.title("Sending rates at destination (per-packet exponential averaged")
 i=0
 for key in dtimes:
-  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i]) 
+  plt.plot(dtimes[key], ewma(crates[key], 1.0), colors[i]) 
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')
-plt.ylabel('Fraction of total capacity')
+plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
-plt.savefig('%s/%s.%s.jpg' %(pre,pre,"load"))
+plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates_perpacket"))
 
 plt.draw()
-
 plt.figure(4)
 plt.title("flow deadlines at switch0")
 for f in q0times:
@@ -162,10 +208,43 @@ plt.figure(5)
 plt.title("DCTCP alpha")
 plt.xlabel('Time in seconds')
 plt.ylabel("alpha")
-if key in dctcp_times:
+for key in dctcp_times:
+  print key
   plt.plot(dctcp_times[key], dctcp_alphas[key], label=str(key))
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.%s.png" %(pre,pre,"dctcp_alphas"))
+plt.draw()
+
+
+cwndx = {}
+cwndy = {}
+for fid in range(1,num_flows+1):
+  cwnd1 = sys.argv[1]+".cwnd."+`fid`
+  print("opening file %s" %cwnd1)
+  if(os.path.exists(cwnd1)):
+    f1 = open(cwnd1)
+    for line in f1:
+      L = line.rstrip();
+      xy1 = L.split('\t');
+      if(fid not in cwndx):
+        cwndx[fid] = []
+        cwndy[fid] = []
+      cwndx[fid].append(xy1[0])
+      cwndy[fid].append(xy1[1])
+
+plt.figure(9)
+plt.title("Congestion Windows")
+
+i=0
+for key in cwndx:
+  print("plotting flow id %d"%key)
+  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
+  i = (i+1)%len(colors)
+plt.xlabel('Time in seconds')
+plt.ylabel('Congestion windows')
+plt.legend(loc='lower right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
+
 plt.draw()
 
 plt.show()

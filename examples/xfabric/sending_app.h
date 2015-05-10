@@ -12,6 +12,7 @@
 #include "ns3/prio-queue.h"
 
 using namespace ns3;
+extern void setuptracing(uint32_t sindex, Ptr<Socket> skt);
 
 class MyApp : public Application
 {

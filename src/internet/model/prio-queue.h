@@ -89,6 +89,10 @@ public:
   uint32_t m_ECNThreshBytes;  
   uint32_t m_ECNThreshPackets;
 
+  double ecn_delaythreshold;
+  bool delay_mark;
+
+
   void updateLinkPrice(void);
   double getRateDifference(Time t);
   double getRateDifferenceNormalized(Time t);
@@ -96,6 +100,7 @@ public:
   /* data structure to maintain prev_deadline for every flow */
   std::map<std::string , double> flow_prevdeadlines;
   std::map<uint64_t, double> pkt_tag;
+  std::map<uint64_t, double> pkt_arrival;
   double get_stored_deadline(std::string fkey);
   void set_stored_deadline(std::string fkey, double new_deadline);
   bool remove_tag(uint64_t pktid);

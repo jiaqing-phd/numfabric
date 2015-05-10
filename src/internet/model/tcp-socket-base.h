@@ -61,14 +61,11 @@ class FlowUtil;
  * this class is modified from the original NS-3 TCP socket implementation
  * (TcpSocketImpl) by Raj Bhattacharjea <raj.b@gatech.edu> of Georgia Tech.
  */
-typedef std::map< std::string, uint32_t> FlowId_;
-typedef std::map< std::string, uint32_t>::iterator FlowIdIter_;
 class TcpSocketBase : public TcpSocket
 {
 public:
   bool need_echo;
   void setFlows(void);
-  FlowId_ flowids;
   /**
    * Get the type ID.
    * \brief Get the type ID.
