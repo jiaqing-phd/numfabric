@@ -157,7 +157,13 @@ Ipv4L3Protocol::updateAllRates(void)
   Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
   
-
+void 
+Ipv4L3Protocol::setFlowIdealRate(uint32_t fid, double rate)
+{
+  std::cout<<"node "<<m_node->GetId()<<" setting ideal rate "<<rate<<" for flow "<<fid<<std::endl;
+  flow_idealrate[fid] = rate;
+}
+ 
 Ipv4L3Protocol::Ipv4L3Protocol()
 {
   NS_LOG_FUNCTION (this);
@@ -165,7 +171,7 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   QUERY_TIME = 0.0001;
   alpha = 1.0/16.0;
     
-  kay = 120000;
+  kay = 30000;
   next_deadline = 0.0;
   last_deadline = 0.0;
 
@@ -1049,7 +1055,11 @@ double Ipv4L3Protocol::get_wfq_weight(Ptr<Packet> packet, Ipv4Header &ipHeader)
 
    uint32_t fid = flowids[flowkey];
 
+
    double fweight = fweights_copy[fid];
+   if(fid == 1) {
+     std::cout<<" flow "<<flowkey<<" id "<<fid<<" weight "<<fweight<<std::endl;
+   }
    return ((packet->GetSize()+46)*8.0) / fweight;
 }
 

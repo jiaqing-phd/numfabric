@@ -547,6 +547,7 @@ private:
   void updateAllRates(void);
   void updateCurrentEpoch(void);
   void updateFlowRate(std::string flowkey, uint32_t pktsize);
+  void setFlowIdealRate(uint32_t, double);
 
   /// Trace of sent packets
   TracedCallback<const Ipv4Header &, Ptr<const Packet>, uint32_t> m_sendOutgoingTrace;

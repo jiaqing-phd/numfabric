@@ -61,6 +61,16 @@ void TcpHeader::SetECN(int ec)
   ecn_ = ec;
 }
 
+double TcpHeader::GetRate() const
+{
+  return m_rate;
+}
+
+void TcpHeader::SetRate(double rate_)
+{
+  m_rate = rate_;
+}
+
 void
 TcpHeader::EnableChecksums (void)
 {
@@ -329,6 +339,10 @@ TcpHeader::Serialize (Buffer::Iterator start)  const
   
   i.WriteHtonU32(ecn_);
 
+  uint8_t a[sizeof(double)];
+  memcpy((void *)a, (void *)&m_rate, sizeof(double));
+  i.Write(a, sizeof(double));
+
   // Serialize options if they exist
   // This implementation does not presently try to align options on word
   // boundaries using NOP options
@@ -376,6 +390,10 @@ TcpHeader::Deserialize (Buffer::Iterator start)
   i.Next (2);
   m_urgentPointer = i.ReadNtohU16 ();
   ecn_ = i.ReadNtohU32();
+  
+  uint8_t a[sizeof(double)];
+  i.Read(a, sizeof(double));
+  memcpy((void *)&m_rate, (void *)a, sizeof(double)); 
 
   // Deserialize options if they exist
   m_options.clear ();
@@ -448,7 +466,7 @@ uint8_t
 TcpHeader::CalculateHeaderLength () const
 {
   //uint32_t len = 20;
-  uint32_t len = 24; //kanthi ecn
+  uint32_t len = 32; //kanthi 4 ecn 8 m_rate
   TcpOptionList::const_iterator i;
 
   for (i = m_options.begin (); i != m_options.end (); ++i)

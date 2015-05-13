@@ -166,13 +166,15 @@ void changeWeights(void)
 {
   uint32_t N = allNodes.GetN(); 
   Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  double total_weight = 0.0;
+  std::map<uint32_t, double> flow_weight_local;
   for(uint32_t nid=0; nid < N ; nid++)
   {
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
     std::map<std::string,uint32_t>::iterator it;
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
     {
-    
+       
       uint32_t s = it->second;
 
       /* check if this flowid is from this source */
@@ -180,13 +182,32 @@ void changeWeights(void)
         uint32_t rand_num = uv->GetInteger(1.0, 10.0);
         double new_weight = rand_num*1.0;
         std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
+        flow_weight_local[s] = new_weight;
+        total_weight += new_weight;
         ipv4->setFlowWeight(s, new_weight);
       }
     }
   }
-  
+ 
+  // get the right allocation 
+  for(std::map<uint32_t, double>::iterator it = flow_weight_local.begin(); it != flow_weight_local.end(); ++it)
+  {
+    uint32_t fid = it->first;
+    double weight = flow_weight_local[fid];
+
+    double rate = (weight/total_weight) * link_rate;
+    for(uint32_t nid=0; nid < N ; nid++)
+    {
+      Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
+        std::cout<<"node "<<nid<<" setting rate "<<rate<<" for flow id "<<fid<<std::endl;
+        ipv4->setFlowIdealRate(rate);
+      }
+    }
+  }
+
   // check queue size every 1/1000 of a second
-  Simulator::Schedule (Seconds (0.2), &changeWeights);
+  Simulator::Schedule (Seconds (0.1), &changeWeights);
 }
 
 
@@ -247,8 +268,8 @@ void startFlowsStatic(void)
       double time_now = 1.0;
       uint32_t flow_counter = 0;
      
-      while(flow_counter < flows_per_host)
-      //while(flow_num < 3)
+    while(flow_counter < flows_per_host)
+ //   while(flow_num < 3)
       {
         // flow size 
         double flow_size = 12500000000; 

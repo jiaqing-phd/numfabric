@@ -54,14 +54,6 @@ TcpNewReno::GetTypeId (void)
                    BooleanValue (false),
                    MakeBooleanAccessor (&TcpNewReno::m_dctcp),
                    MakeBooleanChecker ())
-    .AddAttribute ("smoother_dctcp", "Enable smooth DCTCP",
-                   BooleanValue (false),
-                   MakeBooleanAccessor (&TcpNewReno::m_smoother_dctcp),
-                   MakeBooleanChecker ())
-    .AddAttribute ("strawmancc", "Enable strawmancc",
-                   BooleanValue (false),
-                   MakeBooleanAccessor (&TcpNewReno::m_strawmancc),
-                   MakeBooleanChecker ())
     .AddTraceSource ("CongestionWindow",
                      "The TCP connection's congestion window",
                      MakeTraceSourceAccessor (&TcpNewReno::m_cWnd))
@@ -83,6 +75,10 @@ TcpNewReno::TcpNewReno (void)
   bytes_with_ecn = total_bytes_acked = 0.0;
   dctcp_alpha = 0.0;
   dctcp_reacted = false;
+  xfabric_reacted = false;
+  d0 = 0.00003; //30us - TBD
+  dt = d0 * 1.0;
+
 }
 
 TcpNewReno::TcpNewReno (const TcpNewReno& sock)
@@ -144,8 +140,6 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
                 " cwnd " << m_cWnd <<
                 " ssthresh " << m_ssThresh);
 
-//  m_strawmancc = false;
-  if(!m_strawmancc) {
   // Check for exit condition of fast recovery
   if (m_inFastRec && seq < m_recover)
     { // Partial ACK, partial window deflation (RFC2582 sec.3 bullet #5 paragraph 3)
@@ -168,21 +162,20 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
       m_cWnd += m_segmentSize;
       NS_LOG_INFO ("In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
+      std::cout<<"In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<std::endl;
     }
   else
     { 
+      if(!xfabric_reacted) {
         // Congestion avoidance mode, increase by (segSize*segSize)/cwnd. (RFC2581, sec.3.1)
         // To increase cwnd for one segSize per RTT, it should be (ackBytes*segSize)/cwnd
         double adder = static_cast<double> (m_segmentSize * m_segmentSize) / m_cWnd.Get ();
         adder = std::max (1.0, adder);
         m_cWnd += static_cast<uint32_t> (adder);
-        NS_LOG_INFO ("In CongAvoid, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
-//        std::cout<<"In CongAvoid, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+        xfabric_reacted = false;
+        std::cout<<"In CongAvoid, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+      }
     }
-    } else {
-//      std::cout<<"strawmancc is true. not manipulating window"<<std::endl;
-    }
-  // Complete newAck processing
   TcpSocketBase::NewAck (seq);
 }
 
@@ -203,6 +196,32 @@ TcpNewReno::getFlowId(std::string flowkey)
 //  std::cout<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl; 
   return fid;
 }
+
+void
+TcpNewReno::processRate(const TcpHeader &tcpHeader)
+{
+  double target_rate = tcpHeader.GetRate();
+  std::stringstream ss;
+  ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
+  std::string flowkey = ss.str();
+ 
+  double res = target_rate * (1000000.0/8.0) * 0.000035; //TBD - dt from commandline
+
+  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
+
+//  std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
+
+  if(m_cWnd < 1* m_segmentSize) 
+  {
+    m_cWnd = 1 * m_segmentSize;
+  }
+  m_ssThresh = m_cWnd;
+  if(flowkey == "10.1.0.1:10.1.2.2:2") {
+    std::cout<<" flow "<<  flowkey << " target rate "<<target_rate<<" nodeid "<<m_node->GetId()<<" cWnd "<<m_cWnd<<std::endl;
+  }
+  xfabric_reacted = true;
+}
+   
  
 void
 TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
@@ -314,16 +333,12 @@ TcpNewReno::DupAck (const TcpHeader& t, uint32_t count)
   NS_LOG_FUNCTION (this << count);
   if (count == m_retxThresh && !m_inFastRec)
     { // triple duplicate ack triggers fast retransmit (RFC2582 sec.3 bullet #1)
-      if(!m_strawmancc) {
         m_ssThresh = std::max (2 * m_segmentSize, BytesInFlight () / 2);
         m_cWnd = m_ssThresh + 3 * m_segmentSize;
         m_recover = m_highTxMark;
         m_inFastRec = true;
         NS_LOG_INFO ("Triple dupack. Enter fast recovery mode. Reset cwnd to " << m_cWnd <<
                    ", ssthresh to " << m_ssThresh << " at fast recovery seqnum " << m_recover);
-      } else {
-//        std::cout<<"strawmancc is true.. not manipulating window for DupAck"<<std::endl;
-      }
       DoRetransmit ();
     } 
     else if (m_inFastRec) 
@@ -413,6 +428,7 @@ TcpNewReno::InitializeCwnd (void)
    */
   m_cWnd = m_initialCWnd * m_segmentSize;
   m_ssThresh = m_initialSsThresh;
+  std::cout<<"set initial cwnd to "<<m_cWnd<<std::endl;
 
 }
 

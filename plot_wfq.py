@@ -129,8 +129,9 @@ plt.title("QueueOccupancy")
 colors = ['r','b','g', 'm', 'c', 'y','k']
 i=0
 for key in qsizes:
-    plt.plot(qtimes[key], ewma(qsizes[key], 1.0), colors[i]) 
-    i = (i+1)%len(colors)
+    if(key == "0_0_1" or key == "2_2_0" or key == "3_3_0" or key == "1_1_4" or key == "1_1_5"):
+      plt.plot(qtimes[key], ewma(qsizes[key], 1.0), colors[i], label=str(key)) 
+      i = (i+1)%len(colors)
 #plt.plot(qx1, qy1, 'k', label="switch1") 
 plt.xlabel('Time in seconds')
 plt.ylabel('Queue occupancy in Bytes')

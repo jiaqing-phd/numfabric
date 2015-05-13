@@ -66,9 +66,11 @@ protected:
   virtual void Retransmit (void); // Exit fast recovery upon retransmit timeout
 
   virtual void ProcessECN(const TcpHeader &tcpheader);
+  virtual void processRate(const TcpHeader &tcpheader);
   uint32_t getFlowId(std::string fkey);
   SequenceNumber32 ecn_highest;
   SequenceNumber32 last_outstanding_num;
+  uint32_t d0, dt;
 
   // Implementing ns3::TcpSocket -- Attribute get/set
   virtual void     SetSegSize (uint32_t size);
@@ -93,8 +95,7 @@ protected:
   bool                   m_limitedTx;    //!< perform limited transmit
   bool                   m_dctcp;    //!< enable dctcp
   bool                   dctcp_reacted; 
-  bool                   m_strawmancc; 
-  bool                   m_smoother_dctcp;    //!< enable dctcp
+  bool                   xfabric_reacted;
   int32_t                bytes_with_ecn, total_bytes_acked;
   double                 beta, dctcp_alpha;
   SequenceNumber32       highest_ack_recvd;

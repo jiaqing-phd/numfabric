@@ -263,6 +263,8 @@ public:
 
   int GetECN() const;
   void SetECN(int ecn);
+  double GetRate() const;
+  void SetRate(double rate);
 
 private:
   /**
@@ -299,6 +301,7 @@ private:
   bool m_goodChecksum;    //!< Flag to indicate that checksum is correct
 
   int ecn_;
+  double m_rate;
 
 
   typedef std::list< Ptr<TcpOption> > TcpOptionList; //!< List of TcpOption

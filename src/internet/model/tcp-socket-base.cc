@@ -50,6 +50,8 @@
 #include "tcp-option-ts.h"
 #include "rtt-estimator.h"
 
+#include "ipv4-l3-protocol.h"
+
 #include <math.h>
 #include <algorithm>
 
@@ -203,6 +205,7 @@ TcpSocketBase::TcpSocketBase (const TcpSocketBase& sock)
   SetDataSentCallback (vPSUI);
   SetSendCallback (vPSUI);
   SetRecvCallback (vPS);
+  last_data_recvd = 0.0;
 }
 
 TcpSocketBase::~TcpSocketBase (void)
@@ -926,7 +929,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port
 
   ReadOptions (tcpHeader);
 
-  if (tcpHeader.GetFlags () & TcpHeader::ACK)
+  if (tcpHeader.GetFlags () & TcpHeader::ACK)   // kanthi 5/10/2015
     {
       EstimateRtt (tcpHeader);
     }
@@ -1030,7 +1033,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, Ipv6Header header, uint16_t port
 
   ReadOptions (tcpHeader);
 
-  if (tcpHeader.GetFlags () & TcpHeader::ACK)
+  if (tcpHeader.GetFlags () & TcpHeader::ACK) //kanthi 5/10/2015
     {
       EstimateRtt (tcpHeader);
     }
@@ -1164,7 +1167,10 @@ TcpSocketBase::ReceivedAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
 
   /* Sender functionality */
-  ProcessECN(tcpHeader);
+  // ProcessECN(tcpHeader);
+
+  /* Sender functionality II */
+  processRate(tcpHeader);
 
   // Received ACK. Compare the ACK number against highest unacked seqno
   if (0 == (tcpHeader.GetFlags () & TcpHeader::ACK))
@@ -1644,6 +1650,8 @@ TcpSocketBase::SendEmptyPacket (uint8_t flags)
     header.SetECN(1);
   }
 
+  header.SetRate(recvr_measured_rate);
+
   /*
    * Add tags for each socket option.
    * Note that currently the socket adds both IPv4 tag and IPv6 tag
@@ -2040,10 +2048,12 @@ TcpSocketBase::SendPendingData (bool withAck)
                     " pd->Size " << m_txBuffer.Size () <<
                     " pd->SFS " << m_txBuffer.SizeFromSequence (m_nextTxSequence));
       // Stop sending if we need to wait for a larger Tx window (prevent silly window syndrome)
+      
       if (w < m_segmentSize && m_txBuffer.SizeFromSequence (m_nextTxSequence) > w)
         {
           break; // No more
         }
+      
       // Nagle's algorithm (RFC896): Hold off sending if there is unacked data
       // in the buffer and the amount of data to send is less than one segment
       if (!m_noDelay && UnAckDataCount () > 0
@@ -2116,6 +2126,26 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
   NS_LOG_LOGIC ("seq " << tcpHeader.GetSequenceNumber () <<
                 " ack " << tcpHeader.GetAckNumber () <<
                 " pkt size " << p->GetSize () );
+
+  std::stringstream ss;
+  ss<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetLocalPort();
+  std::string flowkey = ss.str();
+
+  if(p->GetSize() > 500) { /* TBD : what is the size of ack, syn, fin? */
+    /* Note the time */
+    double t_now = Simulator::Now().GetNanoSeconds();
+    double inter_pkt_delay = t_now - last_data_recvd;
+    //recvr_measured_rate = p->GetSize()*8.0*1000000000.0/(inter_pkt_delay * 1000000.0); // rate in Mbps
+    last_data_recvd = t_now;
+    
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+    recvr_measured_rate = ipv4->GetCSFQRate(flowkey); //kanthi - checking 5/12
+
+    if(flowkey == "10.1.0.1:10.1.2.2:2") {
+      std::cout<<"inter_pkt_delay "<<inter_pkt_delay<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<std::endl;
+    }
+  }
+
   /* process ECN first */
   TcpHeader::Flags_t ce_flag;
   if(need_echo == true) {
@@ -2202,6 +2232,7 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
     m_lastRtt = nextRtt;
     NS_LOG_FUNCTION(this << m_lastRtt);
   }
+
   
 }
 
@@ -2277,6 +2308,11 @@ TcpSocketBase::ReTxTimeout ()
     }
 
   Retransmit ();
+}
+void
+TcpSocketBase::processRate(const ns3::TcpHeader &header)
+{
+  return;
 }
 
 void

@@ -614,7 +614,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   if(m_pkt_tagged) {
     std::string flowkey = GetFlowKey(min_pp);
     double deadline = get_stored_deadline(flowkey);
-    if(deadline == -1) {
+    if(deadline == -1 || control_packet) {
       //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" nodeid "<<nodeid<<" pkt_flow "<<flowkey<<" not found deadline = "<<current_virtualtime);
       pkt_tag[pkt_uid] = current_virtualtime*1.0;
     } else {

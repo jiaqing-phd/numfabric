@@ -126,7 +126,6 @@ public:
   virtual int GetSockName (Address &address) const; // Return local addr:port in address
   virtual void BindToNetDevice (Ptr<NetDevice> netdevice); // NetDevice with my m_endPoint
 
-  virtual void ProcessECN(const TcpHeader &tcpheader);
   
   FlowUtil flowutil;
   double utilInverse(double lp);
@@ -162,6 +161,8 @@ protected:
   virtual bool     GetAllowBroadcast (void) const;
 
 
+  virtual void ProcessECN(const TcpHeader &tcpheader);
+  virtual void processRate(const TcpHeader &tcpheader);
 
   // Helper functions: Connection set up
 
@@ -642,6 +643,7 @@ protected:
   Time              m_persistTimeout;  //!< Time between sending 1-byte probes
   Time              m_cnTimeout;       //!< Timeout for connection retry
 
+  double            last_data_recvd, recvr_measured_rate;
 
   // Connections to other layers of TCP/IP
   Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint
