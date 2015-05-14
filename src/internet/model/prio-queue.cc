@@ -840,7 +840,8 @@ PrioQueue::DoDequeue (void)
     double pkt_depart = Simulator::Now().GetNanoSeconds();
     double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
     ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
-//    std::cout<<"pkt with id "<<ret_packet->GetUid()<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<" ecnthresh "<<ecn_delaythreshold<<std::endl;
+    std::string flowkey = GetFlowKey(ret_packet);
+    std::cout<<"QWAIT "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
   
     if(pkt_wait_duration > ecn_delaythreshold) {
         Ipv4Header ipheader;

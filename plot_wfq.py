@@ -29,6 +29,9 @@ qtimes = {}
 qsizes = {}
 qprices = {}
 
+qwaittimes = {}
+qfwaits  ={}
+
 q0times = {}
 q0deadlines = {}
 q1times = {}
@@ -127,6 +130,18 @@ for line in f:
       qvirtual_times.append(qvirtual_time)
       qvirtualtimes_times.append(qtime)
   
+  if(xy[0] == "QWAIT"):
+    qtime = float(xy[1])
+    qfid = xy[2]
+    qfwait = float(xy[4])
+    queue_id = xy[7]
+
+    if(queue_id == "0_0_1"):
+      if(qfid not in qwaittimes):
+        qwaittimes[qfid] = []
+        qfwaits[qfid] = []
+      qwaittimes[qfid].append(qtime)
+      qfwaits[qfid].append(qfwait)
     
 plt.figure(1)
 plt.title("QueueOccupancy")
@@ -210,6 +225,18 @@ plt.xlabel("Time in seconds")
 plt.ylabel("Time in seconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.png" %(pre,"q0_deadlines"))
+plt.draw()
+
+plt.figure(5)
+plt.title("flow wait times at bottleneck link")
+for f in qwaittimes:
+  if(f == 0):
+    continue
+  plt.plot(qwaittimes[f], qfwaits[f], label=str(f))
+plt.xlabel("Time in seconds")
+plt.ylabel("Time in seconds")
+plt.legend(loc='upper right')
+plt.savefig("%s/%s.png" %(pre,"q0_waittimes"))
 plt.draw()
 
 #plt.figure(5)
