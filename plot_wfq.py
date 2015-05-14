@@ -34,6 +34,8 @@ q0deadlines = {}
 q1times = {}
 q1deadlines = {}
 rincrements = {}
+qvirtual_times = []
+qvirtualtimes_times = []
 
 dctcp_alphas = {}
 dctcp_times = {}
@@ -113,7 +115,8 @@ for line in f:
     qtime = float(xy[2])
     qfid = int(xy[3])
     qfdeadline = float(xy[4])
-    qnid = int(xy[5])
+    qvirtual_time = float(xy[5])
+#    qnid = int(xy[5])
 
     if(queue_id == "0_0_1"):
       if(qfid not in q0times):
@@ -121,6 +124,8 @@ for line in f:
         q0deadlines[qfid] = []
       q0times[qfid].append(qtime)
       q0deadlines[qfid].append(qfdeadline)
+      qvirtual_times.append(qvirtual_time)
+      qvirtualtimes_times.append(qtime)
   
     
 plt.figure(1)
@@ -165,19 +170,19 @@ plt.draw()
 
 #plt.draw()
 
-#plt.figure(6)
-#plt.title("Sending rates at destination")
-#i=0
-#for key in dtimes:
-#  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i]) 
-#  i = (i+1)%len(colors)
+plt.figure(6)
+plt.title("Sending rates at destination")
+i=0
+for key in dtimes:
+  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i]) 
+  i = (i+1)%len(colors)
 
-#plt.xlabel('Time in seconds')
-#plt.ylabel('Rates in Mbps')
-#plt.legend(loc='upper right')
-#plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates"))
+plt.xlabel('Time in seconds')
+plt.ylabel('Rates in Mbps')
+plt.legend(loc='upper right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates"))
 
-#plt.draw()
+plt.draw()
 
 
 plt.figure(7)
@@ -193,28 +198,30 @@ plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates_perpacket"))
 
 plt.draw()
+
 plt.figure(4)
-plt.title("flow deadlines at switch0")
+plt.title("flow deadlines at switch0 and virtual time")
 for f in q0times:
   if(f == 0):
     continue
   plt.plot(q0times[f], q0deadlines[f], label=str(f))
+plt.plot(qvirtualtimes_times, qvirtual_times, label="virtualtime", marker="*", markevery=10000)
 plt.xlabel("Time in seconds")
-plt.ylabel("Deadlines")
+plt.ylabel("Time in seconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.png" %(pre,"q0_deadlines"))
 plt.draw()
 
-plt.figure(5)
-plt.title("DCTCP alpha")
-plt.xlabel('Time in seconds')
-plt.ylabel("alpha")
-for key in dctcp_times:
-  print key
-  plt.plot(dctcp_times[key], dctcp_alphas[key], label=str(key))
-plt.legend(loc='upper right')
-plt.savefig("%s/%s.%s.png" %(pre,pre,"dctcp_alphas"))
-plt.draw()
+#plt.figure(5)
+#plt.title("DCTCP alpha")
+#plt.xlabel('Time in seconds')
+#plt.ylabel("alpha")
+#for key in dctcp_times:
+#  print key
+#  plt.plot(dctcp_times[key], dctcp_alphas[key], label=str(key))
+#plt.legend(loc='upper right')
+#plt.savefig("%s/%s.%s.png" %(pre,pre,"dctcp_alphas"))
+#plt.draw()
 
 
 cwndx = {}

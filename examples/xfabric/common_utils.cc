@@ -44,8 +44,9 @@ CheckQueueSize (Ptr<Queue> queue)
   std::map<std::string, uint32_t>::iterator it;
   for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
     double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
-    std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<nid<<std::endl;
-   }
+    double virtual_time = StaticCast<PrioQueue> (queue)->get_virtualtime();
+    std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<nid<<std::endl;
+  }
   Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
   if(Simulator::Now().GetSeconds() >= sim_time) {
     Simulator::Stop();

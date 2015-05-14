@@ -258,6 +258,8 @@ PrioQueue::GetCurCount(void)
 uint32_t
 PrioQueue::GetCurSize(void)
 {
+
+  /*
    typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
    std::map<std::string,uint32_t> flow_count;
    uint32_t total_pkts = 0;
@@ -294,6 +296,7 @@ PrioQueue::GetCurSize(void)
    }
   
    NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" totalpktscounter "<<total_pkts<<" nodeid "<<nodeid);  
+   */
 
   return m_bytesInQueue;
 }
@@ -421,6 +424,12 @@ PrioQueue::get_stored_deadline(std::string fkey)
   } else {
     return flow_prevdeadlines[fkey];
   }
+}
+
+double
+PrioQueue::get_virtualtime()
+{
+  return current_virtualtime;
 }
 
 inline void

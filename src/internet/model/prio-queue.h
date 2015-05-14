@@ -103,6 +103,7 @@ public:
   std::map<uint64_t, double> pkt_arrival;
   double get_stored_deadline(std::string fkey);
   void set_stored_deadline(std::string fkey, double new_deadline);
+  double get_virtualtime(void);
   bool remove_tag(uint64_t pktid);
   Ptr<Packet> get_packet_with_id(uint64_t pktid);
   struct tag_elem get_lowest_tagid();

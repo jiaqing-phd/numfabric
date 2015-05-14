@@ -217,11 +217,14 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
 
-  //target_rate  = getFlowIdealRate(flowkey)/1000000.0;
+  target_rate  = getFlowIdealRate(flowkey)/1000000.0;
+
+  std::cout<<"flow "<<flowkey<<" ideal rate "<<target_rate<<std::endl;
 
   double res = target_rate * (1000000.0/8.0) * 0.000035; //TBD - dt from commandline
+  m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
-  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
+//  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
 
 //  std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
 
