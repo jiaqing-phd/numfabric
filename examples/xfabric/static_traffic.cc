@@ -199,15 +199,15 @@ void changeWeights(void)
     for(uint32_t nid=0; nid < N ; nid++)
     {
       Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
-      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-        std::cout<<"node "<<nid<<" setting rate "<<rate<<" for flow id "<<fid<<std::endl;
-        ipv4->setFlowIdealRate(rate);
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), fid)!=(source_flow[nid]).end()) {
+        std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rate<<std::endl;
+        ipv4->setFlowIdealRate(fid, rate);
       }
     }
   }
 
   // check queue size every 1/1000 of a second
-  Simulator::Schedule (Seconds (0.1), &changeWeights);
+  Simulator::Schedule (Seconds (0.2), &changeWeights);
 }
 
 

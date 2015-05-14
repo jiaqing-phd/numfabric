@@ -181,7 +181,7 @@ plt.draw()
 
 
 plt.figure(7)
-plt.title("Sending rates at destination (per-packet exponential averaged")
+plt.title("Sending rates at destination (per-packet exponential averaged)")
 i=0
 for key in dtimes:
   plt.plot(dtimes[key], ewma(crates[key], 1.0), colors[i]) 
@@ -231,7 +231,7 @@ for fid in range(1,num_flows+1):
         cwndx[fid] = []
         cwndy[fid] = []
       cwndx[fid].append(xy1[0])
-      cwndy[fid].append(xy1[1])
+      cwndy[fid].append(xy1[2])
 
 plt.figure(9)
 plt.title("Congestion Windows")
@@ -239,7 +239,8 @@ plt.title("Congestion Windows")
 i=0
 for key in cwndx:
   print("plotting flow id %d"%key)
-  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
+  
+  plt.step(cwndx[key], cwndy[key], colors[i], label=`key`)
   i = (i+1)%len(colors)
 plt.xlabel('Time in seconds')
 plt.ylabel('Congestion windows')

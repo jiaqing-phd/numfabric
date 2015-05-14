@@ -68,6 +68,7 @@ protected:
   virtual void ProcessECN(const TcpHeader &tcpheader);
   virtual void processRate(const TcpHeader &tcpheader);
   uint32_t getFlowId(std::string fkey);
+  double getFlowIdealRate(std::string fkey);
   SequenceNumber32 ecn_highest;
   SequenceNumber32 last_outstanding_num;
   uint32_t d0, dt;

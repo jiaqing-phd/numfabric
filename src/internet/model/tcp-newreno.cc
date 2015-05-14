@@ -197,6 +197,18 @@ TcpNewReno::getFlowId(std::string flowkey)
   return fid;
 }
 
+double
+TcpNewReno::getFlowIdealRate(std::string flowkey)
+{
+  uint32_t fid = 0;
+  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+  if((ipv4->flowids).find(flowkey) != (ipv4->flowids).end()) {
+    fid = ipv4->flowids[flowkey];
+  }
+  double rate = ipv4->flow_idealrate[fid]; 
+  return rate;
+}
+
 void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
@@ -204,7 +216,9 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   std::stringstream ss;
   ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
- 
+
+  //target_rate  = getFlowIdealRate(flowkey)/1000000.0;
+
   double res = target_rate * (1000000.0/8.0) * 0.000035; //TBD - dt from commandline
 
   m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
@@ -216,9 +230,6 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     m_cWnd = 1 * m_segmentSize;
   }
   m_ssThresh = m_cWnd;
-  if(flowkey == "10.1.0.1:10.1.2.2:2") {
-    std::cout<<" flow "<<  flowkey << " target rate "<<target_rate<<" nodeid "<<m_node->GetId()<<" cWnd "<<m_cWnd<<std::endl;
-  }
   xfabric_reacted = true;
 }
    
