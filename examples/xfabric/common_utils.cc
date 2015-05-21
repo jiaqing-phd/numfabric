@@ -35,22 +35,43 @@ void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t f
 void
 CheckQueueSize (Ptr<Queue> queue)
 {
-  uint32_t qSize = StaticCast<PrioQueue> (queue)->GetCurSize ();
-  uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
-//  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
-  std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
-  checkTimes++;
-  std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
-  std::map<std::string, uint32_t>::iterator it;
-  for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
-    double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
-    double virtual_time = StaticCast<PrioQueue> (queue)->get_virtualtime();
-    std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<nid<<std::endl;
-  }
-  Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
-  if(Simulator::Now().GetSeconds() >= sim_time) {
-    Simulator::Stop();
-  }
+  if(queue_type == "WFQ") {
+    uint32_t qSize = StaticCast<PrioQueue> (queue)->GetCurSize ();
+    uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
+    std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
+    checkTimes++;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
+    std::map<std::string, uint32_t>::iterator it;
+    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
+      double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
+      double virtual_time = StaticCast<PrioQueue> (queue)->get_virtualtime();
+      double current_slope = StaticCast<PrioQueue> (queue)->getCurrentSlope();
+      std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<current_slope<<" "<<nid<<std::endl;
+    }
+    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+    if(Simulator::Now().GetSeconds() >= sim_time) {
+      Simulator::Stop();
+    }
+  } 
+  if(queue_type == "W2FQ") {
+    uint32_t qSize = StaticCast<W2FQ> (queue)->GetCurSize (0);
+    uint32_t nid = StaticCast<W2FQ> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
+    std::string qname = StaticCast<W2FQ> (queue)->GetLinkIDString();
+    checkTimes++;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
+    std::map<std::string, uint32_t>::iterator it;
+    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
+      uint64_t virtual_time = StaticCast<W2FQ> (queue)->get_virtualtime();
+      double dline = 0.0;
+      std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<nid<<std::endl;
+    }
+    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+    if(Simulator::Now().GetSeconds() >= sim_time) {
+      Simulator::Stop();
+    }
+  } 
 }
 
 CommandLine addCmdOptions(void)

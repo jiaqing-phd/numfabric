@@ -23,6 +23,12 @@ dtimes = {}
 drates = {}
 crates = {}
 
+
+start_times = {}
+finish_times = {}
+stime_xaxis = {}
+finish_xaxis = {}
+
 total_capacity=10000
 
 qtimes = {}
@@ -89,6 +95,25 @@ for line in f:
     rtime.append(float(xy[0]))
     trate.append(float(xy[2])/total_capacity)
 
+  if(xy[0] == "start_time"):
+    fid = int(xy[2])
+    stime = float(xy[3])
+    curtime = float(xy[4])
+    if(fid not in start_times):
+      start_times[fid] = []
+      stime_xaxis[fid] = []
+    start_times[fid].append(stime)
+    stime_xaxis[fid].append(curtime)
+ 
+  if(xy[0] == "finish_time"):
+    fid = int(xy[2])
+    stime = float(xy[3])
+    curtime = float(xy[4])
+    if(fid not in finish_times):
+      finish_times[fid] = []
+      finish_xaxis[fid] = []
+    finish_times[fid].append(stime)
+    finish_xaxis[fid].append(curtime)
 
   if(xy[0] == "QueueStats"):
     queue_id = xy[1]
@@ -215,14 +240,14 @@ plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates_perpacket"))
 plt.draw()
 
 plt.figure(4)
-plt.title("flow deadlines at switch0 and virtual time")
+plt.title("switch0 virtual time")
 for f in q0times:
   if(f == 0):
     continue
   plt.plot(q0times[f], q0deadlines[f], label=str(f))
-plt.plot(qvirtualtimes_times, qvirtual_times, label="virtualtime", marker="*", markevery=10000)
+plt.plot(qvirtualtimes_times, qvirtual_times, label="virtualtime", marker="*", markevery=1000)
 plt.xlabel("Time in seconds")
-plt.ylabel("Time in seconds")
+plt.ylabel("Time in NanoSeconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.png" %(pre,"q0_deadlines"))
 plt.draw()
@@ -234,9 +259,21 @@ for f in qwaittimes:
     continue
   plt.plot(qwaittimes[f], qfwaits[f], label=str(f))
 plt.xlabel("Time in seconds")
-plt.ylabel("Time in seconds")
+plt.ylabel("Time in Nanoseconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.png" %(pre,"q0_waittimes"))
+plt.draw()
+
+
+plt.figure(11)
+plt.title("starttime and finish times at switch")
+for f in start_times:
+#  plt.plot(stime_xaxis[f], start_times[f], label="start"+str(f))
+  plt.plot(stime_xaxis[f], finish_times[f], label="finish"+str(f), marker="x", markevery=1000)
+plt.xlabel("Time in seconds")
+plt.ylabel("Time in Nanoseconds")
+plt.legend(loc='upper right')
+plt.savefig("%s/%s.%s.png" %(pre,pre,"q0_starttimes"))
 plt.draw()
 
 #plt.figure(5)

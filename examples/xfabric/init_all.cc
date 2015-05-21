@@ -33,7 +33,7 @@ uint32_t pkt_size = 1040;
 /* Queue variables */
 uint32_t max_ecn_thresh = 30000;
 uint32_t max_queue_size = 450000000;
-std::string queue_type;
+std::string queue_type = "WFQ";
 bool delay_mark_value = true;
 
 /* TCP variables */
@@ -44,6 +44,7 @@ uint32_t send_buf_size = 1310720;
 
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
+std::vector<Ptr<Queue > > AllQueues;
 double link_delay = 5.0; //in microseconds
 
 

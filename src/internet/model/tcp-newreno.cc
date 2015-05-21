@@ -218,9 +218,8 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   std::string flowkey = ss.str();
 
   target_rate  = getFlowIdealRate(flowkey)/1000000.0;
-
-  std::cout<<"flow "<<flowkey<<" ideal rate "<<target_rate<<std::endl;
-
+  
+ // std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
   double res = target_rate * (1000000.0/8.0) * 0.000035; //TBD - dt from commandline
   m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
@@ -230,6 +229,8 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
   if(m_cWnd < 1* m_segmentSize) 
   {
+     
+//    std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd<<std::endl;
     m_cWnd = 1 * m_segmentSize;
   }
   m_ssThresh = m_cWnd;

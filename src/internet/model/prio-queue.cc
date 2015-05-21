@@ -93,6 +93,7 @@ PrioQueue::PrioQueue () :
   running_avg_prio = latest_avg_prio = 0.0;
   total_samples = 0;
   current_virtualtime = 0.0;
+  updated_virtual_time = 0.0;
   
   std::cout<<" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold<<std::endl;
 }
@@ -253,6 +254,12 @@ PrioQueue::GetCurCount(void)
 {
 
   return m_size;
+}
+
+double
+PrioQueue::getCurrentSlope()
+{
+  return current_slope;
 }
 
 uint32_t
@@ -821,11 +828,13 @@ PrioQueue::DoDequeue (void)
     lowest_deadline = elem.deadline;
     p = get_packet_with_id(lowest_tag_id);
     if(!p) {
-      NS_LOG_UNCOND("could not get packet with id "<<lowest_tag_id<<" deadline "<<lowest_deadline);
+      std::cout<<"could not get packet with id "<<lowest_tag_id<<" deadline "<<lowest_deadline<<" "<<linkid_string<<std::endl;
     }
 
     // increment virtual time
     current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
+    current_slope = (Simulator::Now().GetNanoSeconds() - updated_virtual_time)/(p->GetSize());
+    updated_virtual_time = Simulator::Now().GetNanoSeconds();
     
   } 
 
@@ -841,6 +850,7 @@ PrioQueue::DoDequeue (void)
     double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
     ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
     std::string flowkey = GetFlowKey(ret_packet);
+    if(linkid_string == "0_0_1") 
     std::cout<<"QWAIT "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
   
     if(pkt_wait_duration > ecn_delaythreshold) {

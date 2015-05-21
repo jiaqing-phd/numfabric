@@ -104,6 +104,9 @@ public:
   double get_stored_deadline(std::string fkey);
   void set_stored_deadline(std::string fkey, double new_deadline);
   double get_virtualtime(void);
+  double current_slope;
+  double getCurrentSlope();
+  double updated_virtual_time;
   bool remove_tag(uint64_t pktid);
   Ptr<Packet> get_packet_with_id(uint64_t pktid);
   struct tag_elem get_lowest_tagid();

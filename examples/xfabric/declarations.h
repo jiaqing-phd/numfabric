@@ -16,6 +16,7 @@
 
 using namespace ns3;
 
+extern std::vector<Ptr <Queue> > AllQueues;
 extern std::map<uint32_t, double> flow_sizes;
 extern int checkTimes;
 extern std::map<uint32_t, std::vector<uint32_t> > source_flow;

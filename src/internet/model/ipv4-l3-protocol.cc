@@ -1057,9 +1057,10 @@ double Ipv4L3Protocol::get_wfq_weight(Ptr<Packet> packet, Ipv4Header &ipHeader)
 
 
    double fweight = fweights_copy[fid];
-   if(fid == 1) {
-     std::cout<<" flow "<<flowkey<<" id "<<fid<<" weight "<<fweight<<std::endl;
+   if(fweight == 0.0) {
+    fweight = 1000.0; //highest wei
    }
+  // std::cout<<" node "<<m_node->GetId()<<" weight "<<fweight<<" returning "<<((packet->GetSize()+46)*8.0)/fweight<<" "<<flowkey<<" "<<Simulator::Now().GetSeconds()<<std::endl;  
    return ((packet->GetSize()+46)*8.0) / fweight;
 }
 
@@ -1110,7 +1111,8 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
   // Calculate the rate corresponding to this price
   // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
-  uint32_t pktsize = packet->GetSize() + 46; //adding IP + PrioHeader + ppp header sizes
+  //uint32_t pktsize = packet->GetSize() + 46; //adding IP + PrioHeader + ppp header sizes
+  uint32_t pktsize = packet->GetSize(); //adding IP + PrioHeader + ppp header sizes
   updateFlowRate(flowkey, pktsize);
 
    totalbytes[flowkey] += pktsize;
@@ -1389,7 +1391,8 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
 {
   NS_LOG_FUNCTION (this << packet << &ip << iif);
   Ptr<Packet> p = packet->Copy (); // need to pass a non-const packet up
-  uint32_t pktsize = p->GetSize() + 46;
+  //uint32_t pktsize = p->GetSize() + 46;
+  uint32_t pktsize = p->GetSize();
   Ipv4Header ipHeader = ip;
 
   // incoming packets priority and remaining priority

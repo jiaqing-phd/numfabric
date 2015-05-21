@@ -25,7 +25,14 @@ void createTopology(void)
   PointToPointHelper p2pbottleneck;
   p2pbottleneck.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
   p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(5.0)));
-  p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string));
+
+  if(queue_type == "W2FQ") {
+    std::cout<<"setting queue to W2FQ"<<std::endl;
+    p2pbottleneck.SetQueue("ns3::W2FQ", "DataRate", StringValue(link_rate_string), "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"));
+  } else if(queue_type == "WFQ") {
+    std::cout<<"setting queue to WFQ"<<std::endl;
+    p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string), "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"));
+  }
 
   // Create links between all sourcenodes and bottleneck switch
   //
@@ -71,6 +78,7 @@ void createTopology(void)
       Ptr<Queue> queue = nd->GetQueue ();
       uint32_t nid = (nd->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd->GetNode())->GetId()<<std::endl;
+      AllQueues.push_back(queue);
 
       // the other end
       Ptr<PointToPointNetDevice> nd1 = StaticCast<PointToPointNetDevice> ((dev_cont[i]).Get(1));
@@ -78,6 +86,7 @@ void createTopology(void)
       uint32_t nid1 = (nd1->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd1->GetNode())->GetId()<<std::endl;
 
+      AllQueues.push_back(queue1);
      // get the string version of names of the queues 
      std::stringstream ss;
      ss<<nid<<"_"<<nid<<"_"<<nid1;
@@ -91,8 +100,14 @@ void createTopology(void)
      std::cout<<"fkey2 "<<fkey2<<std::endl;
 
       // first queue 
+     if(queue_type == "WFQ") {
       StaticCast<PrioQueue> (queue)->SetNodeID(nid);
       StaticCast<PrioQueue> (queue)->SetLinkIDString(fkey1);
+     } else if(queue_type == "W2FQ") {
+      StaticCast<W2FQ> (queue)->SetNodeID(nid);
+      StaticCast<W2FQ> (queue)->SetLinkIDString(fkey1);
+     }
+      
       queue_id++;
 //      BooleanValue is_switch;
 //      StaticCast<PrioQueue> (queue)->SetAttribute("is_switch", BooleanValue("true"));
@@ -100,10 +115,14 @@ void createTopology(void)
       Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue);
 //      StaticCast<PrioQueue> (queue)->GetAttribute("is_switch", is_switch);
       std::cout<<"Set the queue id "<<queue_id<<" to queue between "<<nid<<" and "<<nid1<<std::endl;
+     if(queue_type == "WFQ") {
+      StaticCast<PrioQueue> (queue1)->SetNodeID(nid1);
+      StaticCast<PrioQueue> (queue1)->SetLinkIDString(fkey2);
+     } else if(queue_type == "W2FQ") {
+      StaticCast<W2FQ> (queue1)->SetNodeID(nid1);
+      StaticCast<W2FQ> (queue1)->SetLinkIDString(fkey2);
+     }
 
-     // second queue
-     StaticCast<PrioQueue> (queue1)->SetNodeID(nid1);
-     StaticCast<PrioQueue> (queue1)->SetLinkIDString(fkey2);
  //    StaticCast<PrioQueue> (queue1)->SetAttribute("is_switch", BooleanValue("true"));
  //    NS_LOG_UNCOND("Set node "<<nid1<<" as switch");
      Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue1);
@@ -120,7 +139,18 @@ void createTopology(void)
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 }
 
-      
+void setQFlows()
+{
+  if(queue_type == "W2FQ") {
+    for(uint32_t i=0; i<AllQueues.size(); i++) {
+      Ptr<Queue> q = AllQueues[i];
+      for(std::map<std::string, uint32_t>::iterator it=flowids.begin(); it != flowids.end(); ++it) {
+        StaticCast<W2FQ> (q)->setFlowID(it->first, it->second);
+      }
+    }
+  }
+}
+
 void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight)
 {
   ports[sinkN]++;
@@ -181,6 +211,7 @@ void changeWeights(void)
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
         uint32_t rand_num = uv->GetInteger(1.0, 10.0);
         double new_weight = rand_num*1.0;
+        //double new_weight = s*1.0;
         std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
         flow_weight_local[s] = new_weight;
         total_weight += new_weight;
@@ -345,6 +376,7 @@ main(int argc, char *argv[])
   createTopology();
   setUpTraffic();
   setUpMonitoring();
+  setQFlows();
   
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();

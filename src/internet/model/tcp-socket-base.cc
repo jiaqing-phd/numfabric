@@ -2141,7 +2141,7 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
     recvr_measured_rate = ipv4->GetCSFQRate(flowkey); //kanthi - checking 5/12
 
-    if(flowkey == "10.1.0.1:10.1.2.2:2") {
+   if(flowkey == "10.1.0.1:10.1.2.2:2") {
       std::cout<<"inter_pkt_delay "<<inter_pkt_delay<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<std::endl;
     }
   }
