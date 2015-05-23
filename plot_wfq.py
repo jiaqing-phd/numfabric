@@ -268,7 +268,7 @@ plt.draw()
 plt.figure(11)
 plt.title("starttime and finish times at switch")
 for f in start_times:
-#  plt.plot(stime_xaxis[f], start_times[f], label="start"+str(f))
+  plt.plot(stime_xaxis[f], start_times[f], label="start"+str(f))
   plt.plot(stime_xaxis[f], finish_times[f], label="finish"+str(f), marker="x", markevery=1000)
 plt.xlabel("Time in seconds")
 plt.ylabel("Time in Nanoseconds")

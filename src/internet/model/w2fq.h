@@ -52,7 +52,7 @@ public:
   W2FQ::QueueMode GetMode (void);
 
   uint32_t get_virtualtime(void);
-  void setFlowID(std::string flowkey, uint32_t fid);
+  void setFlowID(std::string flowkey, uint32_t fid, double fweight);
   std::map<uint32_t, uint64_t> pkt_arrival;
   uint32_t GetCurCount(uint32_t fid);
   uint32_t GetCurSize(uint32_t fid);
@@ -62,6 +62,7 @@ public:
   
 
 private:
+  bool init_reset;
   virtual bool DoEnqueue (Ptr<Packet> p);
   virtual Ptr<Packet> DoDequeue (void);
 
@@ -71,12 +72,14 @@ private:
   std::map<uint32_t, std::queue<Ptr <Packet> > >m_packets; //!< the packets in the queue
   std::map<uint32_t, uint32_t> m_size;
   std::map<std::string, uint32_t> flow_ids;
+  std::map<uint32_t, double> flow_weights;
   uint32_t m_maxPackets;              //!< max packets in the queue
   uint32_t m_maxBytes;                //!< max bytes in the queue
   std::map<uint32_t, uint32_t> m_bytesInQueue;            //!< actual bytes in the queue
   DataRate m_bps;
   QueueMode m_mode;                   //!< queue mode (packets or bytes limited)
   double current_virtualtime;
+  std::map<uint32_t, double> local_flow_weights;
 
   
   std::map<uint32_t, double> start_time;

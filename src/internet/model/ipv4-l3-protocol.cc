@@ -1075,13 +1075,14 @@ void Ipv4L3Protocol::updateFlowRate(std::string flowkey, uint32_t pktsize)
   double inter_arrival = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
   double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
 
-  double epower = exp((-1.0*inter_arrival)/kay);
-  double first_term = (1.0 - epower)*pkt_rate;
-  double second_term = epower * old_rate[flowkey];
+  //double epower = exp((-1.0*inter_arrival)/kay);
+  //double first_term = (1.0 - epower)*pkt_rate;
+  //double second_term = epower * old_rate[flowkey];
  
-  double new_rate = first_term + second_term;
+  //double new_rate = first_term + second_term;
 
-  old_rate[flowkey] = new_rate;
+  //old_rate[flowkey] = new_rate;
+  old_rate[flowkey] = pkt_rate;
   last_arrival[flowkey] = Simulator::Now().GetNanoSeconds();
 
 //  std::cout<<"updateFlowRate "<<flowkey<<" "<<Simulator::Now().GetNanoSeconds()<<" drate "<<GetStoreDestRate(flowkey)<<" srate "<<GetStoreRate(flowkey)<<" csfq_rate "<<new_rate<<" first_term "<<first_term<<" second_term "<<second_term<<" epower "<<epower<<" old_rate "<<old_rate[flowkey]<<" last_arrived "<<last_arrival[flowkey]<<"interarrival "<<inter_arrival<<" pktsize "<<pktsize<<" nodeid "<<m_node->GetId()<<std::endl;

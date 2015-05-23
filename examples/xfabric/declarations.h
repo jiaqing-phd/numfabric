@@ -91,6 +91,8 @@ extern std::string prefix;
 extern uint32_t util_method ;
 extern uint16_t *ports;
 
+extern std::map<uint32_t, double> flowweights;
+
 extern void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes);
 
 

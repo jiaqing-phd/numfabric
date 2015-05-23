@@ -23,6 +23,7 @@ std::map<uint32_t, std::vector<uint32_t> > source_flow;
 std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 ApplicationContainer sinkApps;
 
+std::map<uint32_t, double> flowweights;
 double sim_time = 2.0;
 double measurement_starttime = 1.2;
 

@@ -98,6 +98,26 @@ PrioQueue::PrioQueue () :
   std::cout<<" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold<<std::endl;
 }
 
+uint32_t
+PrioQueue::getFlowID(Ptr<Packet> p)
+{
+  std::string flowkey = GetFlowKey(p);
+  if (flow_ids.find(flowkey) != flow_ids.end()) {
+//    std::cout<<"flowkey "<<flowkey<<" fid "<<flow_ids[flowkey]<<std::endl;
+    return flow_ids[flowkey];
+  }
+  return 0; //TBD - convert flows to ids
+}
+
+void
+PrioQueue::setFlowID(std::string flowkey, uint32_t fid, double fweight)
+{
+ // std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl;
+  flow_ids[flowkey] = fid;
+  flow_weights[fid] = fweight;
+
+}
+
 /*
 double
 PrioQueue::getRateDifference(Time time_interval)
@@ -850,8 +870,10 @@ PrioQueue::DoDequeue (void)
     double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
     ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
     std::string flowkey = GetFlowKey(ret_packet);
-    if(linkid_string == "0_0_1") 
-    std::cout<<"QWAIT "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
+    if(linkid_string == "0_0_1") {
+      std::cout<<"QWAIT "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
+      std::cout<<"DEQUEUE "<<Simulator::Now().GetSeconds()<<" "<<flow_ids[flowkey]<<std::endl;
+    }
   
     if(pkt_wait_duration > ecn_delaythreshold) {
         Ipv4Header ipheader;
@@ -872,7 +894,8 @@ PrioQueue::DoDequeue (void)
         //std::cout<<"marking pkt from flow "<<flowkey<<std::endl;
 
     }
-  } 
+  }
+
 
     return ret_packet;
 }

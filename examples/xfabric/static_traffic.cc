@@ -141,14 +141,17 @@ void createTopology(void)
 
 void setQFlows()
 {
-  if(queue_type == "W2FQ") {
     for(uint32_t i=0; i<AllQueues.size(); i++) {
       Ptr<Queue> q = AllQueues[i];
       for(std::map<std::string, uint32_t>::iterator it=flowids.begin(); it != flowids.end(); ++it) {
-        StaticCast<W2FQ> (q)->setFlowID(it->first, it->second);
+        if(queue_type == "W2FQ") {
+          StaticCast<W2FQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+        }
+        if(queue_type == "WFQ") {
+          StaticCast<PrioQueue> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+        }
       }
     }
-  }
 }
 
 void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight)
@@ -212,10 +215,16 @@ void changeWeights(void)
         uint32_t rand_num = uv->GetInteger(1.0, 10.0);
         double new_weight = rand_num*1.0;
         //double new_weight = s*1.0;
+        //if(s == 8) {
+        //  new_weight = 7.0;
+        //} else {
+        //  new_weight = 1.0;
+        //}
         std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
         flow_weight_local[s] = new_weight;
         total_weight += new_weight;
         ipv4->setFlowWeight(s, new_weight);
+        flowweights[s] = new_weight;
       }
     }
   }
@@ -236,7 +245,7 @@ void changeWeights(void)
       }
     }
   }
-
+  setQFlows();
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (0.2), &changeWeights);
 }
@@ -300,11 +309,11 @@ void startFlowsStatic(void)
       uint32_t flow_counter = 0;
      
     while(flow_counter < flows_per_host)
- //   while(flow_num < 3)
+   //   while(flow_num < 3)
       {
         // flow size 
         double flow_size = 12500000000; 
-        flow_start_time = time_now + 0.0001*flow_counter;
+        flow_start_time = time_now + 0.0001;
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
         uint32_t flow_weight = 1.0 * flow_num;
 
@@ -319,6 +328,11 @@ void startFlowsStatic(void)
   std::cout<<"num_ports "<<num_ports<<std::endl;
   std::cout<<"num_flows "<<(flow_num-1)<<std::endl;
 
+}
+
+void setUpWeightChange(void)
+{
+  
   Simulator::Schedule (Seconds (1.0), &changeWeights);
 }
 
@@ -376,7 +390,8 @@ main(int argc, char *argv[])
   createTopology();
   setUpTraffic();
   setUpMonitoring();
-  setQFlows();
+  setUpWeightChange();
+  //setQFlows();
   
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();
