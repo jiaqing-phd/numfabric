@@ -156,10 +156,10 @@ for line in f:
       qvirtualtimes_times.append(qtime)
   
   if(xy[0] == "QWAIT"):
-    qtime = float(xy[1])
-    qfid = xy[2]
-    qfwait = float(xy[4])
-    queue_id = xy[7]
+    qtime = float(xy[2])
+    qfid = xy[3]
+    qfwait = float(xy[5])
+    queue_id = xy[1]
 
     if(queue_id == "0_0_1"):
       if(qfid not in qwaittimes):

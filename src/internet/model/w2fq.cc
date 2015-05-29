@@ -110,6 +110,7 @@ uint32_t W2FQ::GetCurSize(uint32_t fid_dummy)
   uint32_t tot_bytes = 0;
   for(std::map<uint32_t, uint32_t>::iterator it = m_bytesInQueue.begin(); it!=m_bytesInQueue.end(); ++it) {
     uint32_t fid = it->first;
+    std::cout<<"QOCCU "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<m_bytesInQueue[fid]<<std::endl;
     tot_bytes += m_bytesInQueue[fid];
   }
   return tot_bytes;
@@ -134,8 +135,11 @@ bool W2FQ::enqueue(Ptr<Packet> p, uint32_t flowid)
      the packet is here 
    */
 
+  if(linkid_string == "0_0_1") {
+    std::cout<<"E queuenumber "<<linkid_string<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<flowid<<" pkts "<<m_size[flowid]<<std::endl;
+  }
   (m_packets[flowid]).push(p);
-  m_size[flowid] = (m_packets[flowid]).size();
+  m_size[flowid] += 1;
   m_bytesInQueue[flowid] += p->GetSize(); // TBD : headers?
   return true;
 }
@@ -145,8 +149,11 @@ W2FQ::remove(Ptr<Packet> p, int32_t flowid)
 {
   NS_LOG_FUNCTION(this << p);
   m_packets[flowid].pop();
-  m_size[flowid] = (m_packets[flowid]).size();
+  m_size[flowid]-= 1;
   m_bytesInQueue[flowid] -= p->GetSize();
+  if(linkid_string == "0_0_1") {
+    std::cout<<"D queuenumber "<<linkid_string<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<flowid<<" pkts "<<m_size[flowid]<<std::endl;
+  }
   return true;
 }
   
@@ -247,38 +254,60 @@ W2FQ::setFlowID(std::string flowkey, uint32_t fid, double fweight)
   flow_ids[flowkey] = fid;
   flow_weights[fid] = fweight;
 
-  /*if(init_reset == false) {
-    std::cout<<"resetting weights"<<std::endl;
-    start_time[fid] = 0;
-    finish_time[fid] = 0;
-    current_virtualtime = 0.0;
-    init_reset = true;
-  }*/
+  /*if(m_packets[fid].size() > 0) {
+    Ptr<Packet> p = (m_packets[fid]).front();
+    if(p) {
+      re_resetFlows(fid, p);
+    }
+  } */
 }
 
-bool 
-W2FQ::DoEnqueue (Ptr<Packet> p)
+
+void
+W2FQ::re_resetFlows(uint32_t flowid, Ptr<Packet> p)
 {
-  NS_LOG_FUNCTION (this << p);
-
-  uint32_t flowid = getFlowID(p);
-
-  /* First check if the queue size exceeded */
-  if ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue[flowid] >= m_maxBytes)) ||
-        (m_mode == QUEUE_MODE_PACKETS && m_packets[flowid].size() >= m_maxPackets))
-    {
-            NS_LOG_UNCOND ("Queue full (packet would exceed max bytes) -- dropping pkt");
-            remove(p, flowid);
-            Drop (p);
-            return false;
-    }
+     //double fw = flow_weights[flowid];
+     //if(fw < 1.0) {
+     // fw = 1000.0;
+     //}
+     double fw = getWFQweight(p);
+     double pkt_wfq_weight = p->GetSize()*8.0/fw;
+     local_flow_weights[flowid] = fw;
+    
+    start_time[flowid] = current_virtualtime;
+    finish_time[flowid] = start_time[flowid] + pkt_wfq_weight;
  
-   if(m_packets[flowid].size() <= 0) { 
-     //double pkt_wfq_weight = getWFQweight(p);
-     double fw = flow_weights[flowid];
+ 
+    double min_starttime = start_time[flowid]; 
+    /* update virtual time */
+    pktq_iter it;
+    for (it = m_packets.begin(); it != m_packets.end(); ++it) {
+      uint32_t fid = it->first;
+      if(linkid_string == "0_0_1") {
+        std::cout<<"start_time flowid "<<fid<<" "<<start_time[fid]<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+        std::cout<<"finish_time flowid "<<fid<<" "<<finish_time[fid]<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+      }
+  
+      if(((m_packets[fid].size()) > 0) && (start_time[fid] < min_starttime)) {
+        min_starttime = start_time[fid];
+      }
+    }
+
+
+    current_virtualtime = std::max(min_starttime, current_virtualtime);
+//      if(linkid_string == "0_0_1") 
+    std::cout<<"re_resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<std::endl;
+  return;
+}
+void
+W2FQ::resetFlows(uint32_t flowid, Ptr<Packet> p)
+{
+   /*  double fw = flow_weights[flowid];
      if(fw < 1.0) {
       fw = 1000.0;
      }
+    */
+    double fw = getWFQweight(p);
      double pkt_wfq_weight = p->GetSize()*8.0/fw;
      //double pkt_wfq_weight = PKTSIZE/fw;
      local_flow_weights[flowid] = fw;
@@ -305,16 +334,47 @@ W2FQ::DoEnqueue (Ptr<Packet> p)
         min_starttime = start_time[fid];
       }
     }
+    double old_virtualtime = current_virtualtime;
 
     current_virtualtime = std::max(min_starttime, current_virtualtime);
+      if(linkid_string == "0_0_1") {
+      std::cout<<"VIRTUALTIMETRACK ENQUEUE "<<Simulator::Now().GetMicroSeconds()<<" "<<old_virtualtime<<" "<<current_virtualtime<<std::endl;
+      }
 //      if(linkid_string == "0_0_1") 
- //    std::cout<<"final: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<std::endl;
+    std::cout<<"resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<" fw "<<fw<<std::endl;
+  return;
+}
+  
+
+bool 
+W2FQ::DoEnqueue (Ptr<Packet> p)
+{
+  NS_LOG_FUNCTION (this << p);
+
+  uint32_t flowid = getFlowID(p);
+
+  /* First check if the queue size exceeded */
+  if ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue[flowid] >= m_maxBytes)) ||
+        (m_mode == QUEUE_MODE_PACKETS && m_packets[flowid].size() >= m_maxPackets))
+    {
+            NS_LOG_UNCOND ("Queue full (packet would exceed max bytes) -- dropping pkt");
+            remove(p, flowid);
+            Drop (p);
+            return false;
+    }
+ 
+   if(m_packets[flowid].size() <= 0) { 
+    resetFlows(flowid, p);
+   }
+
+   if((local_flow_weights.find(flowid) != local_flow_weights.end()) && (getWFQweight(p) != local_flow_weights[flowid])) {
+      re_resetFlows(flowid, p);
   }
 
   pkt_arrival[p->GetUid()] = Simulator::Now().GetNanoSeconds();
   enqueue(p, flowid); 
  // if(linkid_string == "0_0_1") {
-//    std::cout<<"enqueued packet with flowid "<<flowid<<" current_virtualtime "<<current_virtualtime<<" pakcte starttime "<<start_time[flowid]<<" finish time "<<finish_time[flowid]<<" "<<linkid_string<<std::endl;
+ //   std::cout<<"enqueued packet with flowid "<<flowid<<" current_virtualtime "<<current_virtualtime<<" pakcte starttime "<<start_time[flowid]<<" finish time "<<finish_time[flowid]<<" "<<linkid_string<<" pkt size "<<p->GetSize()<<std::endl;
   //} 
   return true;
   
@@ -377,15 +437,17 @@ W2FQ::DoDequeue (void)
   //double pkt_wfq_weight = getWFQweight(pkt);
   if(m_packets[flow].size() > 0) {
      double pktSize = (m_packets[flow].front())->GetSize() * 8.0;
-     //double pktSize = PKTSIZE;
-     double fw = flow_weights[flow];
+
+/*     double fw = flow_weights[flow];
      if(fw < 1.0) {
       fw = 1000.0;
      }
+*/
+    double fw = getWFQweight(pkt);
     double pkt_wfq_weight = pktSize/fw;
     start_time[flow] = finish_time[flow];
     finish_time[flow] = start_time[flow] + pkt_wfq_weight; 
-//    std::cout<<"updated starttime finishtime "<<start_time[flow]<<" "<<finish_time[flow]<<" "<<linkid_string<<std::endl;
+    std::cout<<"updated starttime finishtime "<<start_time[flow]<<" "<<finish_time[flow]<<" "<<linkid_string<<" weight "<<pkt_wfq_weight<<" flow "<<flow<<" "<<pktSize<<" "<<fw<<std::endl;
   }
 
   /* update the virtual clock */
@@ -410,10 +472,11 @@ W2FQ::DoDequeue (void)
   for (it=m_packets.begin(); it != m_packets.end(); ++it)
   {
     uint32_t fid = it->first;
-    double fweight = flow_weights[fid];
-    if(fweight < 1.0) {
+    double fweight = local_flow_weights[fid];
+/*    if(fweight < 1.0) {
       fweight = 1000.0;
     }
+*/
     W += fweight;
     if(m_packets[fid].size() > 0 && !minSreset) {
       minSreset = true;
@@ -423,21 +486,26 @@ W2FQ::DoDequeue (void)
       minS = start_time[fid];
     }
   } 
-  if(minSreset == false) {
+/*  if(minSreset == false) {
     minS = 0.0;
     std::cout<<"minSRESET is false "<<linkid_string<<std::endl;
-  }  
+  }
+*/  
   //if(linkid_string == "0_0_1") {
 //    std::cout<<"determined minstartime "<<minS<<" second term "<< (1.0*current_virtualtime + (double)(pkt->GetSize()*8.0/W))<<" "<<linkid_string<<" W = "<<W<<std::endl;
   //}
+    double old_virtualtime = current_virtualtime;
   current_virtualtime = std::max(minS*1.0, (1.0*current_virtualtime + (double)(pkt->GetSize()*8.0/W)));
+      if(linkid_string == "0_0_1") {
+      std::cout<<"VIRTUALTIMETRACK ENQUEUE "<<Simulator::Now().GetMicroSeconds()<<" "<<old_virtualtime<<" "<<current_virtualtime<<std::endl;
+      }
 //  current_virtualtime = std::max(minS*1.0, (1.0*current_virtualtime + PKTSIZE/W));
   double wait_duration = Simulator::Now().GetNanoSeconds() - pkt_arrival[pkt->GetUid()];
-  if(linkid_string == "0_0_1") {
-    std::cout<<"QWAIT "<<Simulator::Now().GetSeconds()<<" "<<flow<<" spent "<<wait_duration<<" in queue "<<linkid_string<<std::endl;
-    std::cout<<"DEQUEUE "<<Simulator::Now().GetMicroSeconds()<<" "<<flow<<std::endl;
+//  if(linkid_string == "0_0_1") {
+    std::cout<<"QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow<<" spent "<<wait_duration<<" in queue "<<linkid_string<<std::endl;
+    std::cout<<"DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow<<" pkt size "<<pkt->GetSize()<<std::endl;
 //    std::cout<<"End of dequeue: flow "<<flow<<" stime "<<start_time[flow]<<" ftime "<<finish_time[flow]<<" vtime "<<current_virtualtime<<" min_starttime "<<minS<<" "<<linkid_string<<" VTIMEUPDATE"<<std::endl;
-  }
+//  }
   return (pkt);
 }
 

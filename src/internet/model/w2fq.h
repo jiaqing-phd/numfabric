@@ -87,6 +87,8 @@ private:
   
   double getWFQweight(Ptr<Packet> p);
   bool QueueEmpty(void);
+  void resetFlows(uint32_t fid, Ptr<Packet> p);
+  void re_resetFlows(uint32_t fid, Ptr<Packet> p);
   
   TcpHeader GetTCPHeader(Ptr<Packet> p);
   Ptr<const Packet> DoPeek (void) const;

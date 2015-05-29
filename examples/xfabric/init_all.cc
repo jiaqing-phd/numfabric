@@ -38,7 +38,7 @@ std::string queue_type = "WFQ";
 bool delay_mark_value = true;
 
 /* TCP variables */
-uint32_t max_segment_size = 1402;
+uint32_t max_segment_size = 1438;
 uint32_t ssthresh_value = 3000;
 uint32_t recv_buf_size = 1310720;
 uint32_t send_buf_size = 1310720;
@@ -51,7 +51,7 @@ double link_delay = 5.0; //in microseconds
 
 /* Overall simulation parameters */
 uint32_t N = 4; //number of nodes in the star
-uint32_t flows_per_host = 2;
+uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
 
 bool pkt_tag = true;

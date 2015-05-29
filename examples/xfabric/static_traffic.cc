@@ -214,12 +214,22 @@ void changeWeights(void)
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
         uint32_t rand_num = uv->GetInteger(1.0, 10.0);
         double new_weight = rand_num*1.0;
-        //double new_weight = s*1.0;
-        //if(s == 8) {
-        //  new_weight = 7.0;
-        //} else {
-        //  new_weight = 1.0;
-        //}
+/*        double new_weight = s*1.0;
+        double ns_time_now = Simulator::Now().GetSeconds();
+        if((ns_time_now <= 1.19) || (ns_time_now > 1.2 && ns_time_now < 1.5)) {
+          if(s == 1) {
+            new_weight = 10.0;
+          } else {
+            new_weight = 1.0;
+          }
+        } else {
+          if(s == 1) {
+            new_weight = 10.0;
+          } else {
+            new_weight = 10.0;
+          }
+        }
+  */         
         std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
         flow_weight_local[s] = new_weight;
         total_weight += new_weight;
@@ -302,14 +312,15 @@ void startFlowsStatic(void)
    
   for (uint32_t i=0; i < sourceNodes.GetN(); i++) 
   {
-    for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
-    {
+    //for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
+    //{
+      uint32_t j = i;
       double flow_start_time = 0.0;
       double time_now = 1.0;
       uint32_t flow_counter = 0;
      
-    while(flow_counter < flows_per_host)
-   //   while(flow_num < 3)
+      while(flow_counter < flows_per_host)
+      //while(flow_num < 3)
       {
         // flow size 
         double flow_size = 12500000000; 
@@ -321,7 +332,7 @@ void startFlowsStatic(void)
         flow_num++;
         flow_counter++;
       }
-    }
+    //}
   }
 
   uint32_t num_ports = sourceNodes.GetN() + sinkNodes.GetN();
