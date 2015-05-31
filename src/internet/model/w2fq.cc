@@ -16,7 +16,6 @@ NS_LOG_COMPONENT_DEFINE ("W2FQ");
 //static uint32_t MAXUINT = std::numeric_limits<uint32_t>::max();
 //static double MAXDOUBLE = std::numeric_limits<double>::max();
 static double MAXDOUBLE=1.79e+100;
-
 //static double PKTSIZE=1500*8.0;
 
 namespace ns3 {
@@ -308,7 +307,7 @@ W2FQ::resetFlows(uint32_t flowid, Ptr<Packet> p)
      }
     */
     double fw = getWFQweight(p);
-     double pkt_wfq_weight = p->GetSize()*8.0/fw;
+    double pkt_wfq_weight = p->GetSize()*8.0/fw;
      //double pkt_wfq_weight = PKTSIZE/fw;
      local_flow_weights[flowid] = fw;
      
@@ -338,7 +337,8 @@ W2FQ::resetFlows(uint32_t flowid, Ptr<Packet> p)
 
     current_virtualtime = std::max(min_starttime, current_virtualtime);
       if(linkid_string == "0_0_1") {
-      std::cout<<"VIRTUALTIMETRACK ENQUEUE "<<Simulator::Now().GetMicroSeconds()<<" "<<old_virtualtime<<" "<<current_virtualtime<<std::endl;
+      std::cout.precision(15);
+      std::cout<<"VIRTUALTIMETRACK ENQUEUE "<<Simulator::Now().GetNanoSeconds()<<" "<<std::fixed<<old_virtualtime<<" "<<std::fixed<<current_virtualtime<<std::endl;
       }
 //      if(linkid_string == "0_0_1") 
     std::cout<<"resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<" fw "<<fw<<std::endl;
@@ -497,7 +497,8 @@ W2FQ::DoDequeue (void)
     double old_virtualtime = current_virtualtime;
   current_virtualtime = std::max(minS*1.0, (1.0*current_virtualtime + (double)(pkt->GetSize()*8.0/W)));
       if(linkid_string == "0_0_1") {
-      std::cout<<"VIRTUALTIMETRACK ENQUEUE "<<Simulator::Now().GetMicroSeconds()<<" "<<old_virtualtime<<" "<<current_virtualtime<<std::endl;
+      std::cout.precision(15);
+      std::cout<<"VIRTUALTIMETRACK DEQUEUE "<<Simulator::Now().GetNanoSeconds()<<" "<<std::fixed<<old_virtualtime<<" "<<std::fixed<<current_virtualtime<<std::endl;
       }
 //  current_virtualtime = std::max(minS*1.0, (1.0*current_virtualtime + PKTSIZE/W));
   double wait_duration = Simulator::Now().GetNanoSeconds() - pkt_arrival[pkt->GetUid()];
