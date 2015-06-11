@@ -18,6 +18,7 @@ using namespace ns3;
 
 std::map<uint32_t, double> flow_sizes;
 int checkTimes = 0;
+double kvalue;
 
 std::map<uint32_t, std::vector<uint32_t> > source_flow;
 std::map<uint32_t, std::vector<uint32_t> > dest_flow;
@@ -36,6 +37,7 @@ uint32_t max_ecn_thresh = 30000;
 uint32_t max_queue_size = 450000000;
 std::string queue_type = "WFQ";
 bool delay_mark_value = true;
+uint32_t vpackets = 1;
 
 /* TCP variables */
 uint32_t max_segment_size = 1438;
@@ -51,7 +53,7 @@ double link_delay = 5.0; //in microseconds
 
 /* Overall simulation parameters */
 uint32_t N = 4; //number of nodes in the star
-uint32_t flows_per_host = 1;
+uint32_t flows_per_host = 2;
 std::string application_datarate = "10Gbps";
 
 bool pkt_tag = true;

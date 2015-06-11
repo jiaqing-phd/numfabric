@@ -127,6 +127,7 @@ public:
   void setFlowIdealRate(uint32_t, double);
   std::map<uint32_t, double> flow_idealrate;
   void setAlpha(double alpha);
+  void setKay(double kvalue);
   double GetStoreRate(std::string fkey);
   double GetStoreDestRate(std::string fkey);
   double GetStorePrio(std::string fkey);

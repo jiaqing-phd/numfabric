@@ -39,9 +39,11 @@ def find_converge_time(ret_rates, fname, start_time, stop_time):
      
 #      if(flowid == 2 and time > 1.8):
 #        print("time %f cur rate %f flowid %d ret_rates %f" %(time, rates[flowid], flowid, ret_rates[flowid])) 
+          
+      if(not(close_enough(rates[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
+        good[flowid] = 0
         
       if((close_enough(rates[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
-#        if(flowid == 2 and time > 1.8):
         good[flowid] += 1
           
         if(good[flowid] == enough_good):

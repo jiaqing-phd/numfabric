@@ -75,6 +75,11 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeDataRateAccessor (&PrioQueue::m_bps),
                    MakeDataRateChecker ())
 
+    .AddAttribute ("vpackets", 
+                   "The number of packets after which to calculate slope",
+                   UintegerValue (1),
+                   MakeUintegerAccessor (&PrioQueue::vpackets),
+                   MakeUintegerChecker<uint32_t> ())
 
 ;
   return tid;
@@ -660,7 +665,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     }
     // insert the new deadline now
       //NS_LOG_UNCOND("deadline_at_switch "<<Simulator::Now().GetSeconds()<<" nodeid "<<nodeid<<" pkt_flow "<<flowkey<<" found_vtime= "<<current_virtualtime<<" inc= "<<deadline+min_prio<<" inserting_deadline "<<new_deadline);
-    set_stored_deadline(flowkey, pkt_tag[pkt_uid]+min_wfq_weight);
+    set_stored_deadline(flowkey, pkt_tag[pkt_uid]+ (p->GetSize()*8.0/min_wfq_weight));
+    //set_stored_deadline(flowkey, pkt_tag[pkt_uid]+ (min_wfq_weight));
   }
 
   /* Also store time of arrival for each packet */
@@ -853,8 +859,13 @@ PrioQueue::DoDequeue (void)
 
     // increment virtual time
     current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
-    current_slope = (Simulator::Now().GetNanoSeconds() - updated_virtual_time)/(p->GetSize());
-    updated_virtual_time = Simulator::Now().GetNanoSeconds();
+
+    virtualtime_updated += 1;
+    if(virtualtime_updated >= vpackets) {
+     virtualtime_updated = 0;
+     current_slope = CalcSlope();
+     std::cout<<"SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope<<std::endl;
+    } 
     
   } 
 
@@ -871,8 +882,8 @@ PrioQueue::DoDequeue (void)
     ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
     std::string flowkey = GetFlowKey(ret_packet);
     if(linkid_string == "0_0_1") {
-      std::cout<<"QWAIT "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
-      std::cout<<"DEQUEUE "<<Simulator::Now().GetSeconds()<<" "<<flow_ids[flowkey]<<std::endl;
+      std::cout<<"QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow_ids[flowkey]<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
+      std::cout<<"DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow_ids[flowkey]<<" pkt size "<<ret_packet->GetSize()<<std::endl;
     }
   
     if(pkt_wait_duration > ecn_delaythreshold) {
@@ -899,6 +910,22 @@ PrioQueue::DoDequeue (void)
 
     return ret_packet;
 }
+
+void
+PrioQueue::SetVPkts(uint32_t vpkts)
+{
+  vpackets = vpkts;
+}
+
+double 
+PrioQueue::CalcSlope(void)
+{
+  double time_elapsed = Simulator::Now().GetNanoSeconds() - last_virtualtime_time;
+  double slope = (current_virtualtime - last_virtualtime) * 1000.0 / time_elapsed;
+  last_virtualtime_time = Simulator::Now().GetNanoSeconds();
+  last_virtualtime = current_virtualtime;
+  return slope;
+} 
 
 
 Ptr<const Packet>

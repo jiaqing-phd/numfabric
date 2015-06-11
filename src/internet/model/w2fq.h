@@ -59,6 +59,7 @@ public:
   uint32_t GetMaxBytes(void);
   uint32_t getFlowID(Ptr<Packet> p);
 
+  void SetVPkts(uint32_t);
   
 
 private:
@@ -84,6 +85,13 @@ private:
   
   std::map<uint32_t, double> start_time;
   std::map<uint32_t, double> finish_time;
+
+  double current_slope;
+  double CalcSlope(void);
+  double last_virtualtime_time;
+  double last_virtualtime;
+  uint32_t vpackets;
+  uint32_t virtualtime_updated;
   
   double getWFQweight(Ptr<Packet> p);
   bool QueueEmpty(void);

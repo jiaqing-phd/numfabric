@@ -103,9 +103,11 @@ void createTopology(void)
      if(queue_type == "WFQ") {
       StaticCast<PrioQueue> (queue)->SetNodeID(nid);
       StaticCast<PrioQueue> (queue)->SetLinkIDString(fkey1);
+      StaticCast<PrioQueue> (queue)->SetVPkts(vpackets);
      } else if(queue_type == "W2FQ") {
       StaticCast<W2FQ> (queue)->SetNodeID(nid);
       StaticCast<W2FQ> (queue)->SetLinkIDString(fkey1);
+      StaticCast<W2FQ> (queue)->SetVPkts(vpackets);
      }
       
       queue_id++;
@@ -118,9 +120,11 @@ void createTopology(void)
      if(queue_type == "WFQ") {
       StaticCast<PrioQueue> (queue1)->SetNodeID(nid1);
       StaticCast<PrioQueue> (queue1)->SetLinkIDString(fkey2);
+      StaticCast<PrioQueue> (queue1)->SetVPkts(vpackets);
      } else if(queue_type == "W2FQ") {
       StaticCast<W2FQ> (queue1)->SetNodeID(nid1);
       StaticCast<W2FQ> (queue1)->SetLinkIDString(fkey2);
+      StaticCast<W2FQ> (queue1)->SetVPkts(vpackets);
      }
 
  //    StaticCast<PrioQueue> (queue1)->SetAttribute("is_switch", BooleanValue("true"));
@@ -312,9 +316,9 @@ void startFlowsStatic(void)
    
   for (uint32_t i=0; i < sourceNodes.GetN(); i++) 
   {
-    //for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
-    //{
-      uint32_t j = i;
+    for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
+    {
+      //uint32_t j = i;
       double flow_start_time = 0.0;
       double time_now = 1.0;
       uint32_t flow_counter = 0;
@@ -332,7 +336,7 @@ void startFlowsStatic(void)
         flow_num++;
         flow_counter++;
       }
-    //}
+    }
   }
 
   uint32_t num_ports = sourceNodes.GetN() + sinkNodes.GetN();

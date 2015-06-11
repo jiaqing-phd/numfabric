@@ -111,6 +111,12 @@ public:
   void set_stored_deadline(std::string fkey, double new_deadline);
   double get_virtualtime(void);
   double current_slope;
+  double CalcSlope(void);
+  void SetVPkts(uint32_t vpkts);
+  double last_virtualtime_time;
+  double last_virtualtime;
+  uint32_t vpackets;
+  uint32_t virtualtime_updated;
   double getCurrentSlope();
   double updated_virtual_time;
   bool remove_tag(uint64_t pktid);

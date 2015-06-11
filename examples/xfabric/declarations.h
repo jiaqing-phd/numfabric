@@ -23,6 +23,9 @@ extern std::map<uint32_t, std::vector<uint32_t> > source_flow;
 extern std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 extern ApplicationContainer sinkApps;
 
+extern double kvalue;
+extern uint32_t vpackets;
+
 extern double sim_time;
 extern double measurement_starttime ;
 extern double prio_q_min_update_time ;

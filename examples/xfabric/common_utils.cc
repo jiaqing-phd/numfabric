@@ -90,6 +90,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("load", "load",load);
   cmd.AddValue ("rate_update_time", "rate_update_time", rate_update_time);
   cmd.AddValue ("sampling_interval", "sampling_interval", sampling_interval);
+  cmd.AddValue ("kay", "kay", kvalue);
+  cmd.AddValue ("vpackets", "vpackets", vpackets);
 
   return cmd;
 }
@@ -167,6 +169,9 @@ void setUpMonitoring(void)
      //StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0/128.0);
      StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(rate_update_time);
      StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0);
+
+     StaticCast<Ipv4L3Protocol> (ipv4)->setKay(kvalue);
+     
      //StaticCast<Ipv4L3Protocol> (ipv4)->setEpochUpdate(epoch_update_time);
      //StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);
   }

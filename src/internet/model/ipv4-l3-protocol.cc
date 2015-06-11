@@ -269,6 +269,12 @@ void Ipv4L3Protocol::setQueryTime(double qtime)
   QUERY_TIME = qtime;
 } 
 
+void Ipv4L3Protocol::setKay(double kvalue)
+{
+  std::cout<<"Setting kay to "<<kvalue<<std::endl;
+  kay = kvalue;
+}
+
 void Ipv4L3Protocol::setAlpha(double qtime)
 {
   alpha = qtime;

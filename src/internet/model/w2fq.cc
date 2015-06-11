@@ -50,6 +50,11 @@ TypeId W2FQ::GetTypeId (void)
                    MakeDataRateAccessor (&W2FQ::m_bps),
                    MakeDataRateChecker ())
 
+    .AddAttribute ("vpackets", 
+                   "The number of packets after which to calculate slope",
+                   UintegerValue (1),
+                   MakeUintegerAccessor (&W2FQ::vpackets),
+                   MakeUintegerChecker<uint32_t> ())
 
 ;
   return tid;
@@ -61,6 +66,9 @@ W2FQ::W2FQ ()
   nodeid = 1000;
   current_virtualtime = 0.0;
   init_reset = false;
+  last_virtualtime_time = 0.0;
+  last_virtualtime = 0.0;
+  virtualtime_updated = 0;
 }
 
 W2FQ::~W2FQ ()
@@ -295,7 +303,7 @@ W2FQ::re_resetFlows(uint32_t flowid, Ptr<Packet> p)
 
     current_virtualtime = std::max(min_starttime, current_virtualtime);
 //      if(linkid_string == "0_0_1") 
-    std::cout<<"re_resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<std::endl;
+//    std::cout<<"re_resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<std::endl;
   return;
 }
 void
@@ -333,15 +341,14 @@ W2FQ::resetFlows(uint32_t flowid, Ptr<Packet> p)
         min_starttime = start_time[fid];
       }
     }
-    double old_virtualtime = current_virtualtime;
 
     current_virtualtime = std::max(min_starttime, current_virtualtime);
-      if(linkid_string == "0_0_1") {
+   /*   if(linkid_string == "0_0_1") {
       std::cout.precision(15);
       std::cout<<"VIRTUALTIMETRACK ENQUEUE "<<Simulator::Now().GetNanoSeconds()<<" "<<std::fixed<<old_virtualtime<<" "<<std::fixed<<current_virtualtime<<std::endl;
-      }
+      } 
 //      if(linkid_string == "0_0_1") 
-    std::cout<<"resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<" fw "<<fw<<std::endl;
+    std::cout<<"resetFlows: flowid "<<flowid<<" start_time "<<start_time[flowid]<<" pkt_wfq_weight "<<pkt_wfq_weight<<" finish_time "<<finish_time[flowid]<<" vtime "<<current_virtualtime<<" min_starttime "<<min_starttime<<" VTIMEUPDATE "<<linkid_string<<" fw "<<fw<<std::endl; */
   return;
 }
   
@@ -447,7 +454,7 @@ W2FQ::DoDequeue (void)
     double pkt_wfq_weight = pktSize/fw;
     start_time[flow] = finish_time[flow];
     finish_time[flow] = start_time[flow] + pkt_wfq_weight; 
-    std::cout<<"updated starttime finishtime "<<start_time[flow]<<" "<<finish_time[flow]<<" "<<linkid_string<<" weight "<<pkt_wfq_weight<<" flow "<<flow<<" "<<pktSize<<" "<<fw<<std::endl;
+//    std::cout<<"updated starttime finishtime "<<start_time[flow]<<" "<<finish_time[flow]<<" "<<linkid_string<<" weight "<<pkt_wfq_weight<<" flow "<<flow<<" "<<pktSize<<" "<<fw<<std::endl;
   }
 
   /* update the virtual clock */
@@ -494,21 +501,47 @@ W2FQ::DoDequeue (void)
   //if(linkid_string == "0_0_1") {
 //    std::cout<<"determined minstartime "<<minS<<" second term "<< (1.0*current_virtualtime + (double)(pkt->GetSize()*8.0/W))<<" "<<linkid_string<<" W = "<<W<<std::endl;
   //}
-    double old_virtualtime = current_virtualtime;
   current_virtualtime = std::max(minS*1.0, (1.0*current_virtualtime + (double)(pkt->GetSize()*8.0/W)));
-      if(linkid_string == "0_0_1") {
+    /*  if(linkid_string == "0_0_1") {
       std::cout.precision(15);
       std::cout<<"VIRTUALTIMETRACK DEQUEUE "<<Simulator::Now().GetNanoSeconds()<<" "<<std::fixed<<old_virtualtime<<" "<<std::fixed<<current_virtualtime<<std::endl;
-      }
+      }*/
 //  current_virtualtime = std::max(minS*1.0, (1.0*current_virtualtime + PKTSIZE/W));
   double wait_duration = Simulator::Now().GetNanoSeconds() - pkt_arrival[pkt->GetUid()];
 //  if(linkid_string == "0_0_1") {
     std::cout<<"QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow<<" spent "<<wait_duration<<" in queue "<<linkid_string<<std::endl;
     std::cout<<"DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow<<" pkt size "<<pkt->GetSize()<<std::endl;
+    
+    virtualtime_updated += 1;
+    if(virtualtime_updated >= vpackets) {
+     virtualtime_updated = 0;
+     current_slope = CalcSlope();
+     std::cout<<"SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope<<std::endl;
+    } 
+  
 //    std::cout<<"End of dequeue: flow "<<flow<<" stime "<<start_time[flow]<<" ftime "<<finish_time[flow]<<" vtime "<<current_virtualtime<<" min_starttime "<<minS<<" "<<linkid_string<<" VTIMEUPDATE"<<std::endl;
 //  }
   return (pkt);
 }
+
+void
+W2FQ::SetVPkts(uint32_t vpkts)
+{
+  std::cout<<"setting vpackets to "<<vpkts<<std::endl;
+  vpackets = vpkts;
+}
+
+double 
+W2FQ::CalcSlope(void)
+{
+  double time_elapsed = Simulator::Now().GetNanoSeconds() - last_virtualtime_time;
+  double slope = (current_virtualtime - last_virtualtime) * 1000.0 / time_elapsed;
+  last_virtualtime_time = Simulator::Now().GetNanoSeconds();
+  last_virtualtime = current_virtualtime;
+  return slope;
+} 
+   
+
 
 
 Ptr<const Packet>
