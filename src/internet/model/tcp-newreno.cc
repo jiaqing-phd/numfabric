@@ -60,6 +60,10 @@ TcpNewReno::GetTypeId (void)
     .AddTraceSource ("SlowStartThreshold",
                      "TCP slow start threshold (bytes)",
                      MakeTraceSourceAccessor (&TcpNewReno::m_ssThresh))
+    .AddAttribute ("xfabric", "xfabric",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&TcpNewReno::m_xfabric),
+                   MakeBooleanChecker ())
  ;
   return tid;
 }
@@ -173,7 +177,6 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
         adder = std::max (1.0, adder);
         m_cWnd += static_cast<uint32_t> (adder);
         xfabric_reacted = false;
-        std::cout<<"In CongAvoid, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
       }
     }
   TcpSocketBase::NewAck (seq);
@@ -212,29 +215,34 @@ TcpNewReno::getFlowIdealRate(std::string flowkey)
 void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
-  double target_rate = tcpHeader.GetRate();
-  std::stringstream ss;
-  ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
-  std::string flowkey = ss.str();
 
-  target_rate  = getFlowIdealRate(flowkey)/1000000.0;
+  if(m_xfabric) {
+    double target_rate = tcpHeader.GetRate();
+    std::stringstream ss;
+    ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
+    std::string flowkey = ss.str();
+
+    target_rate  = getFlowIdealRate(flowkey)/1000000.0;
   
- // std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
-  double res = target_rate * (1000000.0/8.0) * 0.000090; //TBD - dt from commandline
-  m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
+    // std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
+    double res = target_rate * (1000000.0/8.0) * 0.000090; //TBD - dt from commandline
+    m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
-//  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
+    //  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
 
-//  std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
+    //  std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
 
-  if(m_cWnd < 1* m_segmentSize) 
-  {
+    if(m_cWnd < 1* m_segmentSize) 
+    {
      
-//    std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd<<std::endl;
-    m_cWnd = 1 * m_segmentSize;
+    // std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd<<std::endl;
+      m_cWnd = 1 * m_segmentSize;
+    }
+    m_ssThresh = m_cWnd;
+    xfabric_reacted = true;
+  } else {
+    // just a debug 
   }
-  m_ssThresh = m_cWnd;
-  xfabric_reacted = true;
 }
    
  
@@ -245,12 +253,9 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
   SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
 
-
-  /* On every ACK, we want to estimate new window for strawman CC */
   std::stringstream ss;
   ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
-  //std::cout<<Simulator::Now().GetSeconds()<<"node "<<m_node->GetId()<<" flow "<<flowkey<<" rtt "<<lastRtt_usable.GetSeconds()<<std::endl;
 
   /* update the last ack recvd variable */
   int32_t num_bytes_acked = ack_num.GetValue() - highest_ack_recvd.GetValue();
@@ -294,7 +299,6 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
           }
           m_ssThresh = m_cWnd;
           dctcp_reacted = true;
-
           /* note that we won't react for another RTT */
           ecn_highest = m_highTxMark;
           //bytes_with_ecn = 0.0;
@@ -304,8 +308,8 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
   //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());
         // no reaction 
       }
-    } else {
-    
+    } else if(!m_xfabric) { //m_dctcp and m_xfabric are false - so, this is regular tcp reacting to ECN
+      
       /*
       if(ack_num < ecn_highest) {
         NS_LOG_INFO("ecn mark recvd. but, it is not yet time to react");
@@ -317,22 +321,14 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
       //  m_ssThresh = std::max (2 * m_segmentSize, BytesInFlight () / 2);
       //  m_cWnd = m_ssThresh + 3 * m_segmentSize;
 
-      double adder = static_cast<double> (m_segmentSize) / 2;
-      adder = std::max (1.0, adder);
-     // m_cWnd -= static_cast<uint32_t> (adder);
 
-      //NS_LOG_UNCOND("m_cWnd before : "<<m_cWnd); 
       m_cWnd = (m_cWnd *19)/20;
-      //NS_LOG_UNCOND("m_cWnd after : "<<m_cWnd); 
       if(m_cWnd < 1* m_segmentSize) 
       {
         m_cWnd = 1 * m_segmentSize;
       }
       m_ssThresh = m_cWnd;
       ecn_highest = m_highTxMark;
-      //  m_inFastRec = true;
-      NS_LOG_INFO ("ProcessECN. Enter fast recovery mode. Reset cwnd to " << m_cWnd <<
-               ", ssthresh to " << m_ssThresh << " at fast recovery seqnum " << ecn_highest);
     }
   } 
     
@@ -443,7 +439,6 @@ TcpNewReno::InitializeCwnd (void)
    */
   m_cWnd = m_initialCWnd * m_segmentSize;
   m_ssThresh = m_initialSsThresh;
-  std::cout<<"set initial cwnd to "<<m_cWnd<<std::endl;
 
 }
 

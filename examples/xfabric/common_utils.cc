@@ -49,10 +49,6 @@ CheckQueueSize (Ptr<Queue> queue)
       double current_slope = StaticCast<PrioQueue> (queue)->getCurrentSlope();
       std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<current_slope<<" "<<nid<<std::endl;
     }
-    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
-    if(Simulator::Now().GetSeconds() >= sim_time) {
-      Simulator::Stop();
-    }
   } 
   if(queue_type == "W2FQ") {
     uint32_t qSize = StaticCast<W2FQ> (queue)->GetCurSize (0);
@@ -67,11 +63,21 @@ CheckQueueSize (Ptr<Queue> queue)
       double dline = 0.0;
       std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<nid<<std::endl;
     }
+  }
+
+  if(queue_type == "FifoQueue") {
+    uint32_t qSize = StaticCast<FifoQueue> (queue)->GetCurSize ();
+    uint32_t nid = StaticCast<FifoQueue> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
+    std::string qname = StaticCast<FifoQueue> (queue)->GetLinkIDString();
+    checkTimes++;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
+  }
     Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
     if(Simulator::Now().GetSeconds() >= sim_time) {
       Simulator::Stop();
     }
-  } 
+ 
 }
 
 CommandLine addCmdOptions(void)
@@ -92,6 +98,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("sampling_interval", "sampling_interval", sampling_interval);
   cmd.AddValue ("kay", "kay", kvalue);
   cmd.AddValue ("vpackets", "vpackets", vpackets);
+  cmd.AddValue ("xfabric", "xfabric", xfabric);
+  cmd.AddValue ("dctcp", "dctcp", dctcp);
 
   return cmd;
 }
@@ -116,7 +124,8 @@ void common_config(void)
 
   // Disable delayed ack
   Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
-  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(true));
+  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
+  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
 
@@ -125,6 +134,12 @@ void common_config(void)
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   Config::SetDefault ("ns3::PrioQueue::delay_mark", BooleanValue(delay_mark_value));
+
+
+  Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
+  Config::SetDefault ("ns3::FifoQueue::MaxBytes", UintegerValue (max_queue_size));
+  Config::SetDefault ("ns3::FifoQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
+
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
 

@@ -25,6 +25,7 @@ void createTopology(void)
   PointToPointHelper p2pbottleneck;
   p2pbottleneck.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
   p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(5.0)));
+  
 
   if(queue_type == "W2FQ") {
     std::cout<<"setting queue to W2FQ"<<std::endl;
@@ -32,7 +33,11 @@ void createTopology(void)
   } else if(queue_type == "WFQ") {
     std::cout<<"setting queue to WFQ"<<std::endl;
     p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string), "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"));
+  } else if(queue_type == "FifoQueue") {
+    std::cout<<"setting queue to FifoQueue"<<std::endl;
+    p2pbottleneck.SetQueue("ns3::FifoQueue", "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"));
   }
+  
 
   // Create links between all sourcenodes and bottleneck switch
   //
@@ -108,6 +113,9 @@ void createTopology(void)
       StaticCast<W2FQ> (queue)->SetNodeID(nid);
       StaticCast<W2FQ> (queue)->SetLinkIDString(fkey1);
       StaticCast<W2FQ> (queue)->SetVPkts(vpackets);
+     } else if(queue_type == "FifoQueue") {
+      StaticCast<FifoQueue> (queue)->SetNodeID(nid);
+      StaticCast<FifoQueue> (queue)->SetLinkIDString(fkey1);
      }
       
       queue_id++;
@@ -125,6 +133,9 @@ void createTopology(void)
       StaticCast<W2FQ> (queue1)->SetNodeID(nid1);
       StaticCast<W2FQ> (queue1)->SetLinkIDString(fkey2);
       StaticCast<W2FQ> (queue1)->SetVPkts(vpackets);
+     } else if(queue_type == "FifoQueue") {
+      StaticCast<FifoQueue> (queue1)->SetNodeID(nid);
+      StaticCast<FifoQueue> (queue1)->SetLinkIDString(fkey1);
      }
 
  //    StaticCast<PrioQueue> (queue1)->SetAttribute("is_switch", BooleanValue("true"));
@@ -318,13 +329,13 @@ void startFlowsStatic(void)
   {
     for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
     {
-      //uint32_t j = i;
+    //  uint32_t j = i;
       double flow_start_time = 0.0;
       double time_now = 1.0;
       uint32_t flow_counter = 0;
      
       while(flow_counter < flows_per_host)
-      //while(flow_num < 3)
+      //while(flow_num < 2)
       {
         // flow size 
         double flow_size = 12500000000; 

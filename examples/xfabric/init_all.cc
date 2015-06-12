@@ -33,7 +33,7 @@ float sampling_interval = 0.00001;
 uint32_t pkt_size = 1040;
 
 /* Queue variables */
-uint32_t max_ecn_thresh = 30000;
+uint32_t max_ecn_thresh = 50000;
 uint32_t max_queue_size = 450000000;
 std::string queue_type = "WFQ";
 bool delay_mark_value = true;
@@ -44,6 +44,8 @@ uint32_t max_segment_size = 1438;
 uint32_t ssthresh_value = 3000;
 uint32_t recv_buf_size = 1310720;
 uint32_t send_buf_size = 1310720;
+bool xfabric = false;
+bool dctcp = false;
 
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
@@ -53,7 +55,7 @@ double link_delay = 5.0; //in microseconds
 
 /* Overall simulation parameters */
 uint32_t N = 4; //number of nodes in the star
-uint32_t flows_per_host = 2;
+uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
 
 bool pkt_tag = true;

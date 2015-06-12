@@ -1,0 +1,9 @@
+link_rate=10Gbps
+link_delay=5.0
+dctcp=false
+xfabric=false
+kay=50000
+queuetype=FifoQueue
+vpackets=20
+prefix=test_tcp
+ecn_thresh=30000

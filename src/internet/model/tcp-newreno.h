@@ -100,6 +100,7 @@ protected:
   int32_t                bytes_with_ecn, total_bytes_acked;
   double                 beta, dctcp_alpha;
   SequenceNumber32       highest_ack_recvd;
+  bool                   m_xfabric;   //enable xfabric like behavior
 };
 
 } // namespace ns3

@@ -1167,7 +1167,7 @@ TcpSocketBase::ReceivedAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   NS_LOG_FUNCTION (this << tcpHeader);
 
   /* Sender functionality */
-  // ProcessECN(tcpHeader);
+  ProcessECN(tcpHeader);
 
   /* Sender functionality II */
   processRate(tcpHeader);

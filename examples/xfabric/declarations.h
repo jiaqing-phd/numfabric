@@ -34,6 +34,9 @@ extern uint32_t flows_per_host;
 extern std::string application_datarate;
 extern bool delay_mark_value;
 
+extern bool xfabric;
+extern bool dctcp;
+
 
 extern double price_update_time ;
 extern double rate_update_time ;
