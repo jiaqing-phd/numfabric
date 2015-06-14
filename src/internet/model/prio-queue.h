@@ -54,7 +54,7 @@ public:
   uint32_t nodeid;
   uint32_t linkid;
   std::string linkid_string;
-  void SetNodeID (uint32_t nodeid);
+  virtual void SetNodeID (uint32_t nodeid);
   void SetLinkID (uint32_t linkid);
   void SetLinkIDString (std::string linkid_string);
   std::string GetLinkIDString(void);

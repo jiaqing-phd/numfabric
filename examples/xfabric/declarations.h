@@ -36,6 +36,7 @@ extern bool delay_mark_value;
 
 extern bool xfabric;
 extern bool dctcp;
+extern uint32_t hostflows;
 
 
 extern double price_update_time ;

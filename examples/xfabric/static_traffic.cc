@@ -3,6 +3,13 @@
 
 NS_LOG_COMPONENT_DEFINE ("pfabric");
 
+void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
+{
+      Q->SetNodeID(nid);
+      Q->SetLinkIDString(fkey1);
+      Q->SetVPkts(vpackets);
+}
+
 void createTopology(void)
 {
   bottleNeckNode.Create(2);
@@ -36,6 +43,9 @@ void createTopology(void)
   } else if(queue_type == "FifoQueue") {
     std::cout<<"setting queue to FifoQueue"<<std::endl;
     p2pbottleneck.SetQueue("ns3::FifoQueue", "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"));
+  } else if(queue_type == "hybridQ") {
+    std::cout<<"setting queue to hybridQueue"<<std::endl;
+    p2pbottleneck.SetQueue("ns3::hybridQ", "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"), "DataRate", StringValue(link_rate_string));
   }
   
 
@@ -64,7 +74,6 @@ void createTopology(void)
   std::vector<Ipv4InterfaceContainer> sinkAdj(sink_links.size());
     
   uint32_t cur_subnet = 0;
-  uint32_t queue_id = 1;
 
   for (uint32_t index=0; index<3; index++) {
     std::vector<NetDeviceContainer> dev_cont;
@@ -104,45 +113,11 @@ void createTopology(void)
      std::string fkey2 = ss1.str(); 
      std::cout<<"fkey2 "<<fkey2<<std::endl;
 
-      // first queue 
-     if(queue_type == "WFQ") {
-      StaticCast<PrioQueue> (queue)->SetNodeID(nid);
-      StaticCast<PrioQueue> (queue)->SetLinkIDString(fkey1);
-      StaticCast<PrioQueue> (queue)->SetVPkts(vpackets);
-     } else if(queue_type == "W2FQ") {
-      StaticCast<W2FQ> (queue)->SetNodeID(nid);
-      StaticCast<W2FQ> (queue)->SetLinkIDString(fkey1);
-      StaticCast<W2FQ> (queue)->SetVPkts(vpackets);
-     } else if(queue_type == "FifoQueue") {
-      StaticCast<FifoQueue> (queue)->SetNodeID(nid);
-      StaticCast<FifoQueue> (queue)->SetLinkIDString(fkey1);
-     }
-      
-      queue_id++;
-//      BooleanValue is_switch;
-//      StaticCast<PrioQueue> (queue)->SetAttribute("is_switch", BooleanValue("true"));
-//      std::cout<<"Set node "<<nid<<" as switch"<<std::endl;
-      Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue);
-//      StaticCast<PrioQueue> (queue)->GetAttribute("is_switch", is_switch);
-      std::cout<<"Set the queue id "<<queue_id<<" to queue between "<<nid<<" and "<<nid1<<std::endl;
-     if(queue_type == "WFQ") {
-      StaticCast<PrioQueue> (queue1)->SetNodeID(nid1);
-      StaticCast<PrioQueue> (queue1)->SetLinkIDString(fkey2);
-      StaticCast<PrioQueue> (queue1)->SetVPkts(vpackets);
-     } else if(queue_type == "W2FQ") {
-      StaticCast<W2FQ> (queue1)->SetNodeID(nid1);
-      StaticCast<W2FQ> (queue1)->SetLinkIDString(fkey2);
-      StaticCast<W2FQ> (queue1)->SetVPkts(vpackets);
-     } else if(queue_type == "FifoQueue") {
-      StaticCast<FifoQueue> (queue1)->SetNodeID(nid);
-      StaticCast<FifoQueue> (queue1)->SetLinkIDString(fkey1);
-     }
+     config_queue(queue, nid, vpackets, fkey1);
+     config_queue(queue1, nid1, vpackets, fkey2);
 
- //    StaticCast<PrioQueue> (queue1)->SetAttribute("is_switch", BooleanValue("true"));
- //    NS_LOG_UNCOND("Set node "<<nid1<<" as switch");
+     Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue);
      Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue1);
-//     StaticCast<PrioQueue> (queue1)->GetAttribute("is_switch", is_switch);
-     //
      // assign ip address
     
      sourceAdj[i] = assignAddress(dev_cont[i], cur_subnet);
@@ -165,6 +140,10 @@ void setQFlows()
         if(queue_type == "WFQ") {
           StaticCast<PrioQueue> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
         }
+        if(queue_type == "hybridQ") {
+          StaticCast<hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+        }
+          
       }
     }
 }

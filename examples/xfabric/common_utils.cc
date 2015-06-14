@@ -65,6 +65,20 @@ CheckQueueSize (Ptr<Queue> queue)
     }
   }
 
+  if(queue_type == "hybridQ") {
+    uint32_t qSize = StaticCast<hybridQ> (queue)->GetCurSize (0);
+    uint32_t nid = StaticCast<hybridQ> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
+    std::string qname = StaticCast<hybridQ> (queue)->GetLinkIDString();
+    checkTimes++;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
+    std::map<std::string, uint32_t>::iterator it;
+    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
+      uint64_t virtual_time = StaticCast<hybridQ> (queue)->get_virtualtime();
+      double dline = 0.0;
+      std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<nid<<std::endl;
+    }
+  }
   if(queue_type == "FifoQueue") {
     uint32_t qSize = StaticCast<FifoQueue> (queue)->GetCurSize ();
     uint32_t nid = StaticCast<FifoQueue> (queue)->nodeid;
@@ -73,6 +87,8 @@ CheckQueueSize (Ptr<Queue> queue)
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
   }
+
+  
     Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
     if(Simulator::Now().GetSeconds() >= sim_time) {
       Simulator::Stop();
@@ -100,6 +116,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("vpackets", "vpackets", vpackets);
   cmd.AddValue ("xfabric", "xfabric", xfabric);
   cmd.AddValue ("dctcp", "dctcp", dctcp);
+  cmd.AddValue ("hostflows", "hostflows",flows_per_host);
 
   return cmd;
 }

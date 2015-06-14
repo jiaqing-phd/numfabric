@@ -242,6 +242,7 @@ PrioQueue::~PrioQueue ()
 
 void PrioQueue::SetNodeID(uint32_t node_id)
 {
+  std::cout<<"setnodeid prioqueue"<<std::endl;
   nodeid = node_id;
 }
 

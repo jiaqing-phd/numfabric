@@ -78,6 +78,7 @@ W2FQ::~W2FQ ()
 
 void W2FQ::SetNodeID(uint32_t node_id)
 {
+  std::cout<<"setnodeid in w2fq class"<<std::endl;
   nodeid = node_id;
 }
 

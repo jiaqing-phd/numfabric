@@ -199,4 +199,17 @@ Queue::Drop (Ptr<Packet> p)
   m_traceDrop (p);
 }
 
+void Queue::SetLinkIDString(std::string key)
+{
+}
+
+void Queue::SetVPkts(uint32_t vpkts)
+{
+}
+
+void Queue::SetNodeID(uint32_t nodeid)
+{
+  std::cout<<"baseclass setnodeid"<<std::endl;
+}
+
 } // namespace ns3

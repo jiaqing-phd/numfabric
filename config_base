@@ -1,9 +1,8 @@
-link_rate=10Gbps
-link_delay=5.0
 dctcp=false
-xfabric=false
+xfabric=true
 kay=50000
-queuetype=FifoQueue
+queuetype=W2FQ
 vpackets=20
-prefix=test_tcp
+prefix=test_tcp_w2fq
 ecn_thresh=30000
+hostflows=2

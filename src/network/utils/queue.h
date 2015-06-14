@@ -54,6 +54,10 @@ public:
   Queue ();
   virtual ~Queue ();
 
+  virtual void SetNodeID (uint32_t nodeid);
+  virtual void SetLinkIDString(std::string key);
+  virtual void SetVPkts(uint32_t vpkts);
+
   /**
    * \return true if the queue is empty; false otherwise
    */
