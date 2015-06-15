@@ -41,7 +41,7 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   m_packetSize = packetSize;
   m_dataRate = dataRate;
   m_totBytes = 0;
-  m_maxBytes = maxBytes;
+  m_maxBytes = maxBytes; // assuming we are getting this in bits
   m_startTime = start_time;
   m_fid = fid;
 

@@ -25,7 +25,7 @@ std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 ApplicationContainer sinkApps;
 
 std::map<uint32_t, double> flowweights;
-double sim_time = 2.0;
+double sim_time = 1.4;
 double measurement_starttime = 1.2;
 
 double rate_update_time = 0.0001;
@@ -59,7 +59,7 @@ uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
 
 bool pkt_tag = true;
-std::string empirical_dist_file="DCTCP_CDF";
+std::string empirical_dist_file="DCTCP_CDF_REDUCED";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 
 std::string link_twice_string = "20Gbps";
@@ -73,7 +73,7 @@ double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;
 std::string link_rate_string = "10Gbps";
 
-double load = 0.5;
+double load = 0.05;
 double meanflowsize = 1138*1460 ; // what TBD?
 
 /* Application configuration */

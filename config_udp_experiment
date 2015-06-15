@@ -1,9 +1,9 @@
-dctcp=false
-xfabric=true
+dctcp=true
+xfabric=false
 kay=50000
 queuetype=FifoQueue
 vpackets=20
-prefix=test_udp_fifo
+prefix=test_udp_fifo_with_unknown
 ecn_thresh=30000
 hostflows=1
-load=0.05
+load=0.001

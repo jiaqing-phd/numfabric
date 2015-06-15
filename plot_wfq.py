@@ -29,7 +29,7 @@ finish_times = {}
 stime_xaxis = {}
 finish_xaxis = {}
 
-total_capacity=10000
+total_capacity=10000*2.0;
 
 qtimes = {}
 qsizes = {}
@@ -82,14 +82,14 @@ for line in f:
     rate=float(xy[4])
     csfq_rate = float(xy[5])
 
-    if(flow_id not in dtimes):
+    if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
       dtimes[flow_id] = []
       drates[flow_id] = []
       crates[flow_id] = []
-
-    dtimes[flow_id].append(t1)
-    drates[flow_id].append(rate)
-    crates[flow_id].append(csfq_rate)
+    if((flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
+      dtimes[flow_id].append(t1)
+      drates[flow_id].append(rate)
+      crates[flow_id].append(csfq_rate)
 
   if(len(xy)> 2 and xy[1] == "TotalRate"):
     rtime.append(float(xy[0]))
@@ -184,14 +184,14 @@ plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_occupancy"))
 plt.draw()
 
-#plt.figure(2)
-#plt.title("Sum of all sending rates / total sending capacity")
+plt.figure(2)
+plt.title("Sum of all unknown sending rates / total sending capacity (ewma 0.01)")
 
-#plt.plot(rtime, trate, colors[i]) 
-#plt.xlabel('Time in seconds')
-#plt.ylabel('Fraction of total capacity')
-#plt.legend(loc='upper right')
-#plt.savefig('%s/%s.%s.png' %(pre,pre,"load"))
+plt.plot(rtime, ewma(trate, 0.01), colors[i]) 
+plt.xlabel('Time in seconds')
+plt.ylabel('Fraction of total capacity')
+plt.legend(loc='upper right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"unknown_load"))
 
 #plt.draw()
 
@@ -214,7 +214,7 @@ plt.figure(6)
 plt.title("Sending rates at destination")
 i=0
 for key in dtimes:
-  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i]) 
+  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key)) 
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')

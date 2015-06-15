@@ -223,7 +223,8 @@ void setUpMonitoring(void)
 void
 CheckIpv4Rates (NodeContainer &allNodes)
 {
-  double current_rate = 0.0, current_dest_rate = 0.0;
+  //double current_rate = 0.0, current_dest_rate = 0.0;
+  double current_dest_rate = 0.0;
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
   {
@@ -232,21 +233,23 @@ CheckIpv4Rates (NodeContainer &allNodes)
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
     {
     
-      double rate = ipv4->GetStoreRate (it->first);
+//      double rate = ipv4->GetStoreRate (it->first);
       double destRate = ipv4->GetStoreDestRate (it->first);
       double csfq_rate = ipv4->GetCSFQRate (it->first);
 
       uint32_t s = it->second;
 
       /* check if this flowid is from this source */
-      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-         std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
-         current_rate += rate;
-      }
+//      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
+//         std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
+//         current_rate += rate;
+//      }
 //      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<std::endl;
-         current_dest_rate += rate;
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<nid<<std::endl;
+         if(!(s==1 || s==2 || s ==3 || s == 4)) {
+           current_dest_rate += destRate; // hack - hardcoded only for this experiment - remove later
+         }
       }
     }
   }

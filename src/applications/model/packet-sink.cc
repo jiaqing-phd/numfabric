@@ -103,7 +103,7 @@ uint32_t PacketSink::GetTotalRx () const
 {
   NS_LOG_FUNCTION (this);
 
-  std::cout<<"NOflow_stop "<<m_flowID<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" Flow_started "<<flow_start_time.GetSeconds()<<" Flow_completed "<<Simulator::Now().GetNanoSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
+  std::cout<<"flow_stop "<<m_flowID<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" Flow_started "<<flow_start_time.GetSeconds()<<" Flow_completed "<<Simulator::Now().GetNanoSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
 /*  if(m_lastflow) {
     NS_LOG_UNCOND("Final flow "<<m_flowID<<" stopping everything");
     Simulator::Stop();
@@ -209,7 +209,7 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
           flow_start_time = Simulator::Now();
         }
         m_totalRx += packet->GetSize ();
-        std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
+//        std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
 //      }
         if((m_numBytes > 0.0) && (m_totalRx >= m_numBytes)) {
           // Flow completed.. Must print that out and exit

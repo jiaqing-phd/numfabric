@@ -3,6 +3,8 @@
 
 NS_LOG_COMPONENT_DEFINE ("pfabric");
 
+uint32_t global_flow_id = 0;
+
 void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
 {
       Q->SetNodeID(nid);
@@ -388,10 +390,10 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 
   Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
   exp->SetAttribute("Mean", DoubleValue(avg_interarrival));
-  NS_LOG_UNCOND("lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival);
+  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<std::endl;
 
-  uint32_t flow_num = 1;
-
+  //uint32_t flow_id_zero = 1000;
+  uint32_t flow_num = global_flow_id;
    
   for (uint32_t i=0; i < sourceNodes.GetN(); i++) 
   {
@@ -400,7 +402,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
       double flow_start_time = 0.0;
       double time_now = 1.0;
      
-      while(time_now < (sim_time-1.0))
+      while(time_now < (sim_time-0.1))
       {
         // flow size 
         double flow_size = empirical_rand->GetValue(); 
@@ -408,18 +410,17 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         flow_start_time = time_now + inter_arrival;
         NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
         time_now = flow_start_time; // is this right ?
-        NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
-        uint32_t flow_weight = 1.0 * flow_num;
+        std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
 
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 0); 
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1); 
         flow_num++;
       }
     }
   }
 
-  uint32_t num_ports = sourceNodes.GetN() + sinkNodes.GetN();
-  std::cout<<"num_ports "<<num_ports<<std::endl;
-  std::cout<<"num_flows "<<(flow_num-1)<<std::endl;
+  global_flow_id = flow_num;
+
 }
 
 
@@ -458,6 +459,8 @@ void startFlowsStatic(void)
   std::cout<<"num_ports "<<num_ports<<std::endl;
   std::cout<<"num_flows "<<(flow_num-1)<<std::endl;
 
+  global_flow_id = flow_num;
+
 }
 
 void setUpWeightChange(void)
@@ -473,6 +476,7 @@ void setUpTraffic()
   meanflowsize = x->avg();
   NS_LOG_UNCOND("Avg of empirical values.. "<<meanflowsize);
   startFlowsStatic();
+  startRandomFlows(x);
 } 
    
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname)
