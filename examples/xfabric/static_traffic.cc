@@ -4,6 +4,7 @@
 NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 uint32_t global_flow_id = 0;
+std::map<uint32_t, uint32_t> flow_known;
 
 void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
 {
@@ -150,7 +151,7 @@ void setQFlows()
     }
 }
 
-void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp)
+void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known)
 {
   ports[sinkN]++;
   // Socket at the source
@@ -172,6 +173,8 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   Ipv4Address addr = ipv4->GetAddress (1, 0).GetLocal();
 
   std::cout<<"FLOW_INFO source_node "<<(sourceNodes.Get(sourceN))->GetId()<<" sink_node "<<(sinkNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<ports[sinkN]<<" flow_size "<<flow_size<<" flow_weight" <<flow_weight<<std::endl;
+
+  flow_known[flow_id] = known;
   (source_flow[(sourceNodes.Get(sourceN))->GetId()]).push_back(flow_id);
   (dest_flow[(sinkNodes.Get(sinkN))->GetId()]).push_back(flow_id);
   std::stringstream ss;
@@ -198,6 +201,9 @@ void changeAppRates(void)
     {
        
       uint32_t s = it->second;
+      if(flow_known[s] == 0) { //unknown flow - no weight or rate
+        continue;
+      }
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
@@ -413,7 +419,8 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
         uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
 
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1); 
+        uint32_t known = 0;
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
         flow_num++;
       }
     }
@@ -447,8 +454,8 @@ void startFlowsStatic(void)
         flow_start_time = time_now + 0.0001;
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
         uint32_t flow_weight = 1.0 * flow_num;
-
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 0); 
+        uint32_t known = 1;
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 0, known); 
         flow_num++;
         flow_counter++;
       }
