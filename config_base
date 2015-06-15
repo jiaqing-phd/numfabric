@@ -1,8 +1,8 @@
 dctcp=false
 xfabric=true
 kay=50000
-queuetype=W2FQ
+queuetype=FifoQueue
 vpackets=20
-prefix=test_tcp_w2fq
+prefix=test_udp_fifo
 ecn_thresh=30000
-hostflows=2
+hostflows=1

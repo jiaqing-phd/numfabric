@@ -1,11 +1,17 @@
 #include "declarations.h"
 using namespace ns3;
 
-void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes)
+void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
 {
   // Create a packet sink on the star "hub" to receive these packets
   Address anyAddress = InetSocketAddress (Ipv4Address::GetAny (), port);
-  PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", anyAddress);
+
+  PacketSinkHelper sinkHelper ("ns3::UdpSocketFactory", anyAddress);
+  if(tcp) {
+    sinkHelper.SetAttribute("Protocol", StringValue("ns3::TcpSocketFactory"));
+    sinkHelper.SetAttribute("Local", AddressValue(anyAddress));
+//    sinkHelper ("ns3::TcpSocketFactory", anyAddress);
+  }
   ApplicationContainer sinkAppContainer = sinkHelper.Install (sinkNodes.Get(sinkN));
   sinkAppContainer.Start(Seconds(0.0));
   sinkApps.Add(sinkAppContainer);

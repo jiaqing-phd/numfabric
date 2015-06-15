@@ -148,27 +148,21 @@ void setQFlows()
     }
 }
 
-void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight)
+void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp)
 {
   ports[sinkN]++;
   // Socket at the source
   Ptr<Ipv4L3Protocol> sink_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sinkNodes.Get(sinkN))->GetObject<Ipv4> ());
   Ipv4Address remoteIp = sink_node_ipv4->GetAddress (1,0).GetLocal();
   Address remoteAddress = (InetSocketAddress (remoteIp, ports[sinkN]));
-  sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size);
+  sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, tcp);
 
   // Get source address
   Ptr<Ipv4L3Protocol> source_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); 
   Ipv4Address sourceIp = source_node_ipv4->GetAddress (1,0).GetLocal();
   Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
-
-  //Ptr<Socket> ns3TcpSocket = Socket::CreateSocket (sourceNodes.Get(sourceN), TcpSocketFactory::GetTypeId ());
-//  Ptr<Socket> ns3TcpSocket = Socket::CreateSocket (sourceNodes.Get(sourceN), TcpSocketFactory::GetTypeId ());
-//  ns3TcpSockets.push_back(ns3TcpSocket);
-//  NS_LOG_UNCOND("number of sockets at node "<<sourceNodes.Get(sourceN)->GetId()<<" = "<<ns3TcpSockets.size());
   Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
-  //SendingApp->Setup (ns3TcpSocket, remoteAddress, pkt_size, DataRate ("1Gbps"), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN));
-  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN));
+  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), tcp);
   //apps.Add(SendingApp);
   (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
       
@@ -188,6 +182,137 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   
   //flow_id++;
 }
+void changeAppRates(void)
+{
+  uint32_t N = allNodes.GetN(); 
+  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  double total_weight = 0.0;
+  std::map<uint32_t, double> flow_weight_local;
+  for(uint32_t nid=0; nid < N ; nid++)
+  {
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+    std::map<std::string,uint32_t>::iterator it;
+    for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
+    {
+       
+      uint32_t s = it->second;
+
+      /* check if this flowid is from this source */
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
+        uint32_t rand_num = uv->GetInteger(1.0, 10.0);
+        double new_weight = rand_num*1.0;
+        std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
+        flow_weight_local[s] = new_weight;
+        total_weight += new_weight;
+        ipv4->setFlowWeight(s, new_weight);
+        flowweights[s] = new_weight;
+      }
+    }
+  }
+ 
+  // get the right allocation 
+  for(std::map<uint32_t, double>::iterator it = flow_weight_local.begin(); it != flow_weight_local.end(); ++it)
+  {
+    uint32_t fid = it->first;
+    double weight = flow_weight_local[fid];
+
+    double new_rate = (weight/total_weight) * link_rate;
+    for(uint32_t nid=0; nid < N ; nid++)
+    {
+      Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), fid)!=(source_flow[nid]).end()) {
+        
+        std::stringstream ss;
+        ss<<new_rate<<"bps";
+        std::string datarate_str = ss.str(); 
+      
+        Ptr<MyApp> local_SendingApp;
+        for(uint32_t aIndx=0; aIndx< (allNodes.Get(nid))->GetNApplications(); aIndx++) { // check all apps on this node
+          local_SendingApp = StaticCast <MyApp> ( (allNodes.Get(nid))->GetApplication(aIndx) ); 
+          if(local_SendingApp->getFlowId() == fid) { //if this is the app associated with this fid, change data rate
+            local_SendingApp ->ChangeRate(DataRate (new_rate) ); 
+            std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<new_rate<<" source "<<nid<<std::endl;
+            ipv4->setFlowIdealRate(fid, new_rate);
+          } // end if flowid matches
+        }  //end for iterating all applications
+      } // end if flow belongs to the source
+    }
+  }
+  setQFlows();
+  // check queue size every 1/1000 of a second
+  Simulator::Schedule (Seconds (0.2), &changeAppRates);
+}
+
+#if 0
+// SC: follows form of change weights
+// loop through all sources, assign a random 'weight' and scale the rate accordingly
+// change the rate by modifying MyApp data rate for each application at host
+void changeAppRates(void)
+{
+  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  double total_weight = 0.0;
+  std::map<uint32_t, double> flow_weight_local;
+
+  // loop thru senders and get the relative rate (as a weight) per sender
+  for (uint32_t i=0; i < sourceNodes.GetN(); i++) {
+        uint32_t rand_num = uv->GetInteger(1.0, 10.0);
+        double new_weight = rand_num*1.0;
+
+        flow_weight_local[i] = new_weight;
+        total_weight += new_weight;
+  }
+
+  // iterate through all the senders
+  // get the myApp pointer for currently running app
+  // change its rate, continue
+  for (uint32_t i=0; i < sourceNodes.GetN(); i++) {
+
+      double weight = flow_weight_local[i];
+      double new_rate = (weight/total_weight) * link_rate;
+
+      std::stringstream ss;
+      ss<<new_rate<<"bps";
+      std::string datarate_str = ss.str(); 
+      
+      Ptr<MyApp> local_SendingApp;
+      local_SendingApp = StaticCast <MyApp> ( (sourceNodes.Get(i))->GetApplication(0) );
+      // local_SendingApp ->ChangeRate(DataRate ("4.1Gbps") ); 
+      local_SendingApp ->ChangeRate(DataRate (new_rate) ); 
+      
+      std::cout<<"SC: changing application rate at node "<<i<<" to "<<new_rate<<" at "<<Simulator::Now().GetSeconds()<<" weight "<< weight <<std::endl;
+ 
+      // SC: change idealRate based on rate of APP
+      // SC: example cout debug statements
+      // SC TrueRate debug 1 flow id 1 rate 5e+09 node id 2
+      // SC TrueRate debug 1 flow id 2 rate 5e+09 node id 3
+      // SC: changing application rate at node 0 to 5.71429e+09 at 1 weight 4
+      // SC: changing application rate at node 1 to 4.28571e+09 at 1 weight 3
+     
+      // SC change to more general code for N > 2 
+      // first sender, node 2 has fid 1
+      if(i == 0) {
+            Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(2))->GetObject<Ipv4> ());
+            ipv4->setFlowIdealRate(1, new_rate);      
+      } 
+      //  sender 2, node 3 has fid 2
+      if(i == 1) {
+            Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(3))->GetObject<Ipv4> ());
+            ipv4->setFlowIdealRate(2, new_rate);      
+      }
+ 
+  }
+ Simulator::Schedule (Seconds (0.10), &changeAppRates);
+
+}
+#endif
+
+// SC 
+void setUpRateChange(void)
+{
+  
+  Simulator::Schedule (Seconds (1.0), &changeAppRates);
+}
+
 
 void changeWeights(void)
 {
@@ -255,7 +380,7 @@ void changeWeights(void)
 }
 
 
-void startFlowsDynamic(Ptr<EmpiricalRandomVariable> empirical_rand)
+void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 {
   double lambda = (link_rate * load ) / (meanflowsize*8.0);
   lambda = lambda / sourceNodes.GetN(); 
@@ -286,7 +411,7 @@ void startFlowsDynamic(Ptr<EmpiricalRandomVariable> empirical_rand)
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
         uint32_t flow_weight = 1.0 * flow_num;
 
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight); 
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 0); 
         flow_num++;
       }
     }
@@ -322,7 +447,7 @@ void startFlowsStatic(void)
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
         uint32_t flow_weight = 1.0 * flow_num;
 
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight); 
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 0); 
         flow_num++;
         flow_counter++;
       }
@@ -395,8 +520,10 @@ main(int argc, char *argv[])
   createTopology();
   setUpTraffic();
   setUpMonitoring();
-  setUpWeightChange();
-  //setQFlows();
+  //setUpWeightChange();
+  //
+  // SC added
+  setUpRateChange();
   
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();
