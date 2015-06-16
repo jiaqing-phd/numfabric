@@ -25,9 +25,9 @@ std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 ApplicationContainer sinkApps;
 
 std::map<uint32_t, double> flowweights;
-double sim_time = 1.4;
-double measurement_starttime = 1.2;
+double sim_time = 2.0;
 
+double measurement_starttime = 1.2;
 double rate_update_time = 0.0001;
 float sampling_interval = 0.00001;
 uint32_t pkt_size = 1040;

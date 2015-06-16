@@ -103,12 +103,7 @@ uint32_t PacketSink::GetTotalRx () const
 {
   NS_LOG_FUNCTION (this);
 
-  std::cout<<"flow_stop "<<m_flowID<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" Flow_started "<<flow_start_time.GetSeconds()<<" Flow_completed "<<Simulator::Now().GetNanoSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
-/*  if(m_lastflow) {
-    NS_LOG_UNCOND("Final flow "<<m_flowID<<" stopping everything");
-    Simulator::Stop();
-  }
-*/
+  std::cout<<"flow_stop "<<m_flowID<<" stop_time "<<Simulator::Now().GetNanoSeconds()<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" flow_started "<<flow_start_time.GetSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
   return m_totalRx;
 }
 
@@ -202,6 +197,7 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
         { //EOF
           break;
         }
+      
 //      if(Simulator::Now().GetSeconds() > m_startMeasurement.GetSeconds()) {
         if(m_totalRx == 0) {
           // first packet time - note down

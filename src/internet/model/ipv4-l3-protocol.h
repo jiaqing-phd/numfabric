@@ -147,6 +147,12 @@ public:
   double getflowsize(std::string flowkey);
   uint64_t current_epoch;
 
+
+  void printSumThr(void);
+  void setSimTime(double sim_time);
+ 
+  std::map<std::string, uint32_t > data_recvd; 
+
   std::map<std::string, std::queue<Ptr<Packet> > > our_packets;
   std::map<std::string, std::queue<Ipv4Address> >src_address;
   std::map<std::string, std::queue<Ipv4Address> >dst_address;

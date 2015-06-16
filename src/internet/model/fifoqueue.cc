@@ -324,7 +324,7 @@ FifoQueue::DoEnqueue (Ptr<Packet> p)
         p->AddHeader(pheader);
         p->AddHeader(ppp);
 
-        std::cout<<"marking ECN "<<linkid_string<<"  qsize "<<m_bytesInQueue<<" ecnthresh "<<m_ECNThreshBytes<<std::endl;
+//        std::cout<<"marking ECN "<<linkid_string<<"  qsize "<<m_bytesInQueue<<" ecnthresh "<<m_ECNThreshBytes<<std::endl;
 
     } 
 

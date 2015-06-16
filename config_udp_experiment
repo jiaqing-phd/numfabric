@@ -6,4 +6,5 @@ vpackets=20
 prefix=test_udp_fifo_with_unknown
 ecn_thresh=30000
 hostflows=1
-load=0.001
+load=0.01
+sim_time=1.5

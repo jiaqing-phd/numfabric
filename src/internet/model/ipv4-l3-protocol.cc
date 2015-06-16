@@ -156,7 +156,24 @@ Ipv4L3Protocol::updateAllRates(void)
   }
   Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
-  
+ 
+void
+Ipv4L3Protocol::printSumThr(void)
+{
+  std::map<std::string,uint32_t>::iterator it;
+  for (std::map<std::string,uint32_t>::iterator it=flowids.begin(); it!=flowids.end(); ++it) 
+  {
+    std::cout<<"TotalRecvd Node "<<m_node->GetId()<<" "<<flowids[it->first]<<" "<<data_recvd[it->first]<<std::endl;
+  }
+}
+   
+void
+Ipv4L3Protocol::setSimTime(double sim_time)
+{
+  Simulator::Schedule( Seconds(sim_time), &ns3::Ipv4L3Protocol::printSumThr, this);
+  std::cout<<" setSimTime set to "<<sim_time<<std::endl;
+}
+ 
 void 
 Ipv4L3Protocol::setFlowIdealRate(uint32_t fid, double rate)
 {
@@ -1190,6 +1207,8 @@ void Ipv4L3Protocol::setFlow(std::string flow, uint32_t flowid, double fsize, ui
     NS_LOG_UNCOND("Pushing "<<real_dest<<" into destinations list");
     flow_dests.push_back(real_dest);
     flowutil.SetFlow(flow, flowid, fsize, weight);
+  
+    data_recvd[flow] = 0.0;
 }
 
 void Ipv4L3Protocol::setfctAlpha(double fct_alpha)
@@ -1426,6 +1445,7 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
     std::string flowkey = ss.str(); 
     
     destination_bytes[flowkey] += pktsize;
+    data_recvd[flowkey] += pktsize;
    
     updateFlowRate(flowkey, pktsize);
 //    std::cout<<"delivered pkt of pktsize "<<pktsize<<" "<<flowkey<<" "<<Simulator::Now().GetNanoSeconds()<<" "<<destination_bytes[flowkey]<<" time "<<Simulator::Now().GetMicroSeconds()<<" node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl; 

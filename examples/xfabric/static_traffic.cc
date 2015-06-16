@@ -184,6 +184,8 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   
   ipv4->setFlow(s, flow_id, flow_size, flow_weight);
   sink_node_ipv4->setFlow(s, flow_id, flow_size, flow_weight);
+
+  sink_node_ipv4->setSimTime(sim_time);
   
   //flow_id++;
 }
@@ -391,12 +393,13 @@ void changeWeights(void)
 void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 {
   double lambda = (link_rate * load ) / (meanflowsize*8.0);
+  std::cout<<"lambda first "<<lambda<<std::endl;
   lambda = lambda / sourceNodes.GetN(); 
   double avg_interarrival = 1/lambda;
 
   Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
   exp->SetAttribute("Mean", DoubleValue(avg_interarrival));
-  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<std::endl;
+  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
 
   //uint32_t flow_id_zero = 1000;
   uint32_t flow_num = global_flow_id;

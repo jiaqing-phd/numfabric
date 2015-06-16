@@ -55,7 +55,7 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   myAddress = ownaddress;
   srcNode = sNode;
   destNode = dNode;
-  NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
+  //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
   m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
 }
 
@@ -86,7 +86,7 @@ MyApp::StartApplication (void)
   } else {
     ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
   }
-  setuptracing(m_fid, ns3TcpSocket);
+//  setuptracing(m_fid, ns3TcpSocket);
   m_socket = ns3TcpSocket;
   if (InetSocketAddress::IsMatchingType (m_peer))
   { 
@@ -101,7 +101,7 @@ MyApp::StartApplication (void)
   m_socket->Connect (m_peer);
     
   SendPacket ();
-  std::cout<<"flow_start "<<m_fid<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" at "<<(Simulator::Now()).GetNanoSeconds()<<" "<<m_maxBytes<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<std::endl;
+  std::cout<<"flow_start "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<std::endl;
 }
 
 void
@@ -118,7 +118,7 @@ MyApp::StopApplication (void)
     {
       m_socket->Close ();
     }
-  NS_LOG_UNCOND((Simulator::Now()).GetSeconds()<<" flowid "<<m_fid<<" stopped sending ");
+  std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" stopped sending after seding "<<m_totBytes<<std::endl;
 }
 
 void
@@ -158,7 +158,7 @@ MyApp::ScheduleTx (void)
 //      double next_time = m_interArrival->GetValue();
 //      Time tNext (Seconds (next_time));
       Time tNext (Seconds (m_packetSize * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
-      std::cout<<Simulator::Now().GetNanoSeconds()<<"scheduling next transmission at "<<tNext.GetNanoSeconds()<<" flow "<<m_fid<<" pktsize "<<m_packetSize<<" datarate "<<m_dataRate.GetBitRate()<<std::endl;
+//      std::cout<<Simulator::Now().GetNanoSeconds()<<"scheduling next transmission at "<<tNext.GetNanoSeconds()<<" flow "<<m_fid<<" pktsize "<<m_packetSize<<" datarate "<<m_dataRate.GetBitRate()<<std::endl;
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
     } else {
       StopApplication();
