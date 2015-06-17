@@ -409,7 +409,7 @@ hybridQ::DoEnqueue(Ptr<Packet> p)
 }
 
 bool
-hybridQ::FifoEnQ(Ptr<Packet> p, uint32_t idx)
+hybridQ::FifoEnQ(Ptr<Packet> p)
 {
   m_fifopkts.push(p);
   m_fifosize += 1;

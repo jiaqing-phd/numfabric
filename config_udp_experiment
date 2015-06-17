@@ -7,6 +7,6 @@ prefix=udp_rate_control_withunknown
 ecn_thresh=30000
 hostflows=1
 load=0.05
-sim_time=2.0
+sim_time=1.5
 flows_tcp=0
 weight_change=0
