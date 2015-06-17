@@ -82,14 +82,15 @@ for line in f:
     rate=float(xy[4])
     csfq_rate = float(xy[5])
 
-    if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
+    #if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
+    if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
       crates[flow_id] = []
-    if((flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
-      dtimes[flow_id].append(t1)
-      drates[flow_id].append(rate)
-      crates[flow_id].append(csfq_rate)
+#    if((flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
+    dtimes[flow_id].append(t1)
+    drates[flow_id].append(rate)
+    crates[flow_id].append(csfq_rate)
 
   if(len(xy)> 2 and xy[1] == "TotalRate"):
     rtime.append(float(xy[0]))

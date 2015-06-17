@@ -58,6 +58,7 @@ public:
   std::map<uint32_t, uint64_t> pkt_arrival;
   uint32_t GetCurCount(uint32_t fid);
   uint32_t GetCurSize(uint32_t fid);
+  uint32_t GetFifoSize(void);
   uint32_t GetMaxBytes(void);
   uint32_t getFlowID(Ptr<Packet> p);
 

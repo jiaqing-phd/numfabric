@@ -21,6 +21,9 @@ extern std::map<uint32_t, double> flow_sizes;
 extern int checkTimes;
 extern std::map<uint32_t, std::vector<uint32_t> > source_flow;
 extern std::map<uint32_t, std::vector<uint32_t> > dest_flow;
+extern uint32_t flows_tcp;
+extern uint32_t weight_change;
+
 extern ApplicationContainer sinkApps;
 
 extern double kvalue;

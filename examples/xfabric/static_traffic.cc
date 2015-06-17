@@ -367,7 +367,8 @@ void changeWeights(void)
       }
     }
   }
- 
+
+  std::cout<<"BASE RATE "<<Simulator::Now().GetSeconds()<<" "<<(1.0/total_weight)*link_rate<<std::endl; 
   // get the right allocation 
   for(std::map<uint32_t, double>::iterator it = flow_weight_local.begin(); it != flow_weight_local.end(); ++it)
   {
@@ -458,7 +459,8 @@ void startFlowsStatic(void)
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
         uint32_t flow_weight = 1.0 * flow_num;
         uint32_t known = 1;
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 0, known); 
+          
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, flows_tcp, known); 
         flow_num++;
         flow_counter++;
       }
@@ -534,10 +536,14 @@ main(int argc, char *argv[])
   createTopology();
   setUpTraffic();
   setUpMonitoring();
-  //setUpWeightChange();
-  //
-  // SC added
-  setUpRateChange();
+
+  if(weight_change) {
+    setUpWeightChange();
+  } else {
+    //
+    // SC added
+    setUpRateChange();
+  }
   
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();

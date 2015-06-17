@@ -61,7 +61,7 @@ TcpNewReno::GetTypeId (void)
                      "TCP slow start threshold (bytes)",
                      MakeTraceSourceAccessor (&TcpNewReno::m_ssThresh))
     .AddAttribute ("xfabric", "xfabric",
-                   BooleanValue (false),
+                   BooleanValue (true),
                    MakeBooleanAccessor (&TcpNewReno::m_xfabric),
                    MakeBooleanChecker ())
  ;
@@ -215,7 +215,6 @@ TcpNewReno::getFlowIdealRate(std::string flowkey)
 void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
-
   if(m_xfabric) {
     double target_rate = tcpHeader.GetRate();
     std::stringstream ss;
@@ -224,7 +223,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
     target_rate  = getFlowIdealRate(flowkey)/1000000.0;
   
-    std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
+  //  std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
     double res = target_rate * (1000000.0/8.0) * 0.000090; //TBD - dt from commandline
     m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
@@ -287,6 +286,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
  //   NS_LOG_INFO("ProcessECN .. ACK recvd for seq "<<ack_num<<" ecn_highest set to "<<ecn_highest<< "current highest "<<m_highTxMark); 
 
     if(m_dctcp) {
+   //   std::cout<<"m_dctcp is true"<<std::endl;
       //NS_LOG_UNCOND("bytes_with_ecn "<<bytes_with_ecn<<" totalbytes "<<total_bytes_acked);
       if(ack_num >= ecn_highest) {
 

@@ -76,8 +76,9 @@ CheckQueueSize (Ptr<Queue> queue)
     uint32_t nid = StaticCast<hybridQ> (queue)->nodeid;
   //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
     std::string qname = StaticCast<hybridQ> (queue)->GetLinkIDString();
+    uint32_t fifosize = StaticCast<hybridQ> (queue)->GetFifoSize();
     checkTimes++;
-    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<fifosize<<std::endl;
     std::map<std::string, uint32_t>::iterator it;
     for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       uint64_t virtual_time = StaticCast<hybridQ> (queue)->get_virtualtime();
@@ -123,6 +124,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("xfabric", "xfabric", xfabric);
   cmd.AddValue ("dctcp", "dctcp", dctcp);
   cmd.AddValue ("hostflows", "hostflows",flows_per_host);
+  cmd.AddValue ("flows_tcp", "flows_tcp", flows_tcp);
+  cmd.AddValue ("weight_change", "weight_change", weight_change);
 
   return cmd;
 }
@@ -247,7 +250,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 //      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<nid<<std::endl;
-         if(!(s==1 || s==2 || s ==3 || s == 4)) {
+         if(!(s==1 || s==2 || s ==3 || s == 4 || s==5 || s==6 || s==7 || s==8)) {
            current_dest_rate += destRate; // hack - hardcoded only for this experiment - remove later
          }
       }
