@@ -82,6 +82,7 @@ CheckQueueSize (Ptr<Queue> queue)
   }
 
   if(queue_type == "fifo_hybridQ") {
+    uint32_t qSize = StaticCast<fifo_hybridQ> (queue)->GetCurSize (0);
     uint32_t nid = StaticCast<fifo_hybridQ> (queue)->nodeid;
     std::string qname = StaticCast<fifo_hybridQ> (queue)->GetLinkIDString();
     uint32_t fifo_1_size = StaticCast<fifo_hybridQ> (queue)->GetFifo_1_Size();

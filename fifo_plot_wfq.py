@@ -34,7 +34,8 @@ finish_xaxis = {}
 total_capacity=10000*2.0;
 
 qtimes = {}
-qsizes = {}
+fifo_1_qsizes = {}
+fifo_2_qsizes = {}
 qprices = {}
 
 qwaittimes = {}
@@ -120,17 +121,17 @@ for line in f:
     finish_xaxis[fid].append(curtime)
  
   # example FIFO_QueueStats 
-  if(xy[0] == "QueueStats"):
-    queue_id = xy[1]
-    qtime = float(xy[2])
-    qsize = float(xy[3])
-    
-    if(queue_id not in qtimes):
-      qtimes[queue_id] = []
-      qsizes[queue_id] = []
-    
-    qtimes[queue_id].append(qtime)
-    qsizes[queue_id].append(qsize)
+  #if(xy[0] == "QueueStats"):
+  #  queue_id = xy[1]
+  #  qtime = float(xy[2])
+  #  qsize = float(xy[3])
+  #  
+  #  if(queue_id not in qtimes):
+  #    qtimes[queue_id] = []
+  #    qsizes[queue_id] = []
+  #  
+  #  qtimes[queue_id].append(qtime)
+  #  qsizes[queue_id].append(qsize)
 
   if(len(xy) > 5):
     if(xy[3] == "DCTCP_DEBUG"):
@@ -142,23 +143,40 @@ for line in f:
         dctcp_alphas[dctcp_nid] = []
       (dctcp_times[dctcp_nid]).append(dctcp_time)
       (dctcp_alphas[dctcp_nid]).append(dctcp_alpha) 
-
-  if(xy[0] == "QueueStats1"):
+  
+  # new example line: QueueStats 0_0_1 1.499 fifo_2_size 70032 fifo_1_size 0 0
+  if(xy[0] == "QueueStats"):
     queue_id = xy[1]
     qtime = float(xy[2])
-    qfid = int(xy[3])
-    qfdeadline = float(xy[4])
-    qvirtual_time = float(xy[5])
-#    qnid = int(xy[5])
+    fifo_1_qsize = float(xy[6])
+    fifo_2_qsize = float(xy[4])
+    
+    if(queue_id not in qtimes):
+      qtimes[queue_id] = []
+      fifo_1_qsizes[queue_id] = []
+      fifo_2_qsizes[queue_id] = []
+    
+    qtimes[queue_id].append(qtime)
+    fifo_1_qsizes[queue_id].append(fifo_1_qsize)
+    fifo_2_qsizes[queue_id].append(fifo_2_qsize)
+  
+  
+  #if(xy[0] == "QueueStats1"):
+  #  queue_id = xy[1]
+  #  qtime = float(xy[2])
+  #  qfid = int(xy[3])
+  #  qfdeadline = float(xy[4])
+  #  qvirtual_time = float(xy[5])
+# #   qnid = int(xy[5])
 
-    if(queue_id == "0_0_1"):
-      if(qfid not in q0times):
-        q0times[qfid] = []
-        q0deadlines[qfid] = []
-      q0times[qfid].append(qtime)
-      q0deadlines[qfid].append(qfdeadline)
-      qvirtual_times.append(qvirtual_time)
-      qvirtualtimes_times.append(qtime)
+  #  if(queue_id == "0_0_1"):
+  #    if(qfid not in q0times):
+  #      q0times[qfid] = []
+  #      q0deadlines[qfid] = []
+  #    q0times[qfid].append(qtime)
+  #    q0deadlines[qfid].append(qfdeadline)
+  #    qvirtual_times.append(qvirtual_time)
+  #    qvirtualtimes_times.append(qtime)
   
   if(xy[0] == "QWAIT"):
     qtime = float(xy[2])
@@ -174,46 +192,52 @@ for line in f:
       qfwaits[qfid].append(qfwait)
     
 plt.figure(1)
-plt.title("QueueOccupancy")
-
+plt.title("Unknown QueueOccupancy (FIFO 1)")
 colors = ['r','b','g', 'm', 'c', 'y','k']
 i=0
-for key in qsizes:
+for key in fifo_1_qsizes:
     if(key == "0_0_1" or key == "2_2_0" or key == "3_3_0" or key == "1_1_4" or key == "1_1_5"):
-      plt.plot(qtimes[key], ewma(qsizes[key], 1.0), colors[i], label=str(key)) 
+      plt.plot(qtimes[key], ewma(fifo_1_qsizes[key], 1.0), colors[i], label=str(key)) 
       i = (i+1)%len(colors)
-#plt.plot(qx1, qy1, 'k', label="switch1") 
 plt.xlabel('Time in seconds')
-plt.ylabel('Queue occupancy in Bytes')
+plt.ylabel('Unknown Queue occupancy in Bytes (FIFO 1)')
 plt.legend(loc='lower right')
-plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_occupancy"))
-#plt.draw()
+plt.savefig('%s/%s.%s.png' %(pre,pre,"known_fifo_1_queue_occupancy"))
+
+
+plt.figure(8)
+plt.title("Known QueueOccupancy (FIFO 2)")
+colors = ['r','b','g', 'm', 'c', 'y','k']
+i=0
+for key in fifo_2_qsizes:
+    if(key == "0_0_1" or key == "2_2_0" or key == "3_3_0" or key == "1_1_4" or key == "1_1_5"):
+      plt.plot(qtimes[key], ewma(fifo_2_qsizes[key], 1.0), colors[i], label=str(key)) 
+      i = (i+1)%len(colors)
+plt.xlabel('Time in seconds')
+plt.ylabel('Known Queue occupancy in Bytes (FIFO 2)')
+plt.legend(loc='lower right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"known_fifo_2_queue_occupancy"))
+
 
 plt.figure(2)
 plt.title("Sum of all unknown sending rates / total sending capacity (ewma 0.01)")
-
 plt.plot(rtime, ewma(trate, 0.01), colors[i]) 
 plt.xlabel('Time in seconds')
 plt.ylabel('Fraction of total capacity')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"unknown_load"))
 
-#plt.draw()
+plt.figure(3)
+plt.title("Sending rates at sender")
+i=0
+for key in stimes:
+  plt.plot(stimes[key], ewma(srates[key], 1.0), colors[i]) 
+  i = (i+1)%len(colors)
 
-
-#plt.figure(3)
-#plt.title("Sending rates at sender")
-#i=0
-#for key in stimes:
-#  plt.plot(stimes[key], ewma(srates[key], 1.0), colors[i]) 
-#  i = (i+1)%len(colors)
-
-#plt.xlabel('Time in seconds')
-#plt.ylabel('Rates in Mbps')
-#plt.legend(loc='upper right')
-#plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
-
-#plt.draw()
+plt.xlabel('Time in seconds')
+plt.ylabel('Rates in Mbps')
+plt.legend(loc='upper right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
 
 plt.figure(6)
 plt.title("Sending rates at destination")
@@ -226,7 +250,6 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates"))
-
 #plt.draw()
 
 
@@ -241,88 +264,5 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates_perpacket"))
-
 #plt.draw()
 
-plt.figure(4)
-plt.title("switch0 virtual time")
-for f in q0times:
-  if(f == 0):
-    continue
-  plt.plot(q0times[f], q0deadlines[f], label=str(f))
-plt.plot(qvirtualtimes_times, qvirtual_times, label="virtualtime", marker="*", markevery=1000)
-plt.xlabel("Time in seconds")
-plt.ylabel("Time in NanoSeconds")
-plt.legend(loc='upper right')
-plt.savefig("%s/%s.png" %(pre,"q0_deadlines"))
-#plt.draw()
-
-plt.figure(5)
-plt.title("flow wait times at bottleneck link")
-for f in qwaittimes:
-  if(f == 0):
-    continue
-  plt.plot(qwaittimes[f], qfwaits[f], label=str(f))
-plt.xlabel("Time in seconds")
-plt.ylabel("Time in Nanoseconds")
-plt.legend(loc='upper right')
-plt.savefig("%s/%s.png" %(pre,"q0_waittimes"))
-#plt.draw()
-
-
-plt.figure(11)
-plt.title("starttime and finish times at switch")
-for f in start_times:
-  plt.plot(stime_xaxis[f], start_times[f], label="start"+str(f))
-  plt.plot(stime_xaxis[f], finish_times[f], label="finish"+str(f), marker="x", markevery=1000)
-plt.xlabel("Time in seconds")
-plt.ylabel("Time in Nanoseconds")
-plt.legend(loc='upper right')
-plt.savefig("%s/%s.%s.png" %(pre,pre,"q0_starttimes"))
-#plt.draw()
-
-#plt.figure(5)
-#plt.title("DCTCP alpha")
-#plt.xlabel('Time in seconds')
-#plt.ylabel("alpha")
-#for key in dctcp_times:
-#  print key
-#  plt.plot(dctcp_times[key], dctcp_alphas[key], label=str(key))
-#plt.legend(loc='upper right')
-#plt.savefig("%s/%s.%s.png" %(pre,pre,"dctcp_alphas"))
-#plt.draw()
-
-
-cwndx = {}
-cwndy = {}
-for fid in range(1,num_flows+1):
-  cwnd1 = sys.argv[1]+".cwnd."+`fid`
-  print("opening file %s" %cwnd1)
-  if(os.path.exists(cwnd1)):
-    f1 = open(cwnd1)
-    for line in f1:
-      L = line.rstrip();
-      xy1 = L.split('\t');
-      if(fid not in cwndx):
-        cwndx[fid] = []
-        cwndy[fid] = []
-      cwndx[fid].append(xy1[0])
-      cwndy[fid].append(xy1[2])
-
-plt.figure(9)
-plt.title("Congestion Windows")
-
-i=0
-for key in cwndx:
-  print("plotting flow id %d"%key)
-  
-  plt.step(cwndx[key], cwndy[key], colors[i], label=`key`)
-  i = (i+1)%len(colors)
-plt.xlabel('Time in seconds')
-plt.ylabel('Congestion windows')
-plt.legend(loc='lower right')
-plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
-
-#plt.draw()
-
-#plt.show()

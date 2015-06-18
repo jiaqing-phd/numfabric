@@ -1,9 +1,9 @@
 dctcp=false
 xfabric=false
 kay=50000
-queuetype=FifoQueue
+queuetype=fifo_hybridQ
 vpackets=1
-prefix=udp_rate_control_withunknown
+prefix=splitQ.fifo_hybridQ.udp_rate_control_withunknown
 ecn_thresh=30000
 hostflows=1
 load=0.05
