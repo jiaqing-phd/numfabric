@@ -82,10 +82,8 @@ MyApp::StartApplication (void)
 
   Ptr<Socket> ns3TcpSocket;
   if(m_udp) {
-    std::cout<<"Creating UDP socket "<<std::endl;
     ns3TcpSocket = Socket::CreateSocket (srcNode, UdpSocketFactory::GetTypeId());
   } else {
-    std::cout<<"Creating TCP socket "<<std::endl;
     ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
   }
 //  setuptracing(m_fid, ns3TcpSocket);

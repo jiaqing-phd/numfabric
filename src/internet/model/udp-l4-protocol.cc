@@ -413,7 +413,6 @@ UdpL4Protocol::Send (Ptr<Packet> packet,
                      uint16_t sport, uint16_t dport)
 {
   NS_LOG_FUNCTION (this << packet << saddr << daddr << sport << dport);
-  std::cout<<"UDP SEND "<<packet<<" "<<saddr<<" "<<daddr<<" "<<sport<<" "<<dport<<std::endl;
 
   UdpHeader udpHeader;
   if(Node::ChecksumEnabled ())

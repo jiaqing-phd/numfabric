@@ -232,7 +232,7 @@ void changeAppRates(void)
     uint32_t fid = it->first;
     double weight = flow_weight_local[fid];
 
-    double new_rate = (weight/total_weight) * (link_rate - 0.1*link_rate);
+    double new_rate = (weight/total_weight) * link_rate;
     for(uint32_t nid=0; nid < N ; nid++)
     {
       Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
