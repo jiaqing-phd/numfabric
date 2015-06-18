@@ -84,20 +84,18 @@ for line in f:
     rate=float(xy[4])
     csfq_rate = float(xy[5])
 
-    if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id == 3 or flow_id == 4)): 
+    if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
     #if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
       crates[flow_id] = []
-
     if((flow_id == 1 or flow_id == 2 or flow_id == 3 or flow_id == 4)): 
         dtimes[flow_id].append(t1)
         drates[flow_id].append(rate)
         crates[flow_id].append(csfq_rate)
-
   if(len(xy)> 2 and xy[1] == "TotalRate"):
     rtime.append(float(xy[0]))
-    trate.append(float(xy[2])/total_capacity)
+    trate.append(float(xy[2]))
 
   if(xy[0] == "start_time"):
     fid = int(xy[2])
@@ -293,35 +291,35 @@ plt.savefig("%s/%s.%s.png" %(pre,pre,"q0_starttimes"))
 #plt.draw()
 
 
-cwndx = {}
-cwndy = {}
-for fid in range(1,num_flows+1):
-  cwnd1 = sys.argv[1]+".cwnd."+`fid`
-  print("opening file %s" %cwnd1)
-  if(os.path.exists(cwnd1)):
-    f1 = open(cwnd1)
-    for line in f1:
-      L = line.rstrip();
-      xy1 = L.split('\t');
-      if(fid not in cwndx):
-        cwndx[fid] = []
-        cwndy[fid] = []
-      cwndx[fid].append(xy1[0])
-      cwndy[fid].append(xy1[2])
+#cwndx = {}
+#cwndy = {}
+#for fid in range(1,num_flows+1):
+#  cwnd1 = sys.argv[1]+".cwnd."+`fid`
+#  print("opening file %s" %cwnd1)
+#  if(os.path.exists(cwnd1)):
+#    f1 = open(cwnd1)
+#    for line in f1:
+#      L = line.rstrip();
+#      xy1 = L.split('\t');
+#     if(fid not in cwndx):
+#        cwndx[fid] = []
+#        cwndy[fid] = []
+#      cwndx[fid].append(xy1[0])
+#      cwndy[fid].append(xy1[2])
 
-plt.figure(9)
-plt.title("Congestion Windows")
+#plt.figure(9)
+#plt.title("Congestion Windows")
 
-i=0
-for key in cwndx:
-  print("plotting flow id %d"%key)
+#i=0
+#for key in cwndx:
+#  print("plotting flow id %d"%key)
   
-  plt.step(cwndx[key], cwndy[key], colors[i], label=`key`)
-  i = (i+1)%len(colors)
-plt.xlabel('Time in seconds')
-plt.ylabel('Congestion windows')
-plt.legend(loc='lower right')
-plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
+#  plt.step(cwndx[key], cwndy[key], colors[i], label=`key`)
+#  i = (i+1)%len(colors)
+#plt.xlabel('Time in seconds')
+#plt.ylabel('Congestion windows')
+#plt.legend(loc='lower right')
+#plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
 
 #plt.draw()
 

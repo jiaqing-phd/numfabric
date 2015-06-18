@@ -180,7 +180,7 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
 
   std::cout<<"FLOW_INFO source_node "<<(sourceNodes.Get(sourceN))->GetId()<<" sink_node "<<(sinkNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<ports[sinkN]<<" flow_size "<<flow_size<<" flow_weight" <<flow_weight<<std::endl;
 
-  flow_known[flow_id] = known;
+  flow_known[flow_id] = known;  // whether this flow is part of known or unknown flow set
   (source_flow[(sourceNodes.Get(sourceN))->GetId()]).push_back(flow_id);
   (dest_flow[(sinkNodes.Get(sinkN))->GetId()]).push_back(flow_id);
   std::stringstream ss;
@@ -232,7 +232,7 @@ void changeAppRates(void)
     uint32_t fid = it->first;
     double weight = flow_weight_local[fid];
 
-    double new_rate = (weight/total_weight) * link_rate;
+    double new_rate = (weight/total_weight) * (link_rate - 0.1*link_rate);
     for(uint32_t nid=0; nid < N ; nid++)
     {
       Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
@@ -344,6 +344,9 @@ void changeWeights(void)
     {
        
       uint32_t s = it->second;
+      if(flow_known[s] == 0) { //unknown flow - no weight or rate
+        continue;
+      }
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
@@ -401,7 +404,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 {
   double lambda = (link_rate * load ) / (meanflowsize*8.0);
   std::cout<<"lambda first "<<lambda<<std::endl;
-  lambda = lambda / sourceNodes.GetN(); 
+  lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
   double avg_interarrival = 1/lambda;
 
   Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();

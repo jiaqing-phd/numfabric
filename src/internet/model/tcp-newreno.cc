@@ -255,6 +255,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
   std::stringstream ss;
   ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
+  std::cout<<flowkey<<" ProcessECN "<<std::endl;
 
   /* update the last ack recvd variable */
   int32_t num_bytes_acked = ack_num.GetValue() - highest_ack_recvd.GetValue();

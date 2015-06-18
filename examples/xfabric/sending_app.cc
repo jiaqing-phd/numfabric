@@ -82,8 +82,10 @@ MyApp::StartApplication (void)
 
   Ptr<Socket> ns3TcpSocket;
   if(m_udp) {
+    std::cout<<"Creating UDP socket "<<std::endl;
     ns3TcpSocket = Socket::CreateSocket (srcNode, UdpSocketFactory::GetTypeId());
   } else {
+    std::cout<<"Creating TCP socket "<<std::endl;
     ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
   }
 //  setuptracing(m_fid, ns3TcpSocket);
@@ -152,13 +154,8 @@ MyApp::ScheduleTx (void)
   //if (m_running)
   if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
     {
-//      std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" sent bytes "<<m_totBytes<<" m_maxBytes "<<m_maxBytes<<std::endl;
-      //Time tNext (Seconds (m_packetSize * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
-      // We will schedule the next packet when the random number generator says we can
-//      double next_time = m_interArrival->GetValue();
-//      Time tNext (Seconds (next_time));
-      Time tNext (Seconds (m_packetSize * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
-//      std::cout<<Simulator::Now().GetNanoSeconds()<<"scheduling next transmission at "<<tNext.GetNanoSeconds()<<" flow "<<m_fid<<" pktsize "<<m_packetSize<<" datarate "<<m_dataRate.GetBitRate()<<std::endl;
+      //Time tNext (Seconds (1500* 8 / static_cast<double> (m_dataRate.GetBitRate ())));
+      Time tNext (Seconds ((m_packetSize+38) * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
     } else {
       StopApplication();

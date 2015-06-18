@@ -30,7 +30,7 @@ double sim_time = 2.0;
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0001;
 float sampling_interval = 0.001;
-uint32_t pkt_size = 1040;
+uint32_t pkt_size = 1462;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
 

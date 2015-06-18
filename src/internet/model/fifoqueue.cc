@@ -56,6 +56,7 @@ FifoQueue::FifoQueue () :
 {
   NS_LOG_FUNCTION (this);
   nodeid = 1000;
+  total_deq = 0;
 }
 
 uint32_t
@@ -344,6 +345,8 @@ FifoQueue::DoDequeue (void)
   }
 
   Ptr<Packet> p = m_packets.front ();
+  total_deq += p->GetSize();
+  std::cout<<"Dequeued packet of size "<<p->GetSize()<<" total_deq "<<total_deq<<std::endl;
   remove(p);
   return p;
 }

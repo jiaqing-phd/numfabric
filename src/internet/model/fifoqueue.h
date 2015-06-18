@@ -53,6 +53,7 @@ public:
   std::map<std::string, uint32_t>flow_ids;
   std::map<uint32_t, double>flow_weights;
   bool init_reset;
+  uint32_t total_deq;
 
 
   /**

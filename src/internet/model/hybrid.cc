@@ -196,8 +196,10 @@ hybridQ::GetTCPHeader(Ptr<Packet> p)
   p->RemoveHeader(pheader); 
   p->RemoveHeader(h1);
 
+
   p->PeekHeader(tcph);
   // add all headers
+
   p->AddHeader(h1);
   p->AddHeader(pheader);
   p->AddHeader(ppp);
@@ -251,7 +253,7 @@ hybridQ::GetFlowKey(Ptr<Packet> p)
   std::stringstream ss;
   ss <<source<<":"<<destination<<":"<<destPort;
   std::string flowkey = ss.str();
-  
+ 
   return flowkey;
 }
 
@@ -381,10 +383,10 @@ hybridQ::known_flow(uint32_t flowid)
   v.push_back(2);
   v.push_back(3);
   v.push_back(4);
-  v.push_back(5);
+/*  v.push_back(5);
   v.push_back(6);
   v.push_back(7);
-  v.push_back(8);
+  v.push_back(8); */
 
   for(uint32_t idx=0; idx < v.size(); idx++) {
     if(v[idx] == flowid) {
@@ -400,10 +402,8 @@ hybridQ::DoEnqueue(Ptr<Packet> p)
 {
  uint32_t flowid = getFlowID(p);
  if(known_flow(flowid)) {
-  std::cout<<"Enqueued to W2FQ"<<std::endl;
   return W2FQEnQ(p);  
  } else {
-  std::cout<<"Enqueued to Fifo"<<std::endl;
   return FifoEnQ(p);
  }
 }
@@ -495,7 +495,6 @@ hybridQ::DoDequeue(void)
   if((turn == W2FQ && !W2FQempty()) || fifoqempty()) {
     turn = FIFO;
     if(linkid_string == "0_0_1") {
-      std::cout<<"W2fq deq"<<std::endl;
     }
     return W2FQDequeue();
   } 
@@ -503,7 +502,6 @@ hybridQ::DoDequeue(void)
   if((turn == FIFO && !fifoqempty()) || W2FQempty()){
     turn = W2FQ;
     if(linkid_string == "0_0_1") {
-      std::cout<<"fifo deq"<<std::endl;
     }
     return FifoDequeue();
   }
@@ -621,13 +619,13 @@ hybridQ::W2FQDequeue (void)
   double wait_duration = Simulator::Now().GetNanoSeconds() - pkt_arrival[pkt->GetUid()];
 //  if(linkid_string == "0_0_1") {
     std::cout<<"QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow<<" spent "<<wait_duration<<" in queue "<<linkid_string<<std::endl;
-    std::cout<<"DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow<<" pkt size "<<pkt->GetSize()<<std::endl;
+ ///   std::cout<<"DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow<<" pkt size "<<pkt->GetSize()<<std::endl;
     
     virtualtime_updated += 1;
     if(virtualtime_updated >= vpackets) {
      virtualtime_updated = 0;
      current_slope = CalcSlope();
-     std::cout<<"SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope<<std::endl;
+//     std::cout<<"SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope<<std::endl;
     } 
   
 //    std::cout<<"End of dequeue: flow "<<flow<<" stime "<<start_time[flow]<<" ftime "<<finish_time[flow]<<" vtime "<<current_virtualtime<<" min_starttime "<<minS<<" "<<linkid_string<<" VTIMEUPDATE"<<std::endl;
