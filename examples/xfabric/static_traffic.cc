@@ -49,10 +49,8 @@ void createTopology(void)
   } else if(queue_type == "hybridQ") {
     std::cout<<"setting queue to hybridQueue"<<std::endl;
     p2pbottleneck.SetQueue("ns3::hybridQ", "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"), "DataRate", StringValue(link_rate_string));
-  } else if(queue_type == "fifo_hybridQ") {
-    std::cout<<"setting queue to fifo_hybridQueue"<<std::endl;
-    p2pbottleneck.SetQueue("ns3::fifo_hybridQ", "MaxBytes", UintegerValue(max_queue_size), "Mode", StringValue("QUEUE_MODE_BYTES"), "DataRate", StringValue(link_rate_string));
   }
+  
 
   // Create links between all sourcenodes and bottleneck switch
   //
@@ -148,10 +146,6 @@ void setQFlows()
         if(queue_type == "hybridQ") {
           StaticCast<hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
         }
-        if(queue_type == "fifo_hybridQ") {
-          StaticCast<fifo_hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
-        }
-        
           
       }
     }

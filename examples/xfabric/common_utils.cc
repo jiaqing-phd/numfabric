@@ -33,6 +33,9 @@ void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t f
   pSink->GetAttribute("peernodeid", n2);
   NS_LOG_UNCOND("sink attributed set : numbytes "<<nb.Get()<<" flowid "<<fid.Get()<<" nodeid "<<n1.Get()<<" source nodeid "<<n2.Get());
   
+  /* Debug end */
+
+//  Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
 }
 
 void
@@ -41,6 +44,7 @@ CheckQueueSize (Ptr<Queue> queue)
   if(queue_type == "WFQ") {
     uint32_t qSize = StaticCast<PrioQueue> (queue)->GetCurSize ();
     uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
     std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
@@ -55,6 +59,7 @@ CheckQueueSize (Ptr<Queue> queue)
   if(queue_type == "W2FQ") {
     uint32_t qSize = StaticCast<W2FQ> (queue)->GetCurSize (0);
     uint32_t nid = StaticCast<W2FQ> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
     std::string qname = StaticCast<W2FQ> (queue)->GetLinkIDString();
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
@@ -69,6 +74,7 @@ CheckQueueSize (Ptr<Queue> queue)
   if(queue_type == "hybridQ") {
     uint32_t qSize = StaticCast<hybridQ> (queue)->GetCurSize (0);
     uint32_t nid = StaticCast<hybridQ> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
     std::string qname = StaticCast<hybridQ> (queue)->GetLinkIDString();
     uint32_t fifosize = StaticCast<hybridQ> (queue)->GetFifoSize();
     checkTimes++;
@@ -80,21 +86,10 @@ CheckQueueSize (Ptr<Queue> queue)
       std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<nid<<std::endl;
     }
   }
-
-  if(queue_type == "fifo_hybridQ") {
-    uint32_t nid = StaticCast<fifo_hybridQ> (queue)->nodeid;
-    std::string qname = StaticCast<fifo_hybridQ> (queue)->GetLinkIDString();
-    uint32_t fifo_1_size = StaticCast<fifo_hybridQ> (queue)->GetFifo_1_Size();
-    uint32_t fifo_2_size = StaticCast<fifo_hybridQ> (queue)->GetFifo_2_Size();
-    checkTimes++;
-    // example line
-    // QueueStats 2_2_0 1.5 fifo_2_size 1078 fifo_1_size 2 0
-    std::cout<<"QueueStats "<< qname <<" "<<Simulator::Now ().GetSeconds () << " fifo_2_size " << fifo_2_size << " fifo_1_size " << fifo_1_size << " node_id " << nid <<std::endl;
-  }
-
   if(queue_type == "FifoQueue") {
     uint32_t qSize = StaticCast<FifoQueue> (queue)->GetCurSize ();
     uint32_t nid = StaticCast<FifoQueue> (queue)->nodeid;
+  //  double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
     std::string qname = StaticCast<FifoQueue> (queue)->GetLinkIDString();
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;

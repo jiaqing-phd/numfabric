@@ -1,9 +1,7 @@
 import sys
 import os
-import matplotlib;
-matplotlib.use('Agg');
-del matplotlib;
-import matplotlib.pyplot as plt;
+
+import matplotlib.pyplot as plt
 
 f = open(sys.argv[1]+".out")
 pre = sys.argv[1];
@@ -84,16 +82,15 @@ for line in f:
     rate=float(xy[4])
     csfq_rate = float(xy[5])
 
-    if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id == 3 or flow_id == 4)): 
-    #if(flow_id not in dtimes):
+    #if(flow_id not in dtimes and (flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
+    if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
       crates[flow_id] = []
-
-    if((flow_id == 1 or flow_id == 2 or flow_id == 3 or flow_id == 4)): 
-        dtimes[flow_id].append(t1)
-        drates[flow_id].append(rate)
-        crates[flow_id].append(csfq_rate)
+#    if((flow_id == 1 or flow_id == 2 or flow_id ==3 or flow_id ==4)):
+    dtimes[flow_id].append(t1)
+    drates[flow_id].append(rate)
+    crates[flow_id].append(csfq_rate)
 
   if(len(xy)> 2 and xy[1] == "TotalRate"):
     rtime.append(float(xy[0]))
@@ -118,8 +115,7 @@ for line in f:
       finish_xaxis[fid] = []
     finish_times[fid].append(stime)
     finish_xaxis[fid].append(curtime)
- 
-  # example FIFO_QueueStats 
+
   if(xy[0] == "QueueStats"):
     queue_id = xy[1]
     qtime = float(xy[2])
@@ -187,7 +183,7 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Queue occupancy in Bytes')
 plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_occupancy"))
-#plt.draw()
+plt.draw()
 
 plt.figure(2)
 plt.title("Sum of all unknown sending rates / total sending capacity (ewma 0.01)")
@@ -227,7 +223,7 @@ plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates"))
 
-#plt.draw()
+plt.draw()
 
 
 plt.figure(7)
@@ -242,7 +238,7 @@ plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates_perpacket"))
 
-#plt.draw()
+plt.draw()
 
 plt.figure(4)
 plt.title("switch0 virtual time")
@@ -255,7 +251,7 @@ plt.xlabel("Time in seconds")
 plt.ylabel("Time in NanoSeconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.png" %(pre,"q0_deadlines"))
-#plt.draw()
+plt.draw()
 
 plt.figure(5)
 plt.title("flow wait times at bottleneck link")
@@ -267,7 +263,7 @@ plt.xlabel("Time in seconds")
 plt.ylabel("Time in Nanoseconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.png" %(pre,"q0_waittimes"))
-#plt.draw()
+plt.draw()
 
 
 plt.figure(11)
@@ -279,7 +275,7 @@ plt.xlabel("Time in seconds")
 plt.ylabel("Time in Nanoseconds")
 plt.legend(loc='upper right')
 plt.savefig("%s/%s.%s.png" %(pre,pre,"q0_starttimes"))
-#plt.draw()
+plt.draw()
 
 #plt.figure(5)
 #plt.title("DCTCP alpha")
@@ -323,6 +319,6 @@ plt.ylabel('Congestion windows')
 plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
 
-#plt.draw()
+plt.draw()
 
-#plt.show()
+plt.show()
