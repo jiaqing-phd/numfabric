@@ -76,6 +76,7 @@ double link_rate = ONEG * 10.0;
 std::string link_rate_string = "10Gbps";
 
 double load = 0.05;
+double controller_estimated_unknown_load = 0.05;
 double meanflowsize = 1138*1460 ; // what TBD?
 
 /* Application configuration */

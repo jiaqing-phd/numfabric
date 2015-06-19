@@ -92,6 +92,7 @@ extern double link_rate ;
 extern std::string link_rate_string ;
 
 extern double load ;
+extern double controller_estimated_unknown_load ;
 extern double meanflowsize ; // what TBD?
 
 /* Application configuration */

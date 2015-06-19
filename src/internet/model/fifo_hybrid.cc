@@ -233,7 +233,7 @@ fifo_hybridQ::getFlowID(Ptr<Packet> p)
 {
   std::string flowkey = GetFlowKey(p);
   if (flow_ids.find(flowkey) != flow_ids.end()) {
-    std::cout<<"flowkey "<<flowkey<<" fid "<<flow_ids[flowkey]<<std::endl;
+    //std::cout<<"flowkey "<<flowkey<<" fid "<<flow_ids[flowkey]<<std::endl;
     return flow_ids[flowkey];
   }
   return 0; //TBD - convert flows to ids
@@ -265,24 +265,24 @@ fifo_hybridQ::known_flow(uint32_t flowid)
   v.push_back(8);
   */
 
-  /* 
+   
   std::vector<uint32_t> v(4);
   v.push_back(1);
   v.push_back(2);
   v.push_back(3);
   v.push_back(4);
-  */
+  
 
-   
+  /* 
   std::vector<uint32_t> v(2);
   v.push_back(1);
   v.push_back(2);
-    
+  */  
 
   for(uint32_t idx=0; idx < v.size(); idx++) {
     if(v[idx] == flowid) {
 
-      std::cout<<"SC known flow "<< flowid <<std::endl;
+      //std::cout<<"SC known flow "<< flowid <<std::endl;
 
       return true;
     }
@@ -296,10 +296,10 @@ fifo_hybridQ::DoEnqueue(Ptr<Packet> p)
 {
  uint32_t flowid = getFlowID(p);
  if(known_flow(flowid)) {
-  std::cout<<"SC Enqueued to fifo_2, flow id "<< flowid << std::endl;
+  //std::cout<<"SC Enqueued to fifo_2, flow id "<< flowid << std::endl;
   return fifo_2_EnQ(p);  
  } else {
-  std::cout<<"SC Enqueued to fifo_1, flow id "<< flowid << std::endl;
+  //std::cout<<"SC Enqueued to fifo_1, flow id "<< flowid << std::endl;
   return fifo_1_EnQ(p);
  }
 }
@@ -381,7 +381,7 @@ fifo_hybridQ::DoDequeue(void)
   if((turn == FIFO_2 && !fifo_2_qempty()) || fifo_1_qempty()) {
     turn = FIFO_1;
     if(linkid_string == "0_0_1") {
-      std::cout<<"SC FIFO 2 deq"<<std::endl;
+      //std::cout<<"SC FIFO 2 deq"<<std::endl;
     }
     return fifo_2_Dequeue();
   } 
@@ -389,7 +389,7 @@ fifo_hybridQ::DoDequeue(void)
   if((turn == FIFO_1 && !fifo_1_qempty()) || fifo_2_qempty()){
     turn = FIFO_2;
     if(linkid_string == "0_0_1") {
-      std::cout<<"SC FIFO 1 deq"<<std::endl;
+      //std::cout<<"SC FIFO 1 deq"<<std::endl;
     }
     return fifo_1_Dequeue();
   }

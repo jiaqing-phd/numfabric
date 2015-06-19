@@ -40,7 +40,6 @@ extern double flow3_starttime;
 extern double alpha_value ;
 extern double target_queue ;
 
-
 extern float sampling_interval ;
 extern uint32_t pkt_size ;
 //uint32_t max_queue_size ;
@@ -77,6 +76,7 @@ extern double link_rate ;
 extern std::string link_rate_string ;
 
 extern double load ;
+extern double controller_estimated_unknown_load ;
 extern double meanflowsize ; // what TBD?
 
 /* Application configuration */

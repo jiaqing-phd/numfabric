@@ -122,6 +122,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("link_delay","link_delay",link_delay);
   cmd.AddValue ("ecn_thresh", "ecn_thresh", max_ecn_thresh);
   cmd.AddValue ("load", "load",load);
+  cmd.AddValue ("controller_estimated_unknown_load", "controller_estimated_unknown_load",controller_estimated_unknown_load);
   cmd.AddValue ("rate_update_time", "rate_update_time", rate_update_time);
   cmd.AddValue ("sampling_interval", "sampling_interval", sampling_interval);
   cmd.AddValue ("kay", "kay", kvalue);
