@@ -217,6 +217,7 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Known Queue occupancy in Bytes (FIFO 2)')
 plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"known_fifo_2_queue_occupancy"))
+plt.draw()
 
 
 plt.figure(2)
@@ -226,6 +227,7 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Fraction of total capacity')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"unknown_load"))
+plt.draw()
 
 plt.figure(3)
 plt.title("Sending rates at sender")
@@ -238,6 +240,7 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
+plt.draw()
 
 plt.figure(6)
 plt.title("Sending rates at destination")
@@ -250,7 +253,7 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates"))
-#plt.draw()
+plt.draw()
 
 
 plt.figure(7)
@@ -264,5 +267,7 @@ plt.xlabel('Time in seconds')
 plt.ylabel('Rates in Mbps')
 plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"destination_rates_perpacket"))
-#plt.draw()
+plt.draw()
+
+plt.show()
 
