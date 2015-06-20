@@ -37,7 +37,7 @@ for line in logs:
 for key in fstarts:
   if(key in fstops):
     ftime = (fstops[key] - fstarts[key])/1000000.0
-    print("Flow %d Size %d bytes finished in %fms" %(key, fsizes[key], ftime))
+    print("Flow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
   
     
 

@@ -58,12 +58,12 @@ CheckQueueSize (Ptr<Queue> queue)
     std::string qname = StaticCast<W2FQ> (queue)->GetLinkIDString();
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
-    std::map<std::string, uint32_t>::iterator it;
+/*    std::map<std::string, uint32_t>::iterator it;
     for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       uint64_t virtual_time = StaticCast<W2FQ> (queue)->get_virtualtime();
       double dline = 0.0;
       std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<nid<<std::endl;
-    }
+    } */
   }
 
   if(queue_type == "hybridQ") {
@@ -73,12 +73,13 @@ CheckQueueSize (Ptr<Queue> queue)
     uint32_t fifosize = StaticCast<hybridQ> (queue)->GetFifoSize();
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<fifosize<<std::endl;
-    std::map<std::string, uint32_t>::iterator it;
+/*    std::map<std::string, uint32_t>::iterator it;
     for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       uint64_t virtual_time = StaticCast<hybridQ> (queue)->get_virtualtime();
       double dline = 0.0;
       std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<nid<<std::endl;
     }
+*/
   }
 
   if(queue_type == "fifo_hybridQ") {
@@ -132,6 +133,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("hostflows", "hostflows",flows_per_host);
   cmd.AddValue ("flows_tcp", "flows_tcp", flows_tcp);
   cmd.AddValue ("weight_change", "weight_change", weight_change);
+  cmd.AddValue ("weight_norm", "weight_norm", weight_normalized);
+  cmd.AddValue ("rate_based", "rate_based", rate_based);
 
   return cmd;
 }
@@ -174,6 +177,7 @@ void common_config(void)
 
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
+  Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
 
   return;
 

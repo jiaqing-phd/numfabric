@@ -171,7 +171,7 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   Ipv4Address sourceIp = source_node_ipv4->GetAddress (1,0).GetLocal();
   Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
   Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
-  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), tcp);
+  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), tcp, known);
   //apps.Add(SendingApp);
   (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
       
@@ -336,6 +336,7 @@ void changeWeights(void)
   Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
   double total_weight = 0.0;
   std::map<uint32_t, double> flow_weight_local;
+  double min_weight = 100.0;
   for(uint32_t nid=0; nid < N ; nid++)
   {
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
@@ -352,24 +353,37 @@ void changeWeights(void)
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
         uint32_t rand_num = uv->GetInteger(1.0, 10.0);
         double new_weight = rand_num*1.0;
-/*        double new_weight = s*1.0;
-        double ns_time_now = Simulator::Now().GetSeconds();
-        if((ns_time_now <= 1.19) || (ns_time_now > 1.2 && ns_time_now < 1.5)) {
-          if(s == 1) {
-            new_weight = 10.0;
-          } else {
-            new_weight = 1.0;
-          }
-        } else {
-          if(s == 1) {
-            new_weight = 10.0;
-          } else {
-            new_weight = 10.0;
-          }
-        }
-  */         
-        std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
         flow_weight_local[s] = new_weight;
+        if(new_weight < min_weight) {
+          min_weight = new_weight;
+        }
+      } // end if flow is sourced here
+    } // end for all flows registered with this node
+  } // end for all nodes
+
+  /* start a new loop to normalize weights, if configured to do so */
+  for(uint32_t nid=0; nid < N ; nid++)
+  {
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+    std::map<std::string,uint32_t>::iterator it;
+    for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
+    {
+       
+      uint32_t s = it->second;
+      if(flow_known[s] == 0) { //unknown flow - no weight or rate
+        continue;
+      }
+
+      /* check if this flowid is from this source */
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
+        double new_weight = flow_weight_local[s];
+        if(weight_normalized) {
+          new_weight = new_weight/min_weight;
+        }
+        flow_weight_local[s]  = new_weight;
+ 
+        
+        std::cout<<" setting weight of flow "<<s<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
         total_weight += new_weight;
         ipv4->setFlowWeight(s, new_weight);
         flowweights[s] = new_weight;
@@ -384,7 +398,7 @@ void changeWeights(void)
     uint32_t fid = it->first;
     double weight = flow_weight_local[fid];
 
-    double rate = (weight/total_weight) * link_rate;
+    double rate = (weight/total_weight) * (1 - controller_estimated_unknown_load) * link_rate;
     for(uint32_t nid=0; nid < N ; nid++)
     {
       Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());

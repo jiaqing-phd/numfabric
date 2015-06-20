@@ -213,6 +213,19 @@ TcpNewReno::getFlowIdealRate(std::string flowkey)
 }
 
 void
+TcpNewReno::setdctcp(bool dctcp_value)
+{
+  std::cout<<"unknown flow setting m_dctcp "<<dctcp_value<<std::endl;
+  m_dctcp = dctcp_value;
+}
+void
+TcpNewReno::setxfabric(bool xfabric_value)
+{
+  std::cout<<"unknown flow setting m_xfabric "<<xfabric_value<<std::endl;
+  m_xfabric = xfabric_value;
+}
+
+void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
   if(m_xfabric) {
@@ -221,7 +234,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
     std::string flowkey = ss.str();
 
-    target_rate  = getFlowIdealRate(flowkey)/1000000.0;
+//    target_rate  = getFlowIdealRate(flowkey)/1000000.0;
   
   //  std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
     double res = target_rate * (1000000.0/8.0) * 0.000090; //TBD - dt from commandline
@@ -229,7 +242,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
     //  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
 
-    std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
+//    std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
 
     if(m_cWnd < 1* m_segmentSize) 
     {

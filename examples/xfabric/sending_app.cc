@@ -34,7 +34,7 @@ MyApp::ChangeRate (DataRate passed_in_rate)
 void
 //MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate, Ptr<RandomVariableStream> interArrival)
 //MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode)
-MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode, uint32_t fid, Ptr<Node> dNode, uint32_t tcp)
+MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode, uint32_t fid, Ptr<Node> dNode, uint32_t tcp, uint32_t fknown)
 {
   //m_socket = socket;
   m_peer = address;
@@ -50,11 +50,13 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   } else {
     m_udp = 0;
   }
+  flow_known = fknown;
   
   Time tNext = Time(Seconds(m_startTime));
   myAddress = ownaddress;
   srcNode = sNode;
   destNode = dNode;
+
   //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
   m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
 }
@@ -85,8 +87,13 @@ MyApp::StartApplication (void)
     ns3TcpSocket = Socket::CreateSocket (srcNode, UdpSocketFactory::GetTypeId());
   } else {
     ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
+    Ptr<TcpNewReno> nReno = StaticCast<TcpNewReno> (ns3TcpSocket);
+    if(flow_known == 0) {
+      nReno->setdctcp(true); // unknown flows always run dctcp
+      nReno->setxfabric(false);
+    }
   }
-//  setuptracing(m_fid, ns3TcpSocket);
+  setuptracing(m_fid, ns3TcpSocket);
   m_socket = ns3TcpSocket;
   if (InetSocketAddress::IsMatchingType (m_peer))
   { 
@@ -152,7 +159,6 @@ MyApp::ScheduleTx (void)
   //if (m_running)
   if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
     {
-      //Time tNext (Seconds (1500* 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       Time tNext (Seconds ((m_packetSize+38) * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
     } else {

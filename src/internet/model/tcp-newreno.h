@@ -57,6 +57,8 @@ public:
   // From TcpSocketBase
   virtual int Connect (const Address &address);
   virtual int Listen (void);
+  void setdctcp(bool);
+  void setxfabric(bool);
 
 protected:
   virtual uint32_t Window (void); // Return the max possible number of unacked bytes
