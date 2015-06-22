@@ -123,7 +123,9 @@ public:
   double kay;
   std::map<std::string, EventId> m_sendEvent;
 //  EventId m_sendEvent;
-
+  
+  bool known_flow(std::string flowkey);
+  bool issource(Ipv4Address s);
   void setFlowIdealRate(uint32_t, double);
   std::map<uint32_t, double> flow_idealrate;
   void setAlpha(double alpha);

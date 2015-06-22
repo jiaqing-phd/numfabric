@@ -23,6 +23,8 @@ extern std::map<uint32_t, std::vector<uint32_t> > source_flow;
 extern std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 extern uint32_t flows_tcp;
 extern uint32_t weight_change;
+extern uint32_t weight_normalized;
+extern bool rate_based;
 
 extern ApplicationContainer sinkApps;
 

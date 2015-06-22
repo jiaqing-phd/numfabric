@@ -6,7 +6,7 @@ iter_value=0.00001
 
 def close_enough(rate1, rate2):
   diff = rate1 - rate2
-  if(abs(diff) < (0.05*rate2)):
+  if(abs(diff) < (0.1*rate2)):
     return True
   return False
 
@@ -39,16 +39,16 @@ def find_converge_time(ret_rates, fname, start_time, stop_time):
      
 #      if(flowid == 2 and time > 1.8):
 #        print("time %f cur rate %f flowid %d ret_rates %f" %(time, rates[flowid], flowid, ret_rates[flowid])) 
-          
-      if(not(close_enough(rates[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
-        good[flowid] = 0
+      if(flowid in ret_rates):
+        if(not(close_enough(rates[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
+          good[flowid] = 0
         
-      if((close_enough(rates[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
-        good[flowid] += 1
+        if((close_enough(rates[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
+          good[flowid] += 1
           
-        if(good[flowid] == enough_good):
-          converged_time[flowid] = time
-          flow_converged[flowid] = True
+          if(good[flowid] == enough_good):
+            converged_time[flowid] = time
+            flow_converged[flowid] = True
   f1.close()
   return converged_time
 

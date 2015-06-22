@@ -33,6 +33,7 @@ float sampling_interval = 0.001;
 uint32_t pkt_size = 1462;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
+uint32_t weight_normalized = 0;
 
 /* Queue variables */
 uint32_t max_ecn_thresh = 50000;
@@ -53,6 +54,7 @@ bool dctcp = false;
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
 double link_delay = 5.0; //in microseconds
+bool rate_based  = false;
 
 
 /* Overall simulation parameters */

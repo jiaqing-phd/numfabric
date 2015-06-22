@@ -221,24 +221,18 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
 
     Ptr<Ipv4Route> r = (route_q[flowkey]).front();
     (route_q[flowkey]).pop();
-/*
-    TcpHeader tcph;
-    p->PeekHeader(tcph);
-    uint16_t destPort = tcph.GetDestinationPort();
-    std::stringstream ss;
-    ss <<s<<":"<<d<<":"<<destPort;
-    std::string flowkey = ss.str(); 
- */ 
+
+  
     DoSend(p, s, d, prot, r);
 
-    double trate = sample_target_rate[flowkey];
+    uint32_t fid = flowids[flowkey];
+    double trate = flow_idealrate[fid];
     
-    // double trate = sample_target_rate;
     if(trate == 0.0) {
-      trate = 10000;
+      /* should not happen.. a known flow must have a rate assigned */
+      std::cout<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate is zero"<<std::endl;
     }
-    //std::cout<<Simulator::Now().GetSeconds()<<"node "<<m_node->GetId()<<" trate "<<trate<<" flowkey "<<flowkey<<std::endl;
-    double pkt_dur = ((p->GetSize() + 46) * 8.0 ) / trate;  //in us since target_rate is in Mbps
+    double pkt_dur = ((p->GetSize() + 38) * 8.0 ) / trate;  //in us since target_rate is in Mbps
     Time tNext (NanoSeconds (pkt_dur*1000.0));
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
@@ -805,8 +799,29 @@ Ipv4L3Protocol::SendWithHeader (Ptr<Packet> packet,
   SendRealOut (route, packet, ipHeader);
 }
 
-
-
+bool
+Ipv4L3Protocol::known_flow(std::string flowkey)
+{
+  
+  uint32_t fid = flowids[flowkey];
+  if (flow_idealrate.find(fid) == flow_idealrate.end()) {
+//    std::cout<<"unknown flow "<<flowkey<<" "<<fid<<" not found "<<m_node->GetId()<<std::endl;
+    return false;
+  }
+//  std::cout<<"known flow "<<flowkey<<" "<<fid<<" found "<<m_node->GetId()<<std::endl;
+  return true;
+}
+   
+bool
+Ipv4L3Protocol::issource(Ipv4Address source)
+{
+  if (GetInterfaceForAddress(source) != -1) {
+    return true;
+  }
+  return false;
+}
+  
+   
 void 
 Ipv4L3Protocol::Send (Ptr<Packet> packet, 
                       Ipv4Address source,
@@ -820,9 +835,20 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
 //  if(m_node->GetId() == 3 || m_node->GetId() == 2) {
 //    rate_based = false;
 //  }
-  if(rate_based && (packet->GetSize() > 98)) {
+ 
+   TcpHeader tcph; 
+   packet->PeekHeader(tcph);
+   uint16_t destPort = tcph.GetDestinationPort();
+
+   std::stringstream ss;
+   ss <<source<<":"<<destination<<":"<<destPort;
+   std::string flowkey = ss.str(); 
+
+  if(rate_based && (packet->GetSize() > 98) && known_flow(flowkey) && issource(source)) {
+    //std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" "<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
   } else {
+    //std::cout<<" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<std::endl;
     DoSend(packet, source, destination, protocol, route);
   }
   return;
