@@ -143,7 +143,7 @@ void common_config(void)
 {
   double total_rtt = link_delay * 6.0;
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
-  uint32_t initcwnd = (bdproduct / max_segment_size)+1;
+  uint32_t initcwnd = ((bdproduct *2.0) / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
 
   std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<std::endl;  

@@ -170,13 +170,12 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     }
   else
     { 
-      if(!xfabric_reacted) {
+      if(!m_xfabric || !m_dctcp) {
         // Congestion avoidance mode, increase by (segSize*segSize)/cwnd. (RFC2581, sec.3.1)
         // To increase cwnd for one segSize per RTT, it should be (ackBytes*segSize)/cwnd
         double adder = static_cast<double> (m_segmentSize * m_segmentSize) / m_cWnd.Get ();
         adder = std::max (1.0, adder);
         m_cWnd += static_cast<uint32_t> (adder);
-        xfabric_reacted = false;
       }
     }
   TcpSocketBase::NewAck (seq);
@@ -251,7 +250,6 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
       m_cWnd = 1 * m_segmentSize;
     }
     m_ssThresh = m_cWnd;
-    xfabric_reacted = true;
   } else {
     // just a debug 
   }
@@ -287,9 +285,9 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
        dctcp_alpha = (1.0 - beta)*dctcp_alpha + beta* new_alpha;
        total_bytes_acked = 0;
        bytes_with_ecn = 0; 
-   //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<std::endl;
+       std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<std::endl;
+       last_outstanding_num = m_highTxMark;
      }
-     last_outstanding_num = m_highTxMark;
    }
   
   
@@ -321,7 +319,8 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
   //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());
         // no reaction 
       }
-    } else if(!m_xfabric) { //m_dctcp and m_xfabric are false - so, this is regular tcp reacting to ECN
+
+    } else if(!m_xfabric && !m_dctcp) { //m_dctcp and m_xfabric are false - so, this is regular tcp reacting to ECN
       
       /*
       if(ack_num < ecn_highest) {

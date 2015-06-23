@@ -246,7 +246,7 @@ void changeAppRates(void)
         for(uint32_t aIndx=0; aIndx< (allNodes.Get(nid))->GetNApplications(); aIndx++) { // check all apps on this node
           local_SendingApp = StaticCast <MyApp> ( (allNodes.Get(nid))->GetApplication(aIndx) ); 
           if(local_SendingApp->getFlowId() == fid) { //if this is the app associated with this fid, change data rate
-            local_SendingApp ->ChangeRate(DataRate (new_rate) ); 
+            //local_SendingApp ->ChangeRate(DataRate (new_rate) ); 
             std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<new_rate<<" source "<<nid<<std::endl;
             ipv4->setFlowIdealRate(fid, new_rate);
           } // end if flowid matches
@@ -468,13 +468,13 @@ void startFlowsStatic(void)
   {
     for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
     {
-    //  uint32_t j = i;
+  //    uint32_t j = i;
       double flow_start_time = 0.0;
       double time_now = 1.0;
       uint32_t flow_counter = 0;
      
-      while(flow_counter < flows_per_host)
-      //while(flow_num < 2)
+     while(flow_counter < flows_per_host)
+//      while(flow_num < 3)
       {
         // flow size 
         double flow_size = 12500000000; 

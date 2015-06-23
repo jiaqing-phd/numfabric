@@ -305,6 +305,7 @@ FifoQueue::DoEnqueue (Ptr<Packet> p)
             NS_LOG_UNCOND ("Queue full (packet would exceed max bytes) -- dropping pkt");
             remove(p);
             Drop (p);
+            return false;
     } /* if queue is going to be full */
 
   else if ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue >= m_ECNThreshBytes)) ||
@@ -346,7 +347,7 @@ FifoQueue::DoDequeue (void)
 
   Ptr<Packet> p = m_packets.front ();
   total_deq += p->GetSize();
-  std::cout<<"Dequeued packet of size "<<p->GetSize()<<" total_deq "<<total_deq<<std::endl;
+  //std::cout<<"Dequeued packet of size "<<p->GetSize()<<" total_deq "<<total_deq<<std::endl;
   remove(p);
   return p;
 }

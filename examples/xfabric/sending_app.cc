@@ -78,6 +78,7 @@ MyApp::StartApplication (void)
 
   }
 
+  
   m_running = true;
   m_packetsSent = 0;
   m_totBytes = 0;

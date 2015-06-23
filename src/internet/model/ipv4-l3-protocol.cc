@@ -232,8 +232,9 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
       /* should not happen.. a known flow must have a rate assigned */
       std::cout<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate is zero"<<std::endl;
     }
-    double pkt_dur = ((p->GetSize() + 38) * 8.0 ) / trate;  //in us since target_rate is in Mbps
+    double pkt_dur = ((p->GetSize()) * 8.0 * 1000000.0) / trate;  //in us since target_rate is in bps
     Time tNext (NanoSeconds (pkt_dur*1000.0));
+    //std::cout<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
   
