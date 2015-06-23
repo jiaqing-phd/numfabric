@@ -1,7 +1,7 @@
 dctcp=true
 xfabric=false
 kay=50000
-queuetype=FifoQueue
+queuetype=fifo_hybridQ
 vpackets=1
 prefix=dctcp_4flows_fixedrate_withunknown
 ecn_thresh=30000

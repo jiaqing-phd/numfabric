@@ -62,6 +62,8 @@ bool fifo_2_EnQ(Ptr<Packet> p);
 bool known_flow(uint32_t flowid);
 Ptr<Packet> fifo_2_Dequeue(void);
 Ptr<Packet> fifo_1_Dequeue(void);
+  uint32_t m_ECNThreshBytes;  
+  uint32_t m_ECNThreshPackets;
 
 private:
   virtual bool DoEnqueue (Ptr<Packet> p);
@@ -86,6 +88,7 @@ private:
   std::map<uint32_t, double> flow_weights;
   uint32_t m_maxPackets;              //!< max packets in the queue
   uint32_t m_maxBytes;                //!< max bytes in the queue
+  
   std::map<uint32_t, uint32_t> m_bytesInQueue;            //!< actual bytes in the queue
   DataRate m_bps;
   QueueMode m_mode;                   //!< queue mode (packets or bytes limited)

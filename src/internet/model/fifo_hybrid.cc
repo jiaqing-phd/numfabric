@@ -46,6 +46,11 @@ TypeId fifo_hybridQ::GetTypeId (void)
                    DataRateValue (DataRate ("32768b/s")),
                    MakeDataRateAccessor (&fifo_hybridQ::m_bps),
                    MakeDataRateChecker ())
+    .AddAttribute ("ECNThreshBytes", 
+                   "The maximum number of packets accepted by this FifoQueue before it starts marking",
+                   UintegerValue (100),
+                   MakeUintegerAccessor (&fifo_hybridQ::m_ECNThreshBytes),
+                   MakeUintegerChecker<uint32_t> ())
 
 ;
   return tid;
@@ -307,9 +312,42 @@ fifo_hybridQ::DoEnqueue(Ptr<Packet> p)
 bool
 fifo_hybridQ::fifo_1_EnQ(Ptr<Packet> p)
 {
+
+  if ((m_mode == QUEUE_MODE_BYTES && (m_fifo_1_bytesInQueue >= m_maxBytes)) ||
+        (m_mode == QUEUE_MODE_PACKETS && m_fifo_1_pkts.size() >= m_maxPackets))
+    {
+            NS_LOG_UNCOND ("Queue full (packet would exceed max bytes) -- dropping pkt");
+            Drop (p);
+            return false;
+    } /* if queue is going to be full */
+
+  else if ((m_mode == QUEUE_MODE_BYTES && (m_fifo_1_bytesInQueue >= m_ECNThreshBytes)) ||
+        (m_mode == QUEUE_MODE_PACKETS && m_fifo_1_pkts.size() >= m_ECNThreshPackets))
+    {
+        // Now add ECN bit to the IP header of the this packet 
+          
+        Ipv4Header ipheader;
+        PrioHeader pheader;
+        PppHeader ppp;
+        p->RemoveHeader(ppp);
+        p->RemoveHeader(pheader);
+        p->RemoveHeader(ipheader);
+
+        ipheader.SetEcn(Ipv4Header::ECN_CE);
+        
+        p->AddHeader(ipheader);
+        p->AddHeader(pheader);
+        p->AddHeader(ppp);
+
+//        std::cout<<"marking ECN "<<linkid_string<<"  qsize "<<m_bytesInQueue<<" ecnthresh "<<m_ECNThreshBytes<<std::endl;
+
+    } 
   m_fifo_1_pkts.push(p);
   m_fifo_1_size += 1;
   m_fifo_1_bytesInQueue += p->GetSize(); // TBD : headers?
+
+   
+
   return true;
 }
 
@@ -317,9 +355,41 @@ fifo_hybridQ::fifo_1_EnQ(Ptr<Packet> p)
 bool
 fifo_hybridQ::fifo_2_EnQ(Ptr<Packet> p)
 {
+
+  if ((m_mode == QUEUE_MODE_BYTES && (m_fifo_2_bytesInQueue >= m_maxBytes)) ||
+        (m_mode == QUEUE_MODE_PACKETS && m_fifo_2_pkts.size() >= m_maxPackets))
+    {
+            NS_LOG_UNCOND ("Queue full (packet would exceed max bytes) -- dropping pkt");
+            Drop (p);
+            return false;
+    } /* if queue is going to be full */
+
+  else if ((m_mode == QUEUE_MODE_BYTES && (m_fifo_2_bytesInQueue >= m_ECNThreshBytes)) ||
+        (m_mode == QUEUE_MODE_PACKETS && m_fifo_2_pkts.size() >= m_ECNThreshPackets))
+    {
+        // Now add ECN bit to the IP header of the this packet 
+          
+        Ipv4Header ipheader;
+        PrioHeader pheader;
+        PppHeader ppp;
+        p->RemoveHeader(ppp);
+        p->RemoveHeader(pheader);
+        p->RemoveHeader(ipheader);
+
+        ipheader.SetEcn(Ipv4Header::ECN_CE);
+        
+        p->AddHeader(ipheader);
+        p->AddHeader(pheader);
+        p->AddHeader(ppp);
+
+//        std::cout<<"marking ECN "<<linkid_string<<"  qsize "<<m_bytesInQueue<<" ecnthresh "<<m_ECNThreshBytes<<std::endl;
+
+    } 
   m_fifo_2_pkts.push(p);
   m_fifo_2_size += 1;
   m_fifo_2_bytesInQueue += p->GetSize(); // TBD : headers?
+
+   
   return true;
 }
 
