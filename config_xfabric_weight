@@ -1,0 +1,14 @@
+dctcp=false
+xfabric=true
+kay=50000
+queuetype=hybridQ
+vpackets=1
+prefix=weight_based_xfabric
+ecn_thresh=30000
+hostflows=1
+load=0.01
+controller_estimated_unknown_load=0.05
+sim_time=2.0
+flows_tcp=1
+weight_change=1
+rate_based=0
