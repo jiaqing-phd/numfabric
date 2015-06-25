@@ -26,12 +26,14 @@
 #include "ns3/ptr.h"
 #include "ns3/traced-callback.h"
 #include "ns3/address.h"
+#include "ns3/tracker.h"
 
 namespace ns3 {
 
 class Address;
 class Socket;
 class Packet;
+
 
 /**
  * \ingroup applications 
@@ -82,6 +84,10 @@ public:
    * \return the total bytes received in this sink app
    */
   uint32_t GetTotalRx () const;
+
+  Ptr<Tracker> flowTracker;
+
+  void setTracker(Ptr<Tracker> t);
 
   /**
    * \return pointer to listening socket

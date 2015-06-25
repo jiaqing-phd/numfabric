@@ -1,6 +1,40 @@
 #include "declarations.h"
 using namespace ns3;
 
+void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
+{
+  // Create a packet sink on the star "hub" to receive these packets
+  Address anyAddress = InetSocketAddress (Ipv4Address::GetAny (), port);
+
+  PacketSinkHelper sinkHelper ("ns3::UdpSocketFactory", anyAddress);
+  if(tcp) {
+    sinkHelper.SetAttribute("Protocol", StringValue("ns3::TcpSocketFactory"));
+    sinkHelper.SetAttribute("Local", AddressValue(anyAddress));
+//    sinkHelper ("ns3::TcpSocketFactory", anyAddress);
+  }
+  ApplicationContainer sinkAppContainer = sinkHelper.Install (allNodes.Get(sinkN));
+  sinkAppContainer.Start(Seconds(0.0));
+  sinkApps.Add(sinkAppContainer);
+
+
+  NS_LOG_UNCOND("sink apps installed on node "<<(allNodes.Get(sinkN))->GetId());
+  Ptr<PacketSink> pSink = StaticCast <PacketSink> (sinkAppContainer.Get(0));
+  pSink->SetAttribute("numBytes", UintegerValue(numBytes));
+  pSink->SetAttribute("flowid", UintegerValue(flow_id));
+  pSink->SetAttribute("nodeid", UintegerValue(allNodes.Get(sinkN)->GetId()));
+  pSink->SetAttribute("peernodeid", UintegerValue(allNodes.Get(sourceN)->GetId()));
+  pSink->setTracker(flowTracker);
+
+
+  /* Debug... Check what we set */
+  UintegerValue nb, fid, n1, n2;
+  pSink->GetAttribute("numBytes", nb);
+  pSink->GetAttribute("flowid", fid);
+  pSink->GetAttribute("nodeid", n1);
+  pSink->GetAttribute("peernodeid", n2);
+  NS_LOG_UNCOND("sink attributed set : numbytes "<<nb.Get()<<" flowid "<<fid.Get()<<" nodeid "<<n1.Get()<<" source nodeid "<<n2.Get());
+  
+}
 void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
 {
   // Create a packet sink on the star "hub" to receive these packets
@@ -23,6 +57,7 @@ void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t f
   pSink->SetAttribute("flowid", UintegerValue(flow_id));
   pSink->SetAttribute("nodeid", UintegerValue(sinkNodes.Get(sinkN)->GetId()));
   pSink->SetAttribute("peernodeid", UintegerValue(sourceNodes.Get(sourceN)->GetId()));
+  pSink->setTracker(flowTracker);
 
 
   /* Debug... Check what we set */
@@ -178,6 +213,9 @@ void common_config(void)
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
+
+  flowTracker = new Tracker();
+  flowTracker->register_callback(scheduler_wrapper);
 
   return;
 

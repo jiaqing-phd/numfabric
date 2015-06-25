@@ -3,7 +3,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("pfabric");
 
-uint32_t global_flow_id = 0;
+uint32_t global_flow_id = 1;
 std::map<uint32_t, uint32_t> flow_known;
 
 void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
@@ -157,6 +157,49 @@ void setQFlows()
     }
 }
 
+void startFlowEvent(uint32_t sourceN, uint32_t sinkN, double flow_start, double flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known)
+{
+
+  std::cout<<"DEBUG params "<<sourceN<<" "<<sinkN<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<tcp<<" "<<known<<std::endl;
+
+  ports[sinkN]++;
+  // Socket at the source
+  Ptr<Ipv4L3Protocol> sink_node_ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(sinkN))->GetObject<Ipv4> ());
+  Ipv4Address remoteIp = sink_node_ipv4->GetAddress (1,0).GetLocal();
+  Address remoteAddress = (InetSocketAddress (remoteIp, ports[sinkN]));
+  sinkInstallNodeEvent(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, tcp);
+
+  // Get source address
+  Ptr<Ipv4L3Protocol> source_node_ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(sourceN))->GetObject<Ipv4> ()); 
+  Ipv4Address sourceIp = source_node_ipv4->GetAddress (1,0).GetLocal();
+  Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
+  Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
+  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, allNodes.Get(sourceN), flow_id, allNodes.Get(sinkN), tcp, known);
+
+  (allNodes.Get(sourceN))->AddApplication(SendingApp);
+      
+  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(sourceN))->GetObject<Ipv4> ()); // Get Ipv4 instance of the node
+  Ipv4Address addr = ipv4->GetAddress (1, 0).GetLocal();
+
+  std::cout<<"FLOW_INFO source_node "<<(allNodes.Get(sourceN))->GetId()<<" sink_node "<<(allNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<ports[sinkN]<<" flow_size "<<flow_size<<" flow_weight" <<flow_weight<<std::endl;
+
+  flow_known[flow_id] = known;  // whether this flow is part of known or unknown flow set
+  (source_flow[(allNodes.Get(sourceN))->GetId()]).push_back(flow_id);
+  (dest_flow[(allNodes.Get(sinkN))->GetId()]).push_back(flow_id);
+  std::stringstream ss;
+  ss<<addr<<":"<<remoteIp<<":"<<ports[sinkN];
+  std::string s = ss.str(); 
+  flowids[s] = flow_id;
+  
+  ipv4->setFlow(s, flow_id, flow_size, flow_weight);
+  sink_node_ipv4->setFlow(s, flow_id, flow_size, flow_weight);
+
+  sink_node_ipv4->setSimTime(sim_time);
+  
+  //flow_id++;
+}
+
+/*
 void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known)
 {
   ports[sinkN]++;
@@ -172,7 +215,7 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
   Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
   SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), tcp, known);
-  //apps.Add(SendingApp);
+
   (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
       
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); // Get Ipv4 instance of the node
@@ -195,6 +238,8 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   
   //flow_id++;
 }
+*/
+/*
 void changeAppRates(void)
 {
   uint32_t N = allNodes.GetN(); 
@@ -213,7 +258,7 @@ void changeAppRates(void)
         continue;
       }
 
-      /* check if this flowid is from this source */
+      // check if this flowid is from this source 
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
         uint32_t rand_num = uv->GetInteger(1.0, 10.0);
         double new_weight = rand_num*1.0;
@@ -258,6 +303,7 @@ void changeAppRates(void)
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (0.2), &changeAppRates);
 }
+*/
 
 #if 0
 // SC: follows form of change weights
@@ -322,13 +368,13 @@ void changeAppRates(void)
 }
 #endif
 
+#if 0
 // SC 
 void setUpRateChange(void)
 {
   
   Simulator::Schedule (Seconds (1.0), &changeAppRates);
 }
-
 
 void changeWeights(void)
 {
@@ -412,18 +458,22 @@ void changeWeights(void)
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (0.2), &changeWeights);
 }
+#endif
 
-
-void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
+void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, uint32_t known, double random_load)
 {
-  double lambda = (link_rate * load ) / (meanflowsize*8.0);
-  std::cout<<"lambda first "<<lambda<<std::endl;
+  double lambda = (link_rate * random_load ) / (meanflowsize*8.0);
+  std::cout<<"lambda first "<<lambda<<" random_load "<<random_load<<std::endl;
   lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
   double avg_interarrival = 1/lambda;
 
   Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
   exp->SetAttribute("Mean", DoubleValue(avg_interarrival));
-  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
+  if(known == 1) {
+    std::cout<<" KNOWN lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
+  } else {
+    std::cout<<" UNKNOWN lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
+  }
 
   //uint32_t flow_id_zero = 1000;
   uint32_t flow_num = global_flow_id;
@@ -443,11 +493,32 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         flow_start_time = time_now + inter_arrival;
         NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
         time_now = flow_start_time; // is this right ?
-        std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
-        uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
 
-        uint32_t known = 0;
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
+        if(known == 1) {
+          std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        } else {
+          std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        }
+
+        uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
+        
+        uint32_t snid = (sourceNodes.Get(i))->GetId();
+        uint32_t destnid = (sinkNodes.Get(j))->GetId();
+
+        uint32_t uftcp = 1;
+
+        if(flows_tcp == 0 && known == 1) {
+          // if flows_tcp == 0, known flows should run UDP
+          uftcp = 0;
+        }
+
+
+
+
+        FlowData flowData (snid, destnid, flow_start_time, flow_size,flow_num, flow_weight , uftcp, known); 
+        flow_known[flow_num] = known;
+        Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+        //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
         flow_num++;
       }
     }
@@ -457,7 +528,127 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 
 }
 
+void scheduler_wrapper(uint32_t fid)
+{
+  // this is a wrapper called from tracker object
+  // a flow_stop event has been registered and flows_set updated at tracker
+  // just call run_scheduler with dummy arguments
+  //
+  if(flow_known[fid] == 1) {
+    std::cout<<"known flow "<<fid<<" departed"<<std::endl;
+    FlowData fdata(fid);
+    run_scheduler(fdata, 2);
+  } else {
+    std::cout<<"unknown flow "<<fid<<" departed"<<std::endl;
+  }
 
+}
+
+void run_scheduler(FlowData fdata, uint32_t eventType)
+{
+
+  // scheduler called to add a new flow and reschedule all flows
+  std::cout<<"scheduler called at "<<Simulator::Now().GetSeconds()<<" flow "<<fdata.flow_id<<" eventtype "<<eventType<<std::endl;
+
+  flowTracker->dataDump(); // just for debugging
+
+  if(eventType == 1) { //TODO: declare enum FLOW_START
+    // add it to the list of flows 
+    if(fdata.flow_known == 0) {
+      std::cout<<"Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
+      return;
+    } else {
+      std::cout<<"known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
+    }
+    flowTracker->registerEvent(1, fdata);
+  }
+
+  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+  double total_weight = 0.0;
+  std::map<uint32_t, double> flow_weight_local;
+  double min_weight = 100.0;
+
+  std::list<FlowData>::iterator itr;
+  itr = (flowTracker->flows_set).begin();
+
+  while(itr != flowTracker->flows_set.end()) 
+  {
+    uint32_t rand_num = uv->GetInteger(1.0, 10.0);
+    double new_weight = rand_num*1.0;
+    flow_weight_local[itr->flow_id] = new_weight;
+    if(new_weight < min_weight) {
+        min_weight = new_weight;
+    }
+    itr++;
+  } // end flows_set
+
+  /* start a new loop to normalize weights, if configured to do so */
+  itr = flowTracker->flows_set.begin();
+
+  while(itr != flowTracker->flows_set.end()) 
+  {
+    uint32_t nid = itr->source_node;
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+    double new_weight = flow_weight_local[itr->flow_id];
+    if(weight_normalized) {
+      new_weight = new_weight/min_weight;
+    }
+    flow_weight_local[itr->flow_id]  = new_weight;
+ 
+    std::cout<<" setting weight of flow "<<itr->flow_id<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
+    total_weight += new_weight;
+    ipv4->setFlowWeight(itr->flow_id, new_weight);
+    flowweights[itr->flow_id] = new_weight;
+
+    if(itr->flow_running) {
+      //nothing to do
+      itr++;
+      continue;
+    } else {
+      std::cout<<"Before startFlowEvent "<<itr->flow_size<<std::endl;
+      startFlowEvent(itr->source_node, itr->dest_node, Simulator::Now().GetSeconds(), itr->flow_size, itr->flow_id, flow_weight_local[itr->flow_id], itr->flow_tcp, itr->flow_known);
+      itr->flow_running = true;
+    }
+    itr++;
+  } //end flows_set
+
+   std::cout<<"BASE RATE "<<Simulator::Now().GetSeconds()<<" "<<(1.0/total_weight)*link_rate<<std::endl; 
+   // get the right allocation of rates - another loop
+   //
+  itr = flowTracker->flows_set.begin();
+
+  while(itr != flowTracker->flows_set.end()) 
+  {
+    uint32_t nid = itr->source_node;
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+
+    uint32_t fid = itr->flow_id;
+    double weight = flow_weight_local[fid];
+
+    double rate = (weight/total_weight) * (1 - controller_estimated_unknown_load) * link_rate;
+    
+    if(weight_change == 0) { // UDP with rate control
+       Ptr<MyApp> local_SendingApp;
+       for(uint32_t aIndx=0; aIndx< (allNodes.Get(itr->source_node))->GetNApplications(); aIndx++) { // check all apps on this node
+          local_SendingApp = StaticCast <MyApp> ( (allNodes.Get(nid))->GetApplication(aIndx) ); 
+           if(local_SendingApp->getFlowId() == fid) { //if this is the app associated with this fid, change data rate
+               local_SendingApp ->ChangeRate(DataRate (rate) ); 
+            }
+        } // end for
+     }
+     std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rate<<std::endl;
+     std::cout<<" setting realrate "<<rate<<" for flow "<<fid<<" in node "<<itr->source_node<<std::endl;
+        
+     ipv4->setFlowIdealRate(fid, rate);
+    itr++;
+  }
+  setQFlows();
+  std::cout<<" SCHEDULER DONE "<<Simulator::Now().GetSeconds()<<std::endl;
+  // check queue size every 1/1000 of a second
+  //Simulator::Schedule (Seconds (0.2), &changeWeights);
+}
+   
+/*
 void startFlowsStatic(void)
 {
 
@@ -498,20 +689,52 @@ void startFlowsStatic(void)
 
 }
 
+
 void setUpWeightChange(void)
 {
   
   Simulator::Schedule (Seconds (1.0), &changeWeights);
 }
-
+*/
 void setUpTraffic()
 {
-  NS_LOG_UNCOND("EmpiricalRandSetup : file "<<empirical_dist_file);
-  Ptr<EmpiricalRandomVariable> x = SetUpEmpirical(empirical_dist_file);
-  meanflowsize = x->avg();
-  NS_LOG_UNCOND("Avg of empirical values.. "<<meanflowsize);
-  startFlowsStatic();
-  startRandomFlows(x);
+  //NS_LOG_UNCOND("EmpiricalRandSetup : file "<<empirical_dist_file);
+  //Ptr<EmpiricalRandomVariable> x = SetUpEmpirical(empirical_dist_file);
+  //meanflowsize = x->avg();
+  //NS_LOG_UNCOND("Avg of empirical values.. "<<meanflowsize);
+  //startFlowsStatic();
+  //startRandomFlows(x);
+  // SC: load is for UNKNOWN, 1 - load goes to KNOWN flows
+
+  /////////////////////////////////////////////////
+  // SC: heavy DCTCP traffic for known flows
+  NS_LOG_UNCOND("EmpiricalRandSetup_DCTCP_heavy : file "<< empirical_dist_file_DCTCP_heavy);
+  Ptr<EmpiricalRandomVariable> x_DCTCP_heavy = SetUpEmpirical(empirical_dist_file_DCTCP_heavy);
+  meanflowsize = x_DCTCP_heavy->avg();
+  NS_LOG_UNCOND("Avg of empirical DCTCP heavy values.. "<< meanflowsize);
+
+  // known "random" flows in foreground: sampled from heavy parts of DCTCP
+  uint32_t known = 1.0;
+  double random_load = (1.0 - load);
+  std::cout<<"HEAVY known "<< known << " random load " << random_load << " load " << load << std::endl;
+   
+  startRandomFlows(x_DCTCP_heavy, known, random_load);
+
+  /////////////////////////////////////////////////
+  // SC: light DCTCP traffic for unknown flows
+  // unknown random flows in background, sampled from light parts of DCTCP
+  
+  NS_LOG_UNCOND("EmpiricalRandSetup_DCTCP_light : file "<< empirical_dist_file_DCTCP_light);
+  Ptr<EmpiricalRandomVariable> x_DCTCP_light = SetUpEmpirical(empirical_dist_file_DCTCP_light);
+  meanflowsize = x_DCTCP_light->avg();
+  NS_LOG_UNCOND("Avg of empirical DCTCP light values.. "<< meanflowsize);
+
+  known = 0.0;
+  random_load = load; 
+
+  std::cout<<"LIGHT known "<< known << " random load " << random_load << " load " << load << std::endl;
+  startRandomFlows(x_DCTCP_light, known, random_load);
+
 } 
    
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname)
@@ -560,6 +783,7 @@ main(int argc, char *argv[])
   setUpTraffic();
   setUpMonitoring();
 
+/*
   if(weight_change) {
     setUpWeightChange();
   } else {
@@ -567,6 +791,7 @@ main(int argc, char *argv[])
     // SC added
     setUpRateChange();
   }
+*/
   
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();

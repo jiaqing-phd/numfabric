@@ -14,7 +14,11 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/prio-queue.h"
 
+#include "ns3/tracker.h"
+
 using namespace ns3;
+
+Ptr<Tracker> flowTracker;
 
 std::map<uint32_t, double> flow_sizes;
 int checkTimes = 0;
@@ -63,7 +67,9 @@ uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
 
 bool pkt_tag = true;
-std::string empirical_dist_file="DCTCP_CDF_REDUCED";
+
+std::string empirical_dist_file_DCTCP_heavy="DCTCP_CDF_HEAVY";
+std::string empirical_dist_file_DCTCP_light="DCTCP_CDF_LIGHT";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 
 std::string link_twice_string = "20Gbps";

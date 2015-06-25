@@ -16,6 +16,8 @@
 
 using namespace ns3;
 
+extern Ptr<Tracker> flowTracker;
+
 extern std::vector<Ptr <Queue> > AllQueues;
 extern std::map<uint32_t, double> flow_sizes;
 extern int checkTimes;
@@ -79,8 +81,10 @@ extern std::string queue_type;
 extern double epoch_update_time ;
 extern bool pkt_tag, onlydctcp, wfq, dctcp_mark;
 extern bool strawmancc ;
-extern std::string empirical_dist_file;
+extern std::string empirical_dist_file_DCTCP_heavy;
+extern std::string empirical_dist_file_DCTCP_light;
 extern Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
+extern void scheduler_wrapper(uint32_t);
 
 extern std::string link_twice_string ;
 
@@ -107,6 +111,7 @@ extern uint16_t *ports;
 extern std::map<uint32_t, double> flowweights;
 
 extern void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp);
+extern void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp);
 
 
 
@@ -119,5 +124,6 @@ extern void printlink(Ptr<Node> n1, Ptr<Node> n2);
 extern Ipv4InterfaceContainer assignAddress(NetDeviceContainer dev, uint32_t subnet_index);
 extern void CheckQueueSize (Ptr<Queue> queue);
 void setuptracing(uint32_t sindex, Ptr<Socket> skt);
+void run_scheduler(FlowData fdata, uint32_t eventtype);
 
 #endif 

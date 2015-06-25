@@ -11,6 +11,7 @@
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/prio-queue.h"
 
+
 using namespace ns3;
 extern void setuptracing(uint32_t sindex, Ptr<Socket> skt);
 
@@ -49,4 +50,6 @@ private:
   uint32_t        m_fid;
   uint32_t        m_udp;
   uint32_t        flow_known;
+  
+  Ptr<Tracker>         flowTracker;
 };

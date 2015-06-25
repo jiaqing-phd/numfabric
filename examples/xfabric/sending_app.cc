@@ -11,6 +11,7 @@ MyApp::MyApp ()
     m_maxBytes (0)
 {
   m_totBytes = 0;
+  
 }
 
 MyApp::~MyApp ()
@@ -109,7 +110,9 @@ MyApp::StartApplication (void)
   m_socket->Connect (m_peer);
     
   SendPacket ();
-  std::cout<<"flow_start "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<std::endl;
+  std::cout<<"flow_start "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" "<<flow_known<<std::endl;
+  //FlowData dt(m_fid, m_maxBytes, flow_known, srcNode->GetId(), destNode->GetId(), fweight);
+  //flowTracker->registerEvent(1);
 }
 
 void
