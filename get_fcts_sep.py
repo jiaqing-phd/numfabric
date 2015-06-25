@@ -43,7 +43,7 @@ for line in logs:
 for key in fstarts:
   if(key in fstops):
     ftime = (fstops[key] - fstarts[key])/1000000.0
-    if(fknowns[fid] == 1):
+    if(fknowns[key] == 1):
       print("KnownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
     else:
       print("UnknownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))

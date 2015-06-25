@@ -95,7 +95,7 @@ MyApp::StartApplication (void)
       nReno->setxfabric(false);
     }
   }
-  setuptracing(m_fid, ns3TcpSocket);
+  //setuptracing(m_fid, ns3TcpSocket);
   m_socket = ns3TcpSocket;
   if (InetSocketAddress::IsMatchingType (m_peer))
   { 
