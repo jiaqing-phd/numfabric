@@ -285,7 +285,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
        dctcp_alpha = (1.0 - beta)*dctcp_alpha + beta* new_alpha;
        total_bytes_acked = 0;
        bytes_with_ecn = 0; 
-       std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<std::endl;
+//       std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<std::endl;
        last_outstanding_num = m_highTxMark;
      }
    }

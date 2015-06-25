@@ -276,11 +276,12 @@ hybridQ::getFlowID(Ptr<Packet> p)
 }
 
 void
-hybridQ::setFlowID(std::string flowkey, uint32_t fid, double fweight)
+hybridQ::setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t known)
 {
   std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl;
   flow_ids[flowkey] = fid;
   flow_weights[fid] = fweight;
+  flow_known[fid] = known;
 
   /*if(m_packets[fid].size() > 0) {
     Ptr<Packet> p = (m_packets[fid]).front();
@@ -378,25 +379,10 @@ hybridQ::resetFlows(uint32_t flowid, Ptr<Packet> p)
 bool
 hybridQ::known_flow(uint32_t flowid)
 {
-  /* This is hacky and hardcoded and wrong. Correct this */
-  
-  std::vector<uint32_t> v(8);
-  v.push_back(1);
-  v.push_back(2);
-  v.push_back(3);
-  v.push_back(4);
-/*  v.push_back(5);
-  v.push_back(6);
-  v.push_back(7);
-  v.push_back(8); */
-
-  for(uint32_t idx=0; idx < v.size(); idx++) {
-    if(v[idx] == flowid) {
-      return true;
-    }
-  } 
-
-  return false;
+ if(flow_known[flowid]) {
+    return true;
+ } 
+ return false; 
 }
  
 bool

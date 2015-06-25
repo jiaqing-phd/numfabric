@@ -139,17 +139,18 @@ void setQFlows()
     for(uint32_t i=0; i<AllQueues.size(); i++) {
       Ptr<Queue> q = AllQueues[i];
       for(std::map<std::string, uint32_t>::iterator it=flowids.begin(); it != flowids.end(); ++it) {
+      //  std::cout<<"setQFlows flow "<<it->second<<" is "<<flow_known[it->second]<<std::endl;
         if(queue_type == "W2FQ") {
-          StaticCast<W2FQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+          StaticCast<W2FQ> (q)->setFlowID(it->first, it->second, flowweights[it->second], flow_known[it->second]);
         }
         if(queue_type == "WFQ") {
-          StaticCast<PrioQueue> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+          StaticCast<PrioQueue> (q)->setFlowID(it->first, it->second, flowweights[it->second], flow_known[it->second]);
         }
         if(queue_type == "hybridQ") {
-          StaticCast<hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+          StaticCast<hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second], flow_known[it->second]);
         }
         if(queue_type == "fifo_hybridQ") {
-          StaticCast<fifo_hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second]);
+          StaticCast<fifo_hybridQ> (q)->setFlowID(it->first, it->second, flowweights[it->second], flow_known[it->second]);
         }
         
           
@@ -160,7 +161,7 @@ void setQFlows()
 void startFlowEvent(uint32_t sourceN, uint32_t sinkN, double flow_start, double flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known)
 {
 
-  std::cout<<"DEBUG params "<<sourceN<<" "<<sinkN<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<tcp<<" "<<known<<std::endl;
+  std::cout<<"DEBUG params StartFlowEvent "<<sourceN<<" "<<sinkN<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<tcp<<" "<<known<<std::endl;
 
   ports[sinkN]++;
   // Socket at the source
@@ -507,10 +508,10 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, uint32_t know
 
         uint32_t uftcp = 1;
 
-        if(flows_tcp == 0 && known == 1) {
+//        if(flows_tcp == 0 && known == 1) {
           // if flows_tcp == 0, known flows should run UDP
-          uftcp = 0;
-        }
+//          uftcp = 0;
+//        }
 
 
 
@@ -555,6 +556,8 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
   if(eventType == 1) { //TODO: declare enum FLOW_START
     // add it to the list of flows 
     if(fdata.flow_known == 0) {
+      startFlowEvent(fdata.source_node, fdata.dest_node, Simulator::Now().GetSeconds(), fdata.flow_size, fdata.flow_id, 1.0, fdata.flow_tcp, fdata.flow_known);
+      setQFlows();
       std::cout<<"Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
       return;
     } else {
@@ -605,7 +608,6 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
       itr++;
       continue;
     } else {
-      std::cout<<"Before startFlowEvent "<<itr->flow_size<<std::endl;
       startFlowEvent(itr->source_node, itr->dest_node, Simulator::Now().GetSeconds(), itr->flow_size, itr->flow_id, flow_weight_local[itr->flow_id], itr->flow_tcp, itr->flow_known);
       itr->flow_running = true;
     }
@@ -714,7 +716,7 @@ void setUpTraffic()
   NS_LOG_UNCOND("Avg of empirical DCTCP heavy values.. "<< meanflowsize);
 
   // known "random" flows in foreground: sampled from heavy parts of DCTCP
-  uint32_t known = 1.0;
+  uint32_t known = 1;
   double random_load = (1.0 - load);
   std::cout<<"HEAVY known "<< known << " random load " << random_load << " load " << load << std::endl;
    
@@ -729,7 +731,7 @@ void setUpTraffic()
   meanflowsize = x_DCTCP_light->avg();
   NS_LOG_UNCOND("Avg of empirical DCTCP light values.. "<< meanflowsize);
 
-  known = 0.0;
+  known = 0;
   random_load = load; 
 
   std::cout<<"LIGHT known "<< known << " random load " << random_load << " load " << load << std::endl;

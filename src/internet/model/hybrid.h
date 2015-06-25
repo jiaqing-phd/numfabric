@@ -54,7 +54,7 @@ public:
   hybridQ::QueueMode GetMode (void);
 
   uint32_t get_virtualtime(void);
-  void setFlowID(std::string flowkey, uint32_t fid, double fweight);
+  void setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t);
   std::map<uint32_t, uint64_t> pkt_arrival;
   uint32_t GetCurCount(uint32_t fid);
   uint32_t GetCurSize(uint32_t fid);

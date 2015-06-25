@@ -256,11 +256,12 @@ W2FQ::getFlowID(Ptr<Packet> p)
 }
 
 void
-W2FQ::setFlowID(std::string flowkey, uint32_t fid, double fweight)
+W2FQ::setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t known)
 {
   std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl;
   flow_ids[flowkey] = fid;
   flow_weights[fid] = fweight;
+  flow_known[fid] = known;
 
   /*if(m_packets[fid].size() > 0) {
     Ptr<Packet> p = (m_packets[fid]).front();

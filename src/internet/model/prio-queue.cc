@@ -115,11 +115,12 @@ PrioQueue::getFlowID(Ptr<Packet> p)
 }
 
 void
-PrioQueue::setFlowID(std::string flowkey, uint32_t fid, double fweight)
+PrioQueue::setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t known)
 {
  // std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl;
   flow_ids[flowkey] = fid;
   flow_weights[fid] = fweight;
+  flow_known[fid] = known;
 
 }
 

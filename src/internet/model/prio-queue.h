@@ -74,7 +74,7 @@ public:
   double incoming_bytes;
    
   uint32_t getFlowID(Ptr<Packet> p);
-  void setFlowID(std::string flowkey, uint32_t fid, double fweight);
+  void setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t a);
   std::map<std::string, uint32_t>flow_ids;
   std::map<uint32_t, double>flow_weights;
   bool init_reset;

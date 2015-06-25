@@ -245,61 +245,31 @@ fifo_hybridQ::getFlowID(Ptr<Packet> p)
 }
 
 void
-fifo_hybridQ::setFlowID(std::string flowkey, uint32_t fid, double fweight)
+fifo_hybridQ::setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t known)
 {
-  std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl;
+//  std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<" known "<<known<<std::endl;
   flow_ids[flowkey] = fid;
   flow_weights[fid] = fweight;
+  flow_known[fid] = known;
 
 }
 
 bool
 fifo_hybridQ::known_flow(uint32_t flowid)
 {
-  /* This is hacky and hardcoded and wrong. Correct this */
- 
-  /* 
-  std::vector<uint32_t> v(8);
-  v.push_back(1);
-  v.push_back(2);
-  v.push_back(3);
-  v.push_back(4);
-  v.push_back(5);
-  v.push_back(6);
-  v.push_back(7);
-  v.push_back(8);
-  */
-
-   
-  std::vector<uint32_t> v(4);
-  v.push_back(1);
-  v.push_back(2);
-  v.push_back(3);
-  v.push_back(4);
-  
-
-  /* 
-  std::vector<uint32_t> v(2);
-  v.push_back(1);
-  v.push_back(2);
-  */  
-
-  for(uint32_t idx=0; idx < v.size(); idx++) {
-    if(v[idx] == flowid) {
-
-      //std::cout<<"SC known flow "<< flowid <<std::endl;
-
-      return true;
-    }
-  } 
-
-  return false;
+ if(flow_known[flowid] == 1) {
+   // std::cout<<" known_flow "<<flowid<<std::endl;
+    return true;
+ } 
+ //std::cout<<" unknown_flow "<<flowid<<std::endl; 
+ return false; 
 }
  
 bool
 fifo_hybridQ::DoEnqueue(Ptr<Packet> p)
 {
  uint32_t flowid = getFlowID(p);
+ //std::cout<<" flowkey "<<GetFlowKey(p)<<" flowid "<<flowid<<std::endl;
  if(known_flow(flowid)) {
   //std::cout<<"SC Enqueued to fifo_2, flow id "<< flowid << std::endl;
   return fifo_2_EnQ(p);  

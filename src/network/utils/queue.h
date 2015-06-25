@@ -26,6 +26,7 @@
 
 #include <string>
 #include <list>
+#include <map>
 #include "ns3/packet.h"
 #include "ns3/object.h"
 #include "ns3/traced-callback.h"
@@ -50,6 +51,8 @@ public:
    * \return the object TypeId
    */
   static TypeId GetTypeId (void);
+
+   std::map<uint32_t, uint32_t> flow_known;
 
   Queue ();
   virtual ~Queue ();

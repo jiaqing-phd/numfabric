@@ -48,7 +48,7 @@ public:
 
   fifo_hybridQ::QueueMode GetMode (void);
 
-  void setFlowID(std::string flowkey, uint32_t fid, double fweight);
+  void setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t a);
   uint32_t GetCurCount(uint32_t fid);
   // uint32_t GetCurSize(uint32_t fid);
   uint32_t GetFifo_1_Size(void);
