@@ -508,10 +508,10 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, uint32_t know
 
         uint32_t uftcp = 1;
 
-//        if(flows_tcp == 0 && known == 1) {
+        if(flows_tcp == 0 && known == 1) {
           // if flows_tcp == 0, known flows should run UDP
-//          uftcp = 0;
-//        }
+          uftcp = 0;
+        }
 
 
 
