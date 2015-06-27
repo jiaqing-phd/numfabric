@@ -82,6 +82,8 @@ extern double epoch_update_time ;
 extern bool pkt_tag, onlydctcp, wfq, dctcp_mark;
 extern bool strawmancc ;
 extern std::string empirical_dist_file_DCTCP_heavy;
+extern std::string empirical_dist_file;
+extern double UNKNOWN_FLOW_SIZE_CUTOFF;
 extern std::string empirical_dist_file_DCTCP_light;
 extern Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 extern void scheduler_wrapper(uint32_t);

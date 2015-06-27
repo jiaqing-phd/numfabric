@@ -170,6 +170,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("weight_change", "weight_change", weight_change);
   cmd.AddValue ("weight_norm", "weight_norm", weight_normalized);
   cmd.AddValue ("rate_based", "rate_based", rate_based);
+  cmd.AddValue ("UNKNOWN_FLOW_SIZE_CUTOFF", "unknown_flow_size_cutoff", UNKNOWN_FLOW_SIZE_CUTOFF);
 
   return cmd;
 }

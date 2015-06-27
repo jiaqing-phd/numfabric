@@ -461,6 +461,9 @@ void changeWeights(void)
 }
 #endif
 
+# if 0
+// SC: deprecated version where randomFlows were sampled from both a 
+// 'known' and 'unknown' distribution
 void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, uint32_t known, double random_load)
 {
   double lambda = (link_rate * random_load ) / (meanflowsize*8.0);
@@ -515,6 +518,86 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, uint32_t know
 
 
 
+
+        FlowData flowData (snid, destnid, flow_start_time, flow_size,flow_num, flow_weight , uftcp, known); 
+        flow_known[flow_num] = known;
+        Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+        //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
+        flow_num++;
+      }
+    }
+  }
+
+  global_flow_id = flow_num;
+
+}
+# endif
+
+// SC new version: if flow size less than 1 MB, classify as unknown
+// else consider it a known flow
+void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
+{
+  double lambda = (link_rate * load ) / (meanflowsize*8.0);
+  std::cout<<"lambda first "<<lambda<<" load "<<load<<std::endl;
+  lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
+  double avg_interarrival = 1/lambda;
+
+  Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
+  exp->SetAttribute("Mean", DoubleValue(avg_interarrival));
+
+  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
+
+  //uint32_t flow_id_zero = 1000;
+  uint32_t flow_num = global_flow_id;
+   
+  for (uint32_t i=0; i < sourceNodes.GetN(); i++) 
+  {
+    for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
+    {
+      double flow_start_time = 0.0;
+      double time_now = 1.0;
+     
+      while(time_now < (sim_time-0.1))
+      {
+        // flow size 
+        double flow_size = empirical_rand->GetValue(); 
+        double inter_arrival = exp->GetValue();
+        flow_start_time = time_now + inter_arrival;
+        NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
+        time_now = flow_start_time; // is this right ?
+
+        uint32_t known;
+        
+        // determine known or not based on flow size
+        // if less than 1 MB will be unknown
+
+        if(flow_size <= UNKNOWN_FLOW_SIZE_CUTOFF) {
+            known = 0;
+            std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
+
+        } else {
+            known = 1;
+            std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
+
+        }
+        
+        if(known == 1) {
+          std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        } else {
+          std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        }
+
+        uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
+        
+        uint32_t snid = (sourceNodes.Get(i))->GetId();
+        uint32_t destnid = (sinkNodes.Get(j))->GetId();
+
+        uint32_t uftcp = 1;
+
+        if(flows_tcp == 0 && known == 1) {
+          // if flows_tcp == 0, known flows should run UDP
+          uftcp = 0;
+        }
 
         FlowData flowData (snid, destnid, flow_start_time, flow_size,flow_num, flow_weight , uftcp, known); 
         flow_known[flow_num] = known;
@@ -698,18 +781,97 @@ void setUpWeightChange(void)
   Simulator::Schedule (Seconds (1.0), &changeWeights);
 }
 */
+
+void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, double load)
+{
+  double lambda = (link_rate * load ) / (meanflowsize*8.0);
+  std::cout<<"lambda first "<<lambda<<" load "<<load<<std::endl;
+  lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
+  double avg_interarrival = 1/lambda;
+
+  Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
+  exp->SetAttribute("Mean", DoubleValue(avg_interarrival));
+
+  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
+
+  //uint32_t flow_id_zero = 1000;
+  uint32_t flow_num = global_flow_id;
+   
+  for (uint32_t i=0; i < sourceNodes.GetN(); i++) 
+  {
+    for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
+    {
+      double flow_start_time = 0.0;
+      double time_now = 1.0;
+     
+      while(time_now < (sim_time-0.1))
+      {
+        // flow size 
+        double flow_size = empirical_rand->GetValue(); 
+        double inter_arrival = exp->GetValue();
+        flow_start_time = time_now + inter_arrival;
+        NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
+        time_now = flow_start_time; // is this right ?
+
+        uint32_t known;
+        
+        // determine known or not based on flow size
+        // if less than 1 MB will be unknown
+
+        if(flow_size <= UNKNOWN_FLOW_SIZE_CUTOFF) {
+            known = 0;
+        } else {
+            known = 1;
+        }
+        
+        if(known == 1) {
+          std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        } else {
+          std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+        }
+
+        uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
+        
+        uint32_t snid = (sourceNodes.Get(i))->GetId();
+        uint32_t destnid = (sinkNodes.Get(j))->GetId();
+
+        uint32_t uftcp = 1;
+
+        if(flows_tcp == 0 && known == 1) {
+          // if flows_tcp == 0, known flows should run UDP
+          uftcp = 0;
+        }
+
+        FlowData flowData (snid, destnid, flow_start_time, flow_size,flow_num, flow_weight , uftcp, known); 
+        flow_known[flow_num] = known;
+        Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+        //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
+        flow_num++;
+      }
+    }
+  }
+
+  global_flow_id = flow_num;
+
+}
+
+
+
+
 void setUpTraffic()
 {
-  //NS_LOG_UNCOND("EmpiricalRandSetup : file "<<empirical_dist_file);
-  //Ptr<EmpiricalRandomVariable> x = SetUpEmpirical(empirical_dist_file);
-  //meanflowsize = x->avg();
-  //NS_LOG_UNCOND("Avg of empirical values.. "<<meanflowsize);
+
+  // SC: sample from DCTCP full again
+  NS_LOG_UNCOND("EmpiricalRandSetup : file "<<empirical_dist_file);
+  Ptr<EmpiricalRandomVariable> x = SetUpEmpirical(empirical_dist_file);
+  meanflowsize = x->avg();
+  NS_LOG_UNCOND("Avg of empirical values.. "<<meanflowsize);
   //startFlowsStatic();
-  //startRandomFlows(x);
-  // SC: load is for UNKNOWN, 1 - load goes to KNOWN flows
+  startRandomFlows(x);
 
   /////////////////////////////////////////////////
   // SC: heavy DCTCP traffic for known flows
+  /*
   NS_LOG_UNCOND("EmpiricalRandSetup_DCTCP_heavy : file "<< empirical_dist_file_DCTCP_heavy);
   Ptr<EmpiricalRandomVariable> x_DCTCP_heavy = SetUpEmpirical(empirical_dist_file_DCTCP_heavy);
   meanflowsize = x_DCTCP_heavy->avg();
@@ -736,7 +898,8 @@ void setUpTraffic()
 
   std::cout<<"LIGHT known "<< known << " random load " << random_load << " load " << load << std::endl;
   startRandomFlows(x_DCTCP_light, known, random_load);
-
+  */
+    
 } 
    
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname)

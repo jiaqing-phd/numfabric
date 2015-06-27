@@ -69,6 +69,7 @@ std::string application_datarate = "10Gbps";
 bool pkt_tag = true;
 
 std::string empirical_dist_file_DCTCP_heavy="DCTCP_CDF_HEAVY";
+std::string empirical_dist_file="DCTCP_CDF";
 std::string empirical_dist_file_DCTCP_light="DCTCP_CDF_LIGHT";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 
@@ -85,6 +86,7 @@ std::string link_rate_string = "10Gbps";
 
 double load = 0.05;
 double controller_estimated_unknown_load = 0.05;
+double UNKNOWN_FLOW_SIZE_CUTOFF = 1000000.0;
 double meanflowsize = 1138*1460 ; // what TBD?
 
 /* Application configuration */
