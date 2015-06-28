@@ -179,7 +179,7 @@ void common_config(void)
 {
   double total_rtt = link_delay * 6.0;
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
-  uint32_t initcwnd = ((bdproduct *2.0) / max_segment_size) +1;
+  uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
 
   std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<std::endl;  
@@ -211,6 +211,9 @@ void common_config(void)
   Config::SetDefault ("ns3::FifoQueue::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::FifoQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
 
+  Config::SetDefault ("ns3::fifo_hybridQ::Mode", StringValue("QUEUE_MODE_BYTES"));
+  Config::SetDefault ("ns3::fifo_hybridQ::MaxBytes", UintegerValue (max_queue_size));
+  Config::SetDefault ("ns3::fifo_hybridQ::ECNThreshBytes", UintegerValue (max_ecn_thresh));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));

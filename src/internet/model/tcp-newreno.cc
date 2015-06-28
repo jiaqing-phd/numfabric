@@ -285,7 +285,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
        dctcp_alpha = (1.0 - beta)*dctcp_alpha + beta* new_alpha;
        total_bytes_acked = 0;
        bytes_with_ecn = 0; 
-//       std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<std::endl;
+       //std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<" ssthresh "<<m_ssThresh<<" initcwnd "<<m_initialCWnd<<std::endl;
        last_outstanding_num = m_highTxMark;
      }
    }
@@ -452,6 +452,24 @@ TcpNewReno::InitializeCwnd (void)
   m_cWnd = m_initialCWnd * m_segmentSize;
   m_ssThresh = m_initialSsThresh;
 
+  std::cout<<" InitializeCwnd : "<<m_initialCWnd<<" "<<m_cWnd<<" "<<m_ssThresh<<std::endl;
 }
+
+void
+TcpNewReno::resetSSThresh(uint32_t ssthresh)
+{
+  m_initialSsThresh = ssthresh;
+  m_ssThresh = m_initialSsThresh;
+  std::cout<<" ssthresh reset to "<<m_ssThresh<<std::endl;
+}
+
+void
+TcpNewReno::resetInitCwnd(uint32_t cwnd)
+{
+  NS_ABORT_MSG_UNLESS (m_state == CLOSED, "TcpNewReno::SetInitialCwnd() cannot change initial cwnd after connection started.");
+  m_initialCWnd = cwnd;
+  InitializeCwnd();
+}
+  
 
 } // namespace ns3

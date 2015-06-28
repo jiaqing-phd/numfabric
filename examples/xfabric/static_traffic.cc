@@ -572,20 +572,16 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         // if less than 1 MB will be unknown
 
         if(flow_size <= UNKNOWN_FLOW_SIZE_CUTOFF) {
-            known = 0;
-            std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
+          known = 0;
+          std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
 
         } else {
-            known = 1;
-            std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
+          known = 1;
+          std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+            //std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
 
         }
         
-        if(known == 1) {
-          std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
-        } else {
-          std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
-        }
 
         uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
         
@@ -608,7 +604,6 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
     }
   }
 
-  global_flow_id = flow_num;
 
 }
 
@@ -659,13 +654,18 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
 
   while(itr != flowTracker->flows_set.end()) 
   {
-    uint32_t rand_num = uv->GetInteger(1.0, 10.0);
-    double new_weight = rand_num*1.0;
-    flow_weight_local[itr->flow_id] = new_weight;
-    if(new_weight < min_weight) {
+      uint32_t rand_num = uv->GetInteger(1.0, 10.0);
+      double new_weight = rand_num*1.0;
+      if(itr->flow_running) {
+        /* flow already running - don't reassign weight */ 
+        new_weight = itr->flow_weight;
+      }
+      
+      flow_weight_local[itr->flow_id] = new_weight;
+      if(new_weight < min_weight) {
         min_weight = new_weight;
-    }
-    itr++;
+      }
+      itr++;
   } // end flows_set
 
   /* start a new loop to normalize weights, if configured to do so */
@@ -716,12 +716,12 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
        Ptr<MyApp> local_SendingApp;
        for(uint32_t aIndx=0; aIndx< (allNodes.Get(itr->source_node))->GetNApplications(); aIndx++) { // check all apps on this node
           local_SendingApp = StaticCast <MyApp> ( (allNodes.Get(nid))->GetApplication(aIndx) ); 
-           if(local_SendingApp->getFlowId() == fid) { //if this is the app associated with this fid, change data rate
+           if((rate_based == 0) && (local_SendingApp->getFlowId() == fid)) { //if this is the app associated with this fid, change data rate
                local_SendingApp ->ChangeRate(DataRate (rate) ); 
             }
         } // end for
      }
-     std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rate<<std::endl;
+     std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rate<<" weight "<<weight<<" totalweight "<<total_weight<<std::endl;
      std::cout<<" setting realrate "<<rate<<" for flow "<<fid<<" in node "<<itr->source_node<<std::endl;
         
      ipv4->setFlowIdealRate(fid, rate);

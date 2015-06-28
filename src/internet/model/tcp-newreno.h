@@ -59,6 +59,8 @@ public:
   virtual int Listen (void);
   void setdctcp(bool);
   void setxfabric(bool);
+  void resetSSThresh(uint32_t ssthresh);
+  void resetInitCwnd(uint32_t cwnd);
 
 protected:
   virtual uint32_t Window (void); // Return the max possible number of unacked bytes
@@ -81,11 +83,11 @@ protected:
   virtual uint32_t GetInitialSSThresh (void) const;
   virtual void     SetInitialCwnd (uint32_t cwnd);
   virtual uint32_t GetInitialCwnd (void) const;
-private:
   /**
    * \brief Set the congestion window when connection starts
    */
   void InitializeCwnd (void);
+private:
 
 protected:
   TracedValue<uint32_t>  m_cWnd;         //!< Congestion window

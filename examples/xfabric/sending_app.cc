@@ -1,4 +1,5 @@
 #include "sending_app.h"
+#include "declarations.h"
 
 MyApp::MyApp ()
   : m_socket (0),
@@ -93,6 +94,12 @@ MyApp::StartApplication (void)
     if(flow_known == 0) {
       nReno->setdctcp(true); // unknown flows always run dctcp
       nReno->setxfabric(false);
+      /* Set initial cwnd to 10 pkts = 1500 * 10 Bytes */
+      uint32_t unknown_initcwnd = ((1500 * 10)/max_segment_size) + 1;
+      uint32_t ssthresh = unknown_initcwnd * max_segment_size;
+
+      nReno->resetInitCwnd(unknown_initcwnd);
+      nReno->resetSSThresh(ssthresh);
     }
   }
   setuptracing(m_fid, ns3TcpSocket);
