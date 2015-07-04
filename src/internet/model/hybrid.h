@@ -71,6 +71,8 @@ Ptr<Packet> FifoDequeue(void);
 bool W2FQEnQ (Ptr<Packet> p);
 bool W2FQempty(void) ;
 Ptr<Packet> W2FQDequeue (void);
+  uint32_t m_ECNThreshBytes;  
+  uint32_t m_ECNThreshPackets;
 
 private:
   bool init_reset;

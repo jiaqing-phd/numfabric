@@ -215,6 +215,10 @@ void common_config(void)
   Config::SetDefault ("ns3::fifo_hybridQ::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::fifo_hybridQ::ECNThreshBytes", UintegerValue (max_ecn_thresh));
 
+  Config::SetDefault ("ns3::hybridQ::Mode", StringValue("QUEUE_MODE_BYTES"));
+  Config::SetDefault ("ns3::hybridQ::MaxBytes", UintegerValue (max_queue_size));
+  Config::SetDefault ("ns3::hybridQ::ECNThreshBytes", UintegerValue (max_ecn_thresh));
+
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
 

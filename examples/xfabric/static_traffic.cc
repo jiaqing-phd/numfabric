@@ -574,11 +574,11 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         if(flow_size <= UNKNOWN_FLOW_SIZE_CUTOFF) {
           known = 0;
           std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
-
+          std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
         } else {
           known = 1;
           std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
-            //std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
+          std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
 
         }
         
@@ -716,9 +716,9 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
        Ptr<MyApp> local_SendingApp;
        for(uint32_t aIndx=0; aIndx< (allNodes.Get(itr->source_node))->GetNApplications(); aIndx++) { // check all apps on this node
           local_SendingApp = StaticCast <MyApp> ( (allNodes.Get(nid))->GetApplication(aIndx) ); 
-           if((rate_based == 0) && (local_SendingApp->getFlowId() == fid)) { //if this is the app associated with this fid, change data rate
-               local_SendingApp ->ChangeRate(DataRate (rate) ); 
-            }
+         //  if((rate_based == 0) && (local_SendingApp->getFlowId() == fid)) { //if this is the app associated with this fid, change data rate
+           //    local_SendingApp ->ChangeRate(DataRate (rate) ); 
+           // }
         } // end for
      }
      std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rate<<" weight "<<weight<<" totalweight "<<total_weight<<std::endl;
@@ -780,7 +780,7 @@ void setUpWeightChange(void)
   
   Simulator::Schedule (Seconds (1.0), &changeWeights);
 }
-*/
+
 
 void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, double load)
 {
@@ -820,8 +820,10 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, double load)
 
         if(flow_size <= UNKNOWN_FLOW_SIZE_CUTOFF) {
             known = 0;
+          std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
         } else {
             known = 1;
+          std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
         }
         
         if(known == 1) {
@@ -854,6 +856,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand, double load)
   global_flow_id = flow_num;
 
 }
+*/
 
 
 

@@ -51,6 +51,7 @@ for line in logs:
             flow_size_dict['unknown'].append(flow_size)
             unknown_flows +=1
 
+print("known flows %d unknown flows %d" %(known_flows,unknown_flows))
 frac_unknown = float(unknown_flows)/float(total_flows)
 
 unknown_bytes = sum(flow_size_dict['unknown']) 
