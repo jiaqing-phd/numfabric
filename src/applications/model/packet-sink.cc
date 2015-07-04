@@ -33,7 +33,7 @@
 #include "packet-sink.h"
 #include "ns3/uinteger.h"
 #include "ns3/boolean.h"
-
+#include "ns3/applications-module.h"
 
 namespace ns3 {
 
@@ -216,8 +216,18 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
           flow_start_time = Simulator::Now();
         }
         m_totalRx += packet->GetSize ();
-//        std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
+        std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
 //      }
+
+
+        // m_totalRx: update the received stuff
+          if(flowTracker) {
+            std::cout<<"HERE flow tracker"<<std::endl;
+            FlowData fd(m_flowID);
+            flowTracker->UpdateFlowRemainingSize(fd, double(m_totalRx), m_flowID);
+          }
+
+        
         if((m_numBytes > 0.0) && (m_totalRx >= m_numBytes)) {
           // Flow completed.. Must print that out and exit
           GetTotalRx();
