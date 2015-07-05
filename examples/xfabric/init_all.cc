@@ -54,6 +54,12 @@ uint32_t send_buf_size = 1310720;
 bool xfabric = false;
 bool dctcp = false;
 
+/* Deadline variables */
+bool deadline = true;
+// 5 ms
+double deadline_mean = .005;
+double fraction_flows_deadline = .5;
+
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;

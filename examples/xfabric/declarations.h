@@ -59,6 +59,10 @@ extern double flow3_starttime;
 extern double alpha_value ;
 extern double target_queue ;
 
+/* Deadline variables */
+extern bool deadline;
+extern double deadline_mean;
+extern double fraction_flows_deadline;
 
 extern float sampling_interval ;
 extern uint32_t pkt_size ;
@@ -116,7 +120,10 @@ extern void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uin
 extern void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp);
 
 
+extern double getDeadline(double start_time, double flow_size, Ptr<ExponentialRandomVariable> exp, Ptr<UniformRandomVariable> deadline_decision);
 
+Ptr<ExponentialRandomVariable> getDeadlineRV();
+Ptr<UniformRandomVariable> getDecisionRV();
 
 extern CommandLine addCmdOptions(void);
 extern void common_config(void);

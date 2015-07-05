@@ -9,7 +9,9 @@ FlowData::FlowData(uint32_t fid)
   flow_running = true; //check if this is useful
 }
 
-FlowData::FlowData(uint32_t source, int32_t dest, double fstart, double fsize, uint32_t flw_id, double fweight, uint32_t tcp, uint32_t known)
+FlowData::FlowData(uint32_t source, int32_t dest, double fstart, double
+fsize, uint32_t flw_id, double fweight, uint32_t tcp, uint32_t known,
+double flw_rem_size, double flw_deadline, double flw_deadline_delta)
 {
   flow_id = flw_id;
   source_node = source;
@@ -20,8 +22,13 @@ FlowData::FlowData(uint32_t source, int32_t dest, double fstart, double fsize, u
   flow_tcp = tcp;
   flow_known = known;
   flow_running = false;
-  std::cout<<"DEBUG PARAMS FlowData "<<source<<" "<<dest<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<flow_tcp<<" "<<flow_known<<std::endl;
+  flow_rem_size = flw_rem_size;
+  flow_deadline = flw_deadline;
+  flow_deadline_delta = flw_deadline_delta;
+  
+  std::cout<<"DEBUG PARAMS FlowData "<<source<<" "<<dest<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<flow_tcp<<" "<<flow_known<<" "<<flow_rem_size<<std::endl;
 }
+
 
 void Tracker::registered_callback(uint32_t fid)
 {
@@ -65,8 +72,46 @@ void Tracker::dataDump(void)
     itr = flows_set.begin();  
     for(; itr != flows_set.end(); itr++) 
     {
-      std::cout<<"fid "<<itr->flow_id<<" src "<<itr->source_node<<" dst "<<itr->dest_node<<" size "<<itr->flow_size<<std::endl;
+      std::cout<<"fid "<<itr->flow_id<<" src "<<itr->source_node<<" dst "<<itr->dest_node<<" size "<<itr->flow_size<< " rem_size " << itr->flow_rem_size << " deadline " << itr->flow_deadline << " deadline_duration " << itr->flow_deadline_delta << " flow_start " << itr->flow_start << std::endl;
     }
+}
+
+void Tracker::UpdateFlowRemainingSize(FlowData fd, double transmitted_size, uint32_t passed_in_flowID)
+{
+
+  /*
+  fd.flow_rem_size = double(fd.flow_size) - double(transmitted_size);
+ 
+  if(fd. flow_rem_size <= 0.0){
+      fd.flow_rem_size = 0.0;
+  }
+
+  std::cout<<"SC update flow rem size "<< fd.flow_rem_size << " transmitted size " << transmitted_size << " flow size " << fd.flow_size << " flow id " << fd.flow_id << " passed_in_flowID " << passed_in_flowID << std::endl; 
+ */
+
+ // dataDump();
+ 
+ std::list<FlowData>::iterator itr;
+ itr = flows_set.begin();
+ for(; itr != flows_set.end(); itr++)
+ {
+
+      if(itr->flow_id == fd.flow_id) {
+
+        itr->flow_rem_size = double(itr->flow_size) - double(transmitted_size);
+     
+        if(itr->flow_rem_size <= 0.0){
+          itr->flow_rem_size = 0.0;
+        }
+
+        std::cout<<"SC update flow rem size "<< itr->flow_rem_size << " transmitted size " << transmitted_size << " flow size " << itr->flow_size << " flow id " << itr->flow_id << " passed_in_flowID " << passed_in_flowID << std::endl; 
+      }
+    
+    // std::cout<<"SC UPDATE SIZE fid "<<itr->flow_id<<" src "<<itr->source_node<<" dst "<<itr->dest_node<<" size "<<itr->flow_size<<std::endl;
+ }
+ 
+ dataDump(); 
+
 }
    
 
