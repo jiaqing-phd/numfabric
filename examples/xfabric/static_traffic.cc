@@ -6,6 +6,14 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 uint32_t global_flow_id = 1;
 std::map<uint32_t, uint32_t> flow_known;
 
+bool compare_flow_deadlines(const FlowData &a, const FlowData &b)
+{
+  if(a.flow_deadline < b.flow_deadline) {
+    return true;
+  }
+  return false;
+}
+
 void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
 {
       Q->SetNodeID(nid);
@@ -283,7 +291,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
           
           std::cout<<"DEBUG DEADLINE flow_start "<< flow_start_time << " duration " << local_flow_duration << " flow size " << flow_size << " local flow deadline " << local_flow_deadline << std::endl; 
           
-          Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+          Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
           //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
           flow_num++;
 
@@ -300,7 +308,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 
           std::cout<<"DEBUG NO_DEADLINE flow_start "<< flow_start_time << " duration " << local_flow_duration << " flow size " << flow_size << " local flow deadline " << local_flow_deadline << std::endl; 
 
-          Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+          Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
           //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
           flow_num++;
         }
@@ -327,6 +335,70 @@ void scheduler_wrapper(uint32_t fid)
   }
 
 }
+
+void run_scheduler_edf(FlowData fdata, uint32_t eventType)
+{
+
+  std::map<uint32_t, double> flow_rate_local;
+  std::map<uint32_t, double> flow_weight_local;
+      
+  /* Deadline based scheduling */
+  if(eventType == 1) { //TODO: declare enum FLOW_START
+    // add it to the list of flows 
+    if(fdata.flow_known == 0) {
+      startFlowEvent(fdata.source_node, fdata.dest_node, Simulator::Now().GetSeconds(), fdata.flow_size, fdata.flow_id, 1.0, fdata.flow_tcp, fdata.flow_known);
+      setQFlows();
+      std::cout<<"Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
+      return;
+    } else {
+      std::cout<<"known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
+    }
+  }
+  /* adding the flow temporarily so that the scheduler can take it into account */
+  flowTracker->registerEvent(1, fdata);
+  /* order flows by their deadlines */
+  flowTracker->flows_set.sort(compare_flow_deadlines);
+ 
+  /* sorted in order of their deadlines */
+  std::list<FlowData>::iterator itr;
+  itr = (flowTracker->flows_set).begin();
+
+  double total_rate_required = 0.0;
+  double available_rate = (1-controller_estimated_unknown_load) * link_rate;
+  while(itr != flowTracker->flows_set.end()) 
+  {
+    double nanoseconds = 1000000000.0;
+    double time_till_deadline = (itr->flow_deadline) * nanoseconds - Simulator::Now().GetNanoSeconds();
+    double rate_required = available_rate + 1.0;
+    if(time_till_deadline > 0.0) {
+      rate_required = itr->flow_rem_size/time_till_deadline; 
+    }
+    uint32_t nid = itr->source_node;
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+
+    if(rate_required > available_rate) {
+      /* this flow cannot complete now - kill it now -- we will just assign 0 rate*/
+      rate_required = 0.0;
+    } //end of rate required is more than link_rate
+    else if((total_rate_required +rate_required) > available_rate) {
+      rate_required = available_rate;
+      total_rate_required += rate_required;
+    } 
+    flow_rate_local[itr->flow_id] = rate_required;
+    std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<rate_required<<std::endl;
+    std::cout<<" setting realrate "<<rate_required<<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<<std::endl;
+    ipv4->setFlowIdealRate(itr->flow_id, rate_required);
+
+    if(!itr->flow_running) {
+      flow_weight_local[itr->flow_id] = 1.0;
+      startFlowEvent(itr->source_node, itr->dest_node, Simulator::Now().GetSeconds(), itr->flow_size, itr->flow_id, flow_weight_local[itr->flow_id], itr->flow_tcp, itr->flow_known);
+      itr->flow_running = true;
+    }
+    itr++;
+   }
+}    
+     
+   
 
 void run_scheduler(FlowData fdata, uint32_t eventType)
 {
