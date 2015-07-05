@@ -8,10 +8,9 @@ FlowData::FlowData(uint32_t fid)
   flow_id = fid;
   flow_running = true; //check if this is useful
 }
-
 FlowData::FlowData(uint32_t source, int32_t dest, double fstart, double
 fsize, uint32_t flw_id, double fweight, uint32_t tcp, uint32_t known,
-double flw_rem_size, double flw_deadline, double flw_deadline_delta)
+double flw_rem_size, double flw_deadline, double flw_deadline_delta, bool deadline_bound)
 {
   flow_id = flw_id;
   source_node = source;
@@ -25,7 +24,9 @@ double flw_rem_size, double flw_deadline, double flw_deadline_delta)
   flow_rem_size = flw_rem_size;
   flow_deadline = flw_deadline;
   flow_deadline_delta = flw_deadline_delta;
-  
+
+  flow_deadline_bound = deadline_bound;
+
   std::cout<<"DEBUG PARAMS FlowData "<<source<<" "<<dest<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<flow_tcp<<" "<<flow_known<<" "<<flow_rem_size<<std::endl;
 }
 
@@ -43,13 +44,19 @@ void Tracker::register_callback(void (*functocall)(uint32_t))
 
 void Tracker::registerEvent(uint32_t eventtype, FlowData fd)
 {
+    
   if(eventtype == FLOW_START) {
     std::cout<<"FLOW_START event "<<std::endl;
     // a new flow started - add it to set of flows
-    flows_set.push_back(fd);
+    if(fd.flow_deadline_bound) {
+      deadline_flows_set.push_back(fd);
+    } else {
+       flows_set.push_back(fd);
+    }
     dataDump();
   } else {
     //flows_set is a list..search for the right fid to remove
+    bool flow_erased = false;
     std::cout<<"FLOW_STOP event fid "<<fd.flow_id<<std::endl;
     std::list<FlowData>::iterator itr;
     itr = flows_set.begin();  
@@ -57,9 +64,28 @@ void Tracker::registerEvent(uint32_t eventtype, FlowData fd)
     {
       if(itr->flow_id == fd.flow_id) {
         flows_set.erase(itr);
+        flow_erased = true;
         break;
       }
     }
+
+    if(flow_erased == false) {
+      // didn't yet erase this flow.. look in the deadline bound flows 
+      itr = deadline_flows_set.begin();  
+      for(; itr != deadline_flows_set.end(); itr++) 
+      {
+        if(itr->flow_id == fd.flow_id) {
+          deadline_flows_set.erase(itr);
+          flow_erased = true;
+          break;
+        }
+      }
+    }  
+
+    if(flow_erased == false) {
+      std::cout<<" ERROR ! FLOW TO BE ERASED NOT FOUND "<<std::endl;
+    }
+    // 
     registered_callback(fd.flow_id);  
     
   }
@@ -71,6 +97,13 @@ void Tracker::dataDump(void)
     std::list<FlowData>::iterator itr;
     itr = flows_set.begin();  
     for(; itr != flows_set.end(); itr++) 
+    {
+      std::cout<<"fid "<<itr->flow_id<<" src "<<itr->source_node<<" dst "<<itr->dest_node<<" size "<<itr->flow_size<< " rem_size " << itr->flow_rem_size << " deadline " << itr->flow_deadline << " deadline_duration " << itr->flow_deadline_delta << " flow_start " << itr->flow_start << std::endl;
+    }
+
+    std::cout<<" DEADLINE BOUND FLOWS "<<std::endl;
+    itr = deadline_flows_set.begin();  
+    for(; itr != deadline_flows_set.end(); itr++) 
     {
       std::cout<<"fid "<<itr->flow_id<<" src "<<itr->source_node<<" dst "<<itr->dest_node<<" size "<<itr->flow_size<< " rem_size " << itr->flow_rem_size << " deadline " << itr->flow_deadline << " deadline_duration " << itr->flow_deadline_delta << " flow_start " << itr->flow_start << std::endl;
     }

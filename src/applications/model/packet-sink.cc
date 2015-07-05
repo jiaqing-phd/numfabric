@@ -92,6 +92,7 @@ PacketSink::PacketSink ()
   NS_LOG_FUNCTION (this);
   m_socket = 0;
   m_totalRx = 0;
+  flow_finished = false;
 }
 
 void
@@ -105,15 +106,19 @@ PacketSink::~PacketSink()
   NS_LOG_FUNCTION (this);
 }
 
-uint32_t PacketSink::GetTotalRx () const
+uint32_t PacketSink::GetTotalRx () 
 {
   NS_LOG_FUNCTION (this);
 
-  std::cout<<"flow_stop "<<m_flowID<<" stop_time "<<Simulator::Now().GetNanoSeconds()<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" flow_started "<<flow_start_time.GetSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
+  if(!flow_finished) {
 
-  if(flowTracker) {
-    FlowData fd(m_flowID);
-    flowTracker->registerEvent(2, fd);
+    std::cout<<"flow_stop "<<m_flowID<<" stop_time "<<Simulator::Now().GetNanoSeconds()<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" flow_started "<<flow_start_time.GetSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
+
+    if(flowTracker) {
+      FlowData fd(m_flowID);
+      flowTracker->registerEvent(2, fd);
+    }
+    flow_finished = true;
   }
   return m_totalRx;
 }

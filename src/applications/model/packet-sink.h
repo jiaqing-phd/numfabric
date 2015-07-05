@@ -83,7 +83,7 @@ public:
   /**
    * \return the total bytes received in this sink app
    */
-  uint32_t GetTotalRx () const;
+  uint32_t GetTotalRx () ;
 
   Ptr<Tracker> flowTracker;
 
@@ -102,6 +102,7 @@ public:
 protected:
   virtual void DoDispose (void);
 private:
+  bool flow_finished;
   // inherited from Application base class.
   virtual void StartApplication (void);    // Called at time specified by Start
   virtual void StopApplication (void);     // Called at time specified by Stop

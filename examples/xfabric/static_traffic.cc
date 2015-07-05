@@ -245,7 +245,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         flow_start_time = time_now + inter_arrival;
         NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
         time_now = flow_start_time; // is this right ?
-
+        
         uint32_t known;
         
         // determine known or not based on flow size
@@ -261,13 +261,11 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
           std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
 
         }
-        
 
+        flow_start_time = 1.0;
         uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
-        
         uint32_t snid = (sourceNodes.Get(i))->GetId();
         uint32_t destnid = (sinkNodes.Get(j))->GetId();
-
         uint32_t uftcp = 1;
 
         if(flows_tcp == 0 && known == 1) {
@@ -276,44 +274,37 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         }
 
         // SC change for deadline case
-        if(deadline) {
-          
+        double local_flow_deadline = 0.0;
+        bool flow_has_deadline = false;
+        double dd = deadline_decision->GetValue(0, 1.0); 
+        double local_flow_duration = 0.0;
+        if(deadline && dd < 0.5) {
+          // deadline based flow 
           // get deadline DURATION from random variables
           double local_flow_duration;
           local_flow_duration = getDeadline(flow_start_time, flow_size,deadline_exp, deadline_decision);
-          double local_flow_deadline = flow_start_time + local_flow_duration;
-
-          // populate flow data with deadline info
-          FlowData flowData (snid, destnid, flow_start_time,
-          flow_size,flow_num, flow_weight , uftcp, known, flow_size,
-          local_flow_deadline, local_flow_duration ); 
-          flow_known[flow_num] = known;
-          
-          std::cout<<"DEBUG DEADLINE flow_start "<< flow_start_time << " duration " << local_flow_duration << " flow size " << flow_size << " local flow deadline " << local_flow_deadline << std::endl; 
-          
-          Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
-          //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
-          flow_num++;
-
-        } else {
-
-          // if no deadline, duration + deadline to 0
-          double local_flow_deadline = 0.0;
-          double local_flow_duration = 0.0;
-          
-          FlowData flowData (snid, destnid, flow_start_time,
-          flow_size,flow_num, flow_weight , uftcp, known, flow_size,
-          local_flow_deadline, local_flow_duration); 
-          flow_known[flow_num] = known;
-
-          std::cout<<"DEBUG NO_DEADLINE flow_start "<< flow_start_time << " duration " << local_flow_duration << " flow size " << flow_size << " local flow deadline " << local_flow_deadline << std::endl; 
-
-          Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
-          //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
-          flow_num++;
+          local_flow_deadline = flow_start_time + local_flow_duration;
+          flow_has_deadline = true;
         }
+
+         // populate flow data with deadline info
+        FlowData flowData (snid, destnid, flow_start_time,
+        flow_size,flow_num, flow_weight , uftcp, known, flow_size,
+        local_flow_deadline, local_flow_duration, flow_has_deadline ); 
+        flow_known[flow_num] = known;
+          
+        std::cout<<"DEBUG DEADLINE flow_start "<< flow_start_time << " duration " << local_flow_duration << " flow size " << flow_size << " local flow deadline " << local_flow_deadline << std::endl; 
+
+          if(deadline) {
+            Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
+          } else {
+            Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+          }
+
+          //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
+          flow_num++;
         
-      }
+      } // end while
     }
   }
 
@@ -329,7 +320,11 @@ void scheduler_wrapper(uint32_t fid)
   if(flow_known[fid] == 1) {
     std::cout<<"known flow "<<fid<<" departed"<<std::endl;
     FlowData fdata(fid);
-    run_scheduler(fdata, 2);
+    if(deadline) {
+      run_scheduler_edf(fdata, 2);
+    } else {
+      run_scheduler(fdata, 2);
+    }
   } else {
     std::cout<<"unknown flow "<<fid<<" departed"<<std::endl;
   }
@@ -353,27 +348,28 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
     } else {
       std::cout<<"known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
     }
+    /* adding the flow temporarily so that the scheduler can take it into account */
+    flowTracker->registerEvent(1, fdata);
   }
-  /* adding the flow temporarily so that the scheduler can take it into account */
-  flowTracker->registerEvent(1, fdata);
   /* order flows by their deadlines */
-  flowTracker->flows_set.sort(compare_flow_deadlines);
+  flowTracker->deadline_flows_set.sort(compare_flow_deadlines);
  
   /* sorted in order of their deadlines */
   std::list<FlowData>::iterator itr;
-  itr = (flowTracker->flows_set).begin();
+  itr = (flowTracker->deadline_flows_set).begin();
 
   double total_rate_required = 0.0;
   double available_rate = (1-controller_estimated_unknown_load) * link_rate;
-  while(itr != flowTracker->flows_set.end()) 
+  while(itr != flowTracker->deadline_flows_set.end()) 
   {
     double nanoseconds = 1000000000.0;
     double time_till_deadline = (itr->flow_deadline) * nanoseconds - Simulator::Now().GetNanoSeconds();
-    double rate_required = available_rate + 1.0;
+    double rate_required = 0.0;
     if(time_till_deadline > 0.0) {
       rate_required = itr->flow_rem_size/time_till_deadline; 
     }
     uint32_t nid = itr->source_node;
+    std::cout<<"trying to access node "<<nid<<" fid "<<itr->flow_id<<std::endl;
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
 
     if(rate_required > available_rate) {
@@ -381,8 +377,13 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
       rate_required = 0.0;
     } //end of rate required is more than link_rate
     else if((total_rate_required +rate_required) > available_rate) {
-      rate_required = available_rate;
-      total_rate_required += rate_required;
+      // we can't allocate all of this - but allocate partially
+      double partial = available_rate - total_rate_required;
+      if(partial < 0.0) {
+        partial = 0.0;
+      }
+      rate_required = partial;
+      total_rate_required += partial;
     } 
     flow_rate_local[itr->flow_id] = rate_required;
     std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<rate_required<<std::endl;
@@ -396,6 +397,31 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
     }
     itr++;
    }
+
+   // we allocated rates to all the deadline bound flows - divide the remaining capacity into non-deadline bound flows
+   double remaining_capacity = available_rate - total_rate_required;
+   double per_flow_cap = 0.0;
+   if(remaining_capacity > 0.0) {
+    per_flow_cap = remaining_capacity / (flowTracker->flows_set).size();
+   }
+   itr = (flowTracker->flows_set).begin();
+
+    while(itr != flowTracker->flows_set.end())  {
+      uint32_t nid = itr->source_node;
+      Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
+      flow_rate_local[itr->flow_id] = per_flow_cap;
+      std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<per_flow_cap<<std::endl;
+      std::cout<<" setting realrate "<<per_flow_cap<<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<<std::endl;
+      ipv4->setFlowIdealRate(itr->flow_id, per_flow_cap);
+
+      if(!itr->flow_running) {
+        flow_weight_local[itr->flow_id] = 1.0;
+        startFlowEvent(itr->source_node, itr->dest_node, Simulator::Now().GetSeconds(), itr->flow_size, itr->flow_id, flow_weight_local[itr->flow_id], itr->flow_tcp, itr->flow_known);
+        itr->flow_running = true;
+      }
+      itr++;
+   }
+    
 }    
      
    
@@ -537,7 +563,7 @@ double getDeadline(double start_time, double flow_size, Ptr<ExponentialRandomVar
   double effective_rate = (link_rate * (1.0 - controller_estimated_unknown_load))/8.0;
 
   double best_transmit_time = flow_size/effective_rate;
-  double min_transmit_time = 1.25 * flow_size/effective_rate;
+  double min_transmit_time = 0.25 * flow_size/effective_rate;
   // if RV deadline too close, take 1.25 * best transmit (LOWER BOUND)
   double deadline_delta = std::max(RV_delta, min_transmit_time);
 

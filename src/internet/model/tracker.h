@@ -20,12 +20,13 @@ class FlowData {
   double flow_deadline_delta;
 
   bool flow_running;
+  bool flow_deadline_bound;
 
   FlowData(uint32_t fid);
   FlowData(uint32_t source, int32_t dest, double flw_start, double
   flw_size, uint32_t flw_id, double fweight, uint32_t tcp, uint32_t
   flw_known, double flw_rem_size, double flw_deadline, double
-  flw_deadline_delta);
+  flw_deadline_delta, bool deadline_bound = false);
 
 };
   
@@ -33,6 +34,7 @@ class Tracker : public Object
 {
   public:
     std::list<FlowData> flows_set; 
+    std::list<FlowData> deadline_flows_set; 
     void (*scheduler_func)(uint32_t);
     Tracker();
     void registerEvent(uint32_t, FlowData);
