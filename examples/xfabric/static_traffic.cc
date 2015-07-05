@@ -262,7 +262,6 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 
         }
 
-        flow_start_time = 1.0;
         uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
         uint32_t snid = (sourceNodes.Get(i))->GetId();
         uint32_t destnid = (sinkNodes.Get(j))->GetId();
