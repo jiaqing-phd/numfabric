@@ -226,7 +226,6 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
   Ptr<ExponentialRandomVariable> deadline_exp = getDeadlineRV();
   Ptr<UniformRandomVariable> deadline_decision = getDecisionRV();
 
-
   //uint32_t flow_id_zero = 1000;
   uint32_t flow_num = global_flow_id;
    
@@ -281,7 +280,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
           // deadline based flow 
           // get deadline DURATION from random variables
           double local_flow_duration;
-          local_flow_duration = getDeadline(flow_start_time, flow_size,deadline_exp, deadline_decision);
+          local_flow_duration = getDeadline(flow_start_time, flow_size,deadline_exp, deadline_decision, flow_num);
           local_flow_deadline = flow_start_time + local_flow_duration;
           flow_has_deadline = true;
         }
@@ -548,32 +547,23 @@ Ptr<UniformRandomVariable> getDecisionRV() {
   return deadline_decision;
 }
 
-double getDeadline(double start_time, double flow_size, Ptr<ExponentialRandomVariable> exp, Ptr<UniformRandomVariable> deadline_decision) { 
+double getDeadline(double start_time, double flow_size, Ptr<ExponentialRandomVariable> exp, Ptr<UniformRandomVariable> deadline_decision, uint32_t flow_num) { 
 
   // case 1: generate the nominal deadline
   double RV_delta = exp->GetValue();
-
-  // case 2: generate whether deadline is used at all
-  // only 1/2 of flows get deadline
-  uint32_t rand_num = deadline_decision->GetInteger(1.0, 10.0);
-  double decision_frac = rand_num / 10.0;
 
   // in Bits/sec, convert to bytes/sec
   double effective_rate = (link_rate * (1.0 - controller_estimated_unknown_load))/8.0;
 
   double best_transmit_time = flow_size/effective_rate;
-  double min_transmit_time = 0.25 * flow_size/effective_rate;
+  double min_transmit_time = 1.25 * flow_size/effective_rate;
   // if RV deadline too close, take 1.25 * best transmit (LOWER BOUND)
-  double deadline_delta = std::max(RV_delta, min_transmit_time);
+  double deadline_delta = std::max(RV_delta + best_transmit_time, min_transmit_time);
 
-  // only assign a deadline in a fraction of cases (MIXED TRAFFIC)
-  if(decision_frac <= fraction_flows_deadline) {
-     deadline_delta = 0.0;
-     std::cout<<" created NO deadline rand_num" << rand_num << " decision_frac " << decision_frac << " fraction_flows_deadline " << fraction_flows_deadline << std::endl;
+  double random_deadline = RV_delta + best_transmit_time;
+  double total_deadline = start_time + deadline_delta;
 
-  }
-
-  std::cout<<" created deadline duration " << deadline_delta << " min transit time " << min_transmit_time << " flow size " << flow_size << " effective rate " << effective_rate << " link_rate " << link_rate << " best transmit time " << best_transmit_time << " RV value " << RV_delta << std::endl;
+  std::cout<<"created_deadline TRUE flow_num " << flow_num << " duration " << deadline_delta << " min_transit_time " << min_transmit_time << " flow_size " << flow_size << " effective_rate " << effective_rate << " link_rate " << link_rate << " best_transmit_time " << best_transmit_time << " RV_value " << RV_delta << " random_deadline " << random_deadline << " flow_start " << start_time << " total_deadline " << total_deadline << std::endl;
   
   return deadline_delta;
 }
