@@ -55,9 +55,10 @@ bool xfabric = false;
 bool dctcp = false;
 
 /* Deadline variables */
-bool deadline = true;
+bool deadline_mode = true;
+bool scheduler_mode_edf = true;
 // 5 ms
-double deadline_mean = .005;
+double deadline_mean = 2.0;
 double fraction_flows_deadline = .5;
 
 /* IP related variables */

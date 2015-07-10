@@ -37,8 +37,11 @@ estimated_load = sys.argv[5]
 
 # need to assert that best = size/effective_rate, RV + best, 
 
-verbose_out_file = output_dir + '/' + 'verbose.deadline.' + prefix
-mean_out_file = output_dir + '/' +  'average.deadline.' + prefix
+str_verbose = '.'.join(['verbose', 'deadline', str(load), str(estimated_load), str(prefix)])
+str_deadline = '.'.join(['mean', 'deadline', str(load), str(estimated_load), str(prefix)])
+
+verbose_out_file = output_dir + '/' + str_verbose
+mean_out_file = output_dir + '/' + str_deadline
 
 fstarts = {}
 fstops = {}
@@ -62,6 +65,11 @@ RV_means = []
 flowID_to_deadline = {}
 
 flows_with_deadline = 0
+
+# basic problem: under the regular scheduling scheme we dont start a lot of flows
+# ideal scenario: have a bunch of flows in the system predetermined
+# all have a deadline
+
 
 for line in logs:
     l1 = line.rstrip()
@@ -101,28 +109,35 @@ total_flows_with_deadline = 0
 
 with open(verbose_out_file, 'w') as f:
    
-    header_line = '\t'.join(['flow_id', 'flow_stop_time', 'local_deadline', 'deadline_met_boolean'])
+    header_line = '\t'.join(['# prefix', 'flow_id', 'flow_stop_time', 'local_deadline', 'deadline_met_boolean'])
     f.write(header_line + '\n')
 
     for flw_id,local_deadline in flowID_to_deadline.iteritems():
-        flw_stop_time = fstops[flw_id]
 
-        nanosecond = 1e+9
-        scaled_stop_time = flw_stop_time/nanosecond
-        if(local_deadline != scaled_stop_time):
+        if(flw_id in fstops.keys()):
+            flw_stop_time = fstops[flw_id]
 
-            if(local_deadline >= scaled_stop_time):
-                met = 1
-                deadlines_met +=1
-            else:
-                met = 0    
+            nanosecond = 1e+9
+            scaled_stop_time = flw_stop_time/nanosecond
+            if(local_deadline != scaled_stop_time):
 
-            total_flows_with_deadline += 1
+                if(local_deadline >= scaled_stop_time):
+                    met = 1
+                    deadlines_met +=1
+                else:
+                    met = 0    
 
-            print("flow_id %s, flow_stop_time %s, local_deadline %s, met %s" % (flw_id, scaled_stop_time, local_deadline, met))
+                total_flows_with_deadline += 1
 
-            out_line = '\t'.join([str(flw_id), str(scaled_stop_time), str(local_deadline), str(met)])
-            f.write(out_line + '\n')
+                print("flow_id %s, flow_stop_time %s, local_deadline %s, met %s" % (flw_id, scaled_stop_time, local_deadline, met))
+
+                out_line = '\t'.join([prefix, str(flw_id), str(scaled_stop_time), str(local_deadline), str(met)])
+                f.write(out_line + '\n')
+
+        else:
+            # flow has not stopped yet, check if it has a deadline
+            total_flows_with_deadline +=1 
+
 
 with open(mean_out_file, 'w') as f:
 
@@ -134,9 +149,9 @@ with open(mean_out_file, 'w') as f:
 
     print(RV_mean_empirical, fraction_flows_deadline, fraction_met_deadline, deadlines_met, flows_with_deadline, num_total_flows, total_flows_with_deadline)
     
-    header_line = '\t'.join(['load', 'estimated_load', 'RV_mean_empirical', 'fraction_flows_deadline', 'fraction_met_deadline', 'total_deadlines_met', 'total_flows_deadline', 'num_total_flows', 'total_flows_with_deadline'])
+    header_line = '\t'.join(['# load', 'estimated_load', 'prefix', 'RV_mean_empirical', 'fraction_flows_deadline', 'fraction_met_deadline', 'total_deadlines_met', 'total_flows_deadline', 'num_total_flows', 'total_flows_with_deadline'])
     f.write(header_line + '\n')
 
-    out_line = '\t'.join([load, estimated_load, str(RV_mean_empirical), str(fraction_flows_deadline), str(fraction_met_deadline), str(deadlines_met), str(flows_with_deadline), str(num_total_flows), str(total_flows_with_deadline)])
+    out_line = '\t'.join([load, estimated_load, prefix, str(RV_mean_empirical), str(fraction_flows_deadline), str(fraction_met_deadline), str(deadlines_met), str(flows_with_deadline), str(num_total_flows), str(total_flows_with_deadline)])
     
     f.write(out_line + '\n')

@@ -169,7 +169,7 @@ void setQFlows()
 void startFlowEvent(uint32_t sourceN, uint32_t sinkN, double flow_start, double flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known)
 {
 
-  std::cout<<"DEBUG params StartFlowEvent "<<sourceN<<" "<<sinkN<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<tcp<<" "<<known<<std::endl;
+  //std::cout<<"DEBUG params StartFlowEvent "<<sourceN<<" "<<sinkN<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<tcp<<" "<<known<<std::endl;
 
   ports[sinkN]++;
   // Socket at the source
@@ -252,11 +252,11 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 
         if(flow_size <= UNKNOWN_FLOW_SIZE_CUTOFF) {
           known = 0;
-          std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+          //std::cout<<"unknown flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
           std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
         } else {
           known = 1;
-          std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
+          //std::cout<<"known flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
           std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
 
         }
@@ -276,7 +276,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         bool flow_has_deadline = false;
         double dd = deadline_decision->GetValue(0, 1.0); 
         double local_flow_duration = 0.0;
-        if(deadline && dd < 0.5) {
+        if(deadline_mode && (dd < 2.5) && known) {
           // deadline based flow 
           // get deadline DURATION from random variables
           double local_flow_duration;
@@ -291,10 +291,19 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
         local_flow_deadline, local_flow_duration, flow_has_deadline ); 
         flow_known[flow_num] = known;
           
-        std::cout<<"DEBUG DEADLINE flow_start "<< flow_start_time << " duration " << local_flow_duration << " flow size " << flow_size << " local flow deadline " << local_flow_deadline << std::endl; 
+        std::cout<<"FINAL_DEBUG_DEADLINE flow_num " << flow_num << " flow_start_time " << flow_start_time << " duration " << local_flow_duration << " flow_size " << flow_size << " local_flow_deadline " << local_flow_deadline << " known " << known << " flow_has_deadline  " << flow_has_deadline << std::endl; 
 
-          if(deadline) {
-            Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
+          if(deadline_mode) {
+		if(scheduler_mode_edf) {
+
+            		Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
+            	} else {
+			Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+		}
+
+
+        	std::cout<<"ENTER SCHED deadline "<< deadline_mode << " scheduler_mode_edf " << scheduler_mode_edf << std::endl; 
+
           } else {
             Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
           }
@@ -305,7 +314,6 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
       } // end while
     }
   }
-
 
 }
 
@@ -318,8 +326,12 @@ void scheduler_wrapper(uint32_t fid)
   if(flow_known[fid] == 1) {
     std::cout<<"known flow "<<fid<<" departed"<<std::endl;
     FlowData fdata(fid);
-    if(deadline) {
-      run_scheduler_edf(fdata, 2);
+    if(deadline_mode) {
+	if(scheduler_mode_edf){
+      		run_scheduler_edf(fdata, 2);
+	} else {
+      		run_scheduler(fdata, 2);
+	}
     } else {
       run_scheduler(fdata, 2);
     }
@@ -332,6 +344,8 @@ void scheduler_wrapper(uint32_t fid)
 void run_scheduler_edf(FlowData fdata, uint32_t eventType)
 {
 
+  std::cout<<"EDF scheduler" <<std::endl;
+  
   std::map<uint32_t, double> flow_rate_local;
   std::map<uint32_t, double> flow_weight_local;
       
@@ -341,10 +355,10 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
     if(fdata.flow_known == 0) {
       startFlowEvent(fdata.source_node, fdata.dest_node, Simulator::Now().GetSeconds(), fdata.flow_size, fdata.flow_id, 1.0, fdata.flow_tcp, fdata.flow_known);
       setQFlows();
-      std::cout<<"Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
+      std::cout<<"EDF Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
       return;
     } else {
-      std::cout<<"known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
+      std::cout<<"EDF known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
     }
     /* adding the flow temporarily so that the scheduler can take it into account */
     flowTracker->registerEvent(1, fdata);
@@ -364,7 +378,8 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
     double time_till_deadline = (itr->flow_deadline) * nanoseconds - Simulator::Now().GetNanoSeconds();
     double rate_required = 0.0;
     if(time_till_deadline > 0.0) {
-      rate_required = itr->flow_rem_size/time_till_deadline; 
+      rate_required = itr->flow_rem_size/(time_till_deadline/nanoseconds);
+      total_rate_required += rate_required;
     }
     uint32_t nid = itr->source_node;
     std::cout<<"trying to access node "<<nid<<" fid "<<itr->flow_id<<std::endl;
@@ -384,8 +399,11 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
       total_rate_required += partial;
     } 
     flow_rate_local[itr->flow_id] = rate_required;
-    std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<rate_required<<std::endl;
-    std::cout<<" setting realrate "<<rate_required<<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<<std::endl;
+    std::cout<<"EDF DEADLINE TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<rate_required<<std::endl;
+    std::cout<<"EDF DEADLINE setting realrate "<<rate_required<<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<<std::endl;
+
+    std::cout<<"EDF DEBUG rate_required "<< rate_required <<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<< " flow size " << itr->flow_size << " total rate required " << total_rate_required << " available rate " << available_rate << std::endl;
+
     ipv4->setFlowIdealRate(itr->flow_id, rate_required);
 
     if(!itr->flow_running) {
@@ -408,8 +426,8 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventType)
       uint32_t nid = itr->source_node;
       Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
       flow_rate_local[itr->flow_id] = per_flow_cap;
-      std::cout<<"TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<per_flow_cap<<std::endl;
-      std::cout<<" setting realrate "<<per_flow_cap<<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<<std::endl;
+      std::cout<<" EDF NO_DEADLINE TrueRate "<<Simulator::Now().GetSeconds()<<" "<<itr->flow_id<<" "<<per_flow_cap<<std::endl;
+      std::cout<<" EDF NO_DEADLINE setting realrate "<<per_flow_cap<<" for flow "<<itr->flow_id<<" in node "<<itr->source_node<<std::endl;
       ipv4->setFlowIdealRate(itr->flow_id, per_flow_cap);
 
       if(!itr->flow_running) {
@@ -428,7 +446,7 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
 {
 
   // scheduler called to add a new flow and reschedule all flows
-  std::cout<<"scheduler called at "<<Simulator::Now().GetSeconds()<<" flow "<<fdata.flow_id<<" eventtype "<<eventType<<std::endl;
+  // std::cout<<"scheduler called at "<<Simulator::Now().GetSeconds()<<" flow "<<fdata.flow_id<<" eventtype "<<eventType<<std::endl;
 
   flowTracker->dataDump(); // just for debugging
 
@@ -437,10 +455,10 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
     if(fdata.flow_known == 0) {
       startFlowEvent(fdata.source_node, fdata.dest_node, Simulator::Now().GetSeconds(), fdata.flow_size, fdata.flow_id, 1.0, fdata.flow_tcp, fdata.flow_known);
       setQFlows();
-      std::cout<<"Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
+      // std::cout<<"Unknown flow "<<fdata.flow_id<<" started.. nothing to be done "<<std::endl;
       return;
     } else {
-      std::cout<<"known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
+      // std::cout<<"known flow "<<fdata.flow_id<<" started.. run sched "<<std::endl;
     }
     flowTracker->registerEvent(1, fdata);
   }
@@ -482,7 +500,7 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
     }
     flow_weight_local[itr->flow_id]  = new_weight;
  
-    std::cout<<" setting weight of flow "<<itr->flow_id<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
+    //std::cout<<" setting weight of flow "<<itr->flow_id<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
     total_weight += new_weight;
     ipv4->setFlowWeight(itr->flow_id, new_weight);
     flowweights[itr->flow_id] = new_weight;
@@ -537,13 +555,13 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
 Ptr<ExponentialRandomVariable> getDeadlineRV() {
   Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
   exp->SetAttribute("Mean", DoubleValue(deadline_mean));
-  std::cout<<" create deadline RV with mean " << deadline_mean << std::endl;
+  //std::cout<<" create deadline RV with mean " << deadline_mean << std::endl;
   return exp;
 }
 
 Ptr<UniformRandomVariable> getDecisionRV() {
   Ptr<UniformRandomVariable> deadline_decision = CreateObject<UniformRandomVariable> ();
-  std::cout<<" create deadline decision uniform 1 - 10 " << deadline_decision << std::endl;
+  //std::cout<<" create deadline decision uniform 1 - 10 " << deadline_decision << std::endl;
   return deadline_decision;
 }
 
@@ -553,12 +571,14 @@ double getDeadline(double start_time, double flow_size, Ptr<ExponentialRandomVar
   double RV_delta = exp->GetValue();
 
   // in Bits/sec, convert to bytes/sec
-  double effective_rate = (link_rate * (1.0 - controller_estimated_unknown_load))/8.0;
+  //double effective_rate = (link_rate * (1.0 - controller_estimated_unknown_load))/8.0;
+  double effective_rate = (link_rate * (1.0))/8.0;
 
   double best_transmit_time = flow_size/effective_rate;
   double min_transmit_time = 1.25 * flow_size/effective_rate;
   // if RV deadline too close, take 1.25 * best transmit (LOWER BOUND)
-  double deadline_delta = std::max(RV_delta + best_transmit_time, min_transmit_time);
+  // double deadline_delta = std::max(RV_delta + best_transmit_time, min_transmit_time);
+  double deadline_delta = std::max(RV_delta * best_transmit_time, min_transmit_time);
 
   double random_deadline = RV_delta + best_transmit_time;
   double total_deadline = start_time + deadline_delta;
@@ -655,12 +675,15 @@ main(int argc, char *argv[])
    std::cout<<"set prefix to "<<prefix<<std::endl;
  // initAll();
 
-  if(deadline){
+  if(deadline_mode){
     Ptr<ExponentialRandomVariable> deadline_exp;    
     Ptr<UniformRandomVariable> deadline_decision;    
     std::cout<<"DEADLINE TRUE"<<std::endl; 
     //deadline_exp, deadline_decision = generateDeadlineRV();
   }
+
+
+  std::cout<<"PARAMS load " << load << " deadline_mean " << deadline_mean << " scheduler_mode " << scheduler_mode_edf << std::endl; 
 
   createTopology();
   setUpTraffic();

@@ -137,13 +137,13 @@ void Tracker::UpdateFlowRemainingSize(FlowData fd, double transmitted_size, uint
           itr->flow_rem_size = 0.0;
         }
 
-        std::cout<<"SC update flow rem size "<< itr->flow_rem_size << " transmitted size " << transmitted_size << " flow size " << itr->flow_size << " flow id " << itr->flow_id << " passed_in_flowID " << passed_in_flowID << std::endl; 
+        // std::cout<<"SC update flow rem size "<< itr->flow_rem_size << " transmitted size " << transmitted_size << " flow size " << itr->flow_size << " flow id " << itr->flow_id << " passed_in_flowID " << passed_in_flowID << std::endl; 
       }
     
     // std::cout<<"SC UPDATE SIZE fid "<<itr->flow_id<<" src "<<itr->source_node<<" dst "<<itr->dest_node<<" size "<<itr->flow_size<<std::endl;
  }
  
- dataDump(); 
+ //dataDump(); 
 
 }
    

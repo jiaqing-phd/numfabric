@@ -235,7 +235,7 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     }
     double pkt_dur = ((p->GetSize()) * 8.0 * 1000000.0) / trate;  //in us since target_rate is in bps
     Time tNext (NanoSeconds (pkt_dur*1000.0));
-    std::cout<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;
+    //std::cout<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
   

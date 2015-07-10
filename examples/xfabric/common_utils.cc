@@ -171,6 +171,9 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("weight_norm", "weight_norm", weight_normalized);
   cmd.AddValue ("rate_based", "rate_based", rate_based);
   cmd.AddValue ("UNKNOWN_FLOW_SIZE_CUTOFF", "unknown_flow_size_cutoff", UNKNOWN_FLOW_SIZE_CUTOFF);
+  cmd.AddValue ("scheduler_mode_edf", "scheduler_mode_edf", scheduler_mode_edf);
+  cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
+  cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
 
   return cmd;
 }
@@ -276,7 +279,7 @@ void setUpMonitoring(void)
   //apps.Start (Seconds (1.0));
   //apps.Stop (Seconds (sim_time));
 
-  Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
+  //Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
 }
 
 void
@@ -305,6 +308,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 //      }
 //      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
+         //
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<nid<<std::endl;
          if(!(s==1 || s==2 || s ==3 || s == 4 || s==5 || s==6 || s==7 || s==8)) {
            current_dest_rate += destRate; // hack - hardcoded only for this experiment - remove later
