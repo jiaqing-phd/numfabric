@@ -188,7 +188,8 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   QUERY_TIME = 0.0001;
   alpha = 1.0/16.0;
     
-  kay = 30000;
+  //kay = 30000;
+  kay = 60000;
   next_deadline = 0.0;
   last_deadline = 0.0;
 

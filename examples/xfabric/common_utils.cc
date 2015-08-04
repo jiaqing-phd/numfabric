@@ -279,7 +279,7 @@ void setUpMonitoring(void)
   //apps.Start (Seconds (1.0));
   //apps.Stop (Seconds (sim_time));
 
-  //Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
+  Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
 }
 
 void
@@ -306,7 +306,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 //         std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
 //         current_rate += rate;
 //      }
-//      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
+      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<nid<<std::endl;
