@@ -80,8 +80,10 @@ TcpNewReno::TcpNewReno (void)
   dctcp_alpha = 0.0;
   dctcp_reacted = false;
   xfabric_reacted = false;
-  d0 = 0.00003; //30us - TBD
+  d0 = 0.00001; //30us - TBD
   dt = d0 * 1.0;
+  //d0 = 0.00003; //30us - TBD
+  //dt = d0 * 1.0;
 
 }
 
