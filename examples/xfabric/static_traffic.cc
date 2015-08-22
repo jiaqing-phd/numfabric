@@ -3,6 +3,7 @@
 
 NS_LOG_COMPONENT_DEFINE ("pfabric");
 
+
 uint32_t global_flow_id = 1;
 std::map<uint32_t, uint32_t> flow_known;
 
@@ -194,6 +195,7 @@ void startFlowEvent(uint32_t sourceN, uint32_t sinkN, double flow_start, double 
 
   flow_known[flow_id] = known;  // whether this flow is part of known or unknown flow set
   (source_flow[(allNodes.Get(sourceN))->GetId()]).push_back(flow_id);
+  std::cout<<"adding flow "<<flow_id<<" to destination "<<allNodes.Get(sinkN)->GetId()<<std::endl;
   (dest_flow[(allNodes.Get(sinkN))->GetId()]).push_back(flow_id);
   std::stringstream ss;
   ss<<addr<<":"<<remoteIp<<":"<<ports[sinkN];
@@ -236,12 +238,14 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
       double flow_start_time = 0.0;
       double time_now = 1.0;
      
-      while(time_now < (sim_time-0.1))
+      //while(time_now < (sim_time-0.1)) kn testing
+      uint32_t flow_counter = 0;
+      while(flow_counter < 2)
       {
         // flow size 
         double flow_size = empirical_rand->GetValue(); 
         double inter_arrival = exp->GetValue();
-        flow_start_time = time_now + inter_arrival;
+        flow_start_time = time_now;// + inter_arrival; testing
         NS_LOG_UNCOND("next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time);
         time_now = flow_start_time; // is this right ?
         
@@ -260,6 +264,8 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
           std::cout<<"SC_DCTCP_DEBUG known "<< known <<" UNKNOWN_FLOW_SIZE_CUTOFF "<< UNKNOWN_FLOW_SIZE_CUTOFF <<" flow_size "<< flow_size << " flow_num " << flow_num << std::endl;
 
         }
+
+        known = 1; // testing kn
 
         uint32_t flow_weight = 1.0; // TBD - what weight do they have ? 
         uint32_t snid = (sourceNodes.Get(i))->GetId();
@@ -285,31 +291,35 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
           flow_has_deadline = true;
         }
 
+        // kn testing
+        flow_size = 12500000000;
+        flow_has_deadline = false;
+        deadline_mode = false;
+        flow_weight = 1.0;
+
          // populate flow data with deadline info
         FlowData flowData (snid, destnid, flow_start_time,
         flow_size,flow_num, flow_weight , uftcp, known, flow_size,
         local_flow_deadline, local_flow_duration, flow_has_deadline ); 
         flow_known[flow_num] = known;
           
-        std::cout<<"FINAL_DEBUG_DEADLINE flow_num " << flow_num << " flow_start_time " << flow_start_time << " duration " << local_flow_duration << " flow_size " << flow_size << " local_flow_deadline " << local_flow_deadline << " known " << known << " flow_has_deadline  " << flow_has_deadline << std::endl; 
+        std::cout<<"FINAL_DEBUG_DEADLINE flow_num " << flow_num << " flow_start_time " << flow_start_time << " duration " << local_flow_duration << " flow_size " << flow_size << " local_flow_deadline " << local_flow_deadline << " known " << known << " flow_has_deadline  " << flow_has_deadline << " flow_weight "<<flow_weight<<std::endl; 
 
-          if(deadline_mode) {
-		if(scheduler_mode_edf) {
+          //if(deadline_mode) {
+		      //  if(scheduler_mode_edf) {
+           // 		Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
+           // } else {
+      			  Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+		       // }
+        	//  std::cout<<"ENTER SCHED deadline "<< deadline_mode << " scheduler_mode_edf " << scheduler_mode_edf << std::endl; 
 
-            		Simulator::Schedule (Seconds (flow_start_time), &run_scheduler_edf, flowData, 1);
-            	} else {
-			Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
-		}
-
-
-        	std::cout<<"ENTER SCHED deadline "<< deadline_mode << " scheduler_mode_edf " << scheduler_mode_edf << std::endl; 
-
-          } else {
-            Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
-          }
+         // } else {
+         //   Simulator::Schedule (Seconds (flow_start_time), &run_scheduler, flowData, 1);
+         // }
 
           //startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, 1, known); 
           flow_num++;
+          flow_counter++;
         
       } // end while
     }
@@ -500,7 +510,7 @@ void run_scheduler(FlowData fdata, uint32_t eventType)
     }
     flow_weight_local[itr->flow_id]  = new_weight;
  
-    //std::cout<<" setting weight of flow "<<itr->flow_id<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<Simulator::Now().GetSeconds()<<" setting weight of flow "<<itr->flow_id<<" at node "<<nid<<" to "<<new_weight<<" at "<<Simulator::Now().GetSeconds()<<std::endl;
     total_weight += new_weight;
     ipv4->setFlowWeight(itr->flow_id, new_weight);
     flowweights[itr->flow_id] = new_weight;
@@ -671,6 +681,7 @@ main(int argc, char *argv[])
   cmd.Parse (argc, argv);
   common_config(); 
 
+  std::cout<<"print me "<<std::endl;
   std::cout<<*argv<<std::endl;
    std::cout<<"set prefix to "<<prefix<<std::endl;
  // initAll();

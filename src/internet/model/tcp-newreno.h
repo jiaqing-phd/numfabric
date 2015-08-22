@@ -75,7 +75,7 @@ protected:
   double getFlowIdealRate(std::string fkey);
   SequenceNumber32 ecn_highest;
   SequenceNumber32 last_outstanding_num;
-  uint32_t d0, dt;
+  double d0, dt;
 
   // Implementing ns3::TcpSocket -- Attribute get/set
   virtual void     SetSegSize (uint32_t size);

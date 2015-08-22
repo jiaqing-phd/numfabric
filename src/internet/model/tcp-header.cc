@@ -71,6 +71,16 @@ void TcpHeader::SetRate(double rate_)
   m_rate = rate_;
 }
 
+double TcpHeader::GetPrice() const
+{
+  return m_linkprice;
+}
+
+void TcpHeader::SetPrice(double price_)
+{
+  m_linkprice = price_;
+}
+
 void
 TcpHeader::EnableChecksums (void)
 {
@@ -343,6 +353,9 @@ TcpHeader::Serialize (Buffer::Iterator start)  const
   memcpy((void *)a, (void *)&m_rate, sizeof(double));
   i.Write(a, sizeof(double));
 
+  uint8_t b[sizeof(double)];
+  memcpy((void *)b, (void *)&m_linkprice, sizeof(double));
+  i.Write(b, sizeof(double));
   // Serialize options if they exist
   // This implementation does not presently try to align options on word
   // boundaries using NOP options
@@ -394,6 +407,10 @@ TcpHeader::Deserialize (Buffer::Iterator start)
   uint8_t a[sizeof(double)];
   i.Read(a, sizeof(double));
   memcpy((void *)&m_rate, (void *)a, sizeof(double)); 
+
+  uint8_t b[sizeof(double)];
+  i.Read(b, sizeof(double));
+  memcpy((void *)&m_linkprice, (void *)b, sizeof(double)); 
 
   // Deserialize options if they exist
   m_options.clear ();
@@ -466,7 +483,7 @@ uint8_t
 TcpHeader::CalculateHeaderLength () const
 {
   //uint32_t len = 20;
-  uint32_t len = 32; //kanthi 4 ecn 8 m_rate
+  uint32_t len = 40; //kanthi 4 ecn 8 m_rate 8 m_linkprice
   TcpOptionList::const_iterator i;
 
   for (i = m_options.begin (); i != m_options.end (); ++i)

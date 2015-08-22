@@ -146,7 +146,7 @@ MyApp::SendPacket (void)
   Ptr<Packet> packet = Create<Packet> (m_packetSize);
 
   int ret_val = m_socket->Send( packet ); 
-  
+  std::cout<<"***  sent packet with id "<<packet->GetUid()<<" size "<<packet->GetSize()<<" *** "<<std::endl;  
   if(ret_val != -1) {
     m_totBytes += packet->GetSize();
   } else {

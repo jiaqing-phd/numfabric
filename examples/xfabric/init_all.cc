@@ -22,19 +22,26 @@ Ptr<Tracker> flowTracker;
 
 std::map<uint32_t, double> flow_sizes;
 int checkTimes = 0;
-double kvalue;
+double kvalue = 50000;
 
 std::map<uint32_t, std::vector<uint32_t> > source_flow;
 std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 ApplicationContainer sinkApps;
 
 std::map<uint32_t, double> flowweights;
-double sim_time = 2.0;
+double sim_time = 1.3;
+double gamma1_value = 10.0;  //the weight to the rate term
+
+double alpha_value = 1*1e-10;
+double target_queue = 30000.0;
+
 
 double measurement_starttime = 1.2;
-double rate_update_time = 0.0001;
+double rate_update_time = 0.0005;
+double price_update_time = 0.01; //90us //TODO ITEM
+double gamma_value = 0.00001; // price too jagged but values ok
 float sampling_interval = 0.001;
-uint32_t pkt_size = 1462;
+uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
 uint32_t weight_normalized = 0;
@@ -47,11 +54,11 @@ bool delay_mark_value = true;
 uint32_t vpackets = 1;
 
 /* TCP variables */
-uint32_t max_segment_size = 1438;
+uint32_t max_segment_size = 1414;
 uint32_t ssthresh_value = 3000;
 uint32_t recv_buf_size = 1310720;
 uint32_t send_buf_size = 1310720;
-bool xfabric = false;
+bool xfabric = true;
 bool dctcp = false;
 
 /* Deadline variables */
@@ -71,7 +78,8 @@ bool rate_based  = false;
 /* Overall simulation parameters */
 uint32_t N = 4; //number of nodes in the star
 uint32_t flows_per_host = 1;
-std::string application_datarate = "10Gbps";
+//std::string application_datarate = "10Gbps";
+std::string application_datarate = "1Gbps";
 
 bool pkt_tag = true;
 
@@ -89,7 +97,8 @@ NodeContainer sinkNodes;
 
 double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;
-std::string link_rate_string = "10Gbps";
+//std::string link_rate_string = "10Gbps";
+std::string link_rate_string = "1Gbps";
 
 double load = 0.05;
 double controller_estimated_unknown_load = 0.05;

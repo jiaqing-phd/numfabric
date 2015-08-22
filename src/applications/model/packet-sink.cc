@@ -75,11 +75,11 @@ PacketSink::GetTypeId (void)
                    UintegerValue(0),
                    MakeUintegerAccessor (&PacketSink::m_flowID),
                    MakeUintegerChecker<uint32_t> ())
-    .AddAttribute("last_flow",
+/*    .AddAttribute("last_flow",
                   "last_flow",
                   BooleanValue(false),
                   MakeBooleanAccessor (&PacketSink::m_lastflow),
-                  MakeBooleanChecker ())
+                  MakeBooleanChecker ()) */
 
     .AddTraceSource ("Rx", "A packet has been received",
                      MakeTraceSourceAccessor (&PacketSink::m_rxTrace))

@@ -143,7 +143,7 @@ private:
   uint32_t        m_numBytes;
   uint32_t        m_flowID;
   Time            flow_start_time;
-  bool            m_lastflow;
+//  bool            m_lastflow; // kn - not used and removing to get rid of warning
 
   /// Traced Callback: received packets, source address.
   TracedCallback<Ptr<const Packet>, const Address &> m_rxTrace;

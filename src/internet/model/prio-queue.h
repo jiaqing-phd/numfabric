@@ -15,6 +15,7 @@
 #include "ns3/data-rate.h"
 #include "ns3/boolean.h"
 #include "tcp-header.h"
+#include "ns3/tag.h"
 
 //#include "ns3/traced-callback.h"
 
@@ -41,6 +42,27 @@ typedef struct Flowkey {
 } FlowKey;
 
 class TraceContainer;
+
+/* one more class for the packet id */
+
+class MyTag : public Tag
+ {
+ public:
+   static TypeId GetTypeId (void);
+   virtual TypeId GetInstanceTypeId (void) const;
+   virtual uint32_t GetSerializedSize (void) const;
+   virtual void Serialize (TagBuffer i) const;
+   virtual void Deserialize (TagBuffer i);
+   virtual void Print (std::ostream &os) const;
+ 
+   // these are our accessors to our tag structure
+   void SetValue (double value);
+   double GetValue (void) const;
+ private:
+   double m_Value;
+ };
+ 
+
 
 class PrioQueue : public Queue {
 public:
@@ -78,6 +100,8 @@ public:
   std::map<std::string, uint32_t>flow_ids;
   std::map<uint32_t, double>flow_weights;
   bool init_reset;
+  double m_gamma, m_gamma1, m_alpha; // TBD - initialize these
+  double m_target_queue;
 
 
   /**
@@ -97,6 +121,8 @@ public:
 
   double ecn_delaythreshold;
   bool delay_mark;
+  bool xfabric_price;
+  double current_price;
 
 
   void updateLinkPrice(void);
@@ -125,6 +151,7 @@ public:
   struct tag_elem get_highest_tagid();
   double get_lowest_deadline();
   TcpHeader GetTCPHeader(Ptr<Packet> p);
+  Ptr<Packet> get_lowest_tag_packet();
 
 private:
   virtual bool DoEnqueue (Ptr<Packet> p);
@@ -150,7 +177,7 @@ private:
   bool m_dctcp_mark;
   DataRate m_bps;
   QueueMode m_mode;                   //!< queue mode (packets or bytes limited)
-  uint32_t  current_virtualtime;
+  uint64_t  current_virtualtime;
 
 //  unsigned int sq_limit_;
 //  unordered_map<size_t, int> sq_counts_;

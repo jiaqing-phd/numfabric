@@ -265,6 +265,8 @@ public:
   void SetECN(int ecn);
   double GetRate() const;
   void SetRate(double rate);
+  double GetPrice() const;
+  void SetPrice(double pr);
 
 private:
   /**
@@ -302,6 +304,7 @@ private:
 
   int ecn_;
   double m_rate;
+  double m_linkprice;
 
 
   typedef std::list< Ptr<TcpOption> > TcpOptionList; //!< List of TcpOption

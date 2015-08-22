@@ -77,14 +77,15 @@ CheckQueueSize (Ptr<Queue> queue)
     uint32_t qSize = StaticCast<PrioQueue> (queue)->GetCurSize ();
     uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
     std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
+    double cur_price = StaticCast<PrioQueue> (queue)->getCurrentPrice();
     checkTimes++;
-    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<std::endl;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<cur_price<<std::endl;
     std::map<std::string, uint32_t>::iterator it;
     for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
       double virtual_time = StaticCast<PrioQueue> (queue)->get_virtualtime();
       double current_slope = StaticCast<PrioQueue> (queue)->getCurrentSlope();
-      std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<current_slope<<" "<<nid<<std::endl;
+      std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<current_slope<<" "<<cur_price<<" "<<nid<<std::endl;
     }
   } 
   if(queue_type == "W2FQ") {
@@ -279,7 +280,7 @@ void setUpMonitoring(void)
   //apps.Start (Seconds (1.0));
   //apps.Stop (Seconds (sim_time));
 
-  //Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
+  Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
 }
 
 void
@@ -306,7 +307,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 //         std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
 //         current_rate += rate;
 //      }
-//      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
+      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<nid<<std::endl;

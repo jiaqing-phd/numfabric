@@ -77,14 +77,14 @@ Wifi80211pHelper::Install (const WifiPhyHelper &phyHelper, const WifiMacHelper &
   bool isWaveMacHelper = false;
   try
     {
-      const QosWaveMacHelper& qosMac = dynamic_cast<const QosWaveMacHelper&> (macHelper);
+      //const QosWaveMacHelper& qosMac = dynamic_cast<const QosWaveMacHelper&> (macHelper);
       isWaveMacHelper = true;
       // below check will never fail, just used for survive from
       // gcc warn "-Wunused-but-set-variable"
-      if (&qosMac == 0)
-        {
-          NS_FATAL_ERROR ("it could never get here");
-        }
+      //if (&qosMac == NULL)
+      //  {
+      //    NS_FATAL_ERROR ("it could never get here");
+      //  }
     }
   catch (const std::bad_cast &)
     {
@@ -93,12 +93,12 @@ Wifi80211pHelper::Install (const WifiPhyHelper &phyHelper, const WifiMacHelper &
 
   try
     {
-      const NqosWaveMacHelper& nqosMac = dynamic_cast<const NqosWaveMacHelper&> (macHelper);
+      //const NqosWaveMacHelper& nqosMac = dynamic_cast<const NqosWaveMacHelper&> (macHelper);
       isWaveMacHelper = true;
-      if (&nqosMac == 0)
-        {
-          NS_FATAL_ERROR ("it could never get here");
-        }
+     // if (&nqosMac == NULL)
+     //   {
+     //     NS_FATAL_ERROR ("it could never get here");
+     //   }
     }
   catch (const std::bad_cast &)
     {

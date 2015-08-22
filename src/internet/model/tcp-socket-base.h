@@ -129,6 +129,7 @@ public:
   
   FlowUtil flowutil;
   double utilInverse(double lp);
+  double current_netw_price;
 
 
 protected:

@@ -166,7 +166,7 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
       m_cWnd += m_segmentSize;
       NS_LOG_INFO ("In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
-      std::cout<<"In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<std::endl;
+      NS_LOG_LOGIC("In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
     }
   else
     { 
@@ -192,10 +192,10 @@ TcpNewReno::getFlowId(std::string flowkey)
    
 //  std::map<std::string, uint32_t>::iterator it;
 //  for (it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it) {
-//    std::cout<<it->first<<" "<<it->second<<std::endl;
+//    NS_LOG_LOGIC(it->first<<" "<<it->second);
 //  }
  
-//  std::cout<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl; 
+//  NS_LOG_LOGIC(" flowkey "<<flowkey<<" fid "<<fid); 
   return fid;
 }
 
@@ -214,13 +214,13 @@ TcpNewReno::getFlowIdealRate(std::string flowkey)
 void
 TcpNewReno::setdctcp(bool dctcp_value)
 {
-  std::cout<<"unknown flow setting m_dctcp "<<dctcp_value<<std::endl;
+  NS_LOG_LOGIC("unknown flow setting m_dctcp "<<dctcp_value);
   m_dctcp = dctcp_value;
 }
 void
 TcpNewReno::setxfabric(bool xfabric_value)
 {
-  std::cout<<"unknown flow setting m_xfabric "<<xfabric_value<<std::endl;
+  NS_LOG_LOGIC("unknown flow setting m_xfabric "<<xfabric_value);
   m_xfabric = xfabric_value;
 }
 
@@ -233,20 +233,21 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
     std::string flowkey = ss.str();
 
-//    target_rate  = getFlowIdealRate(flowkey)/1000000.0;
+    // target_rate  = getFlowIdealRate(flowkey)/1000000.0;
   
-  //  std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<std::endl;
-    double res = target_rate * (1000000.0/8.0) * 0.000050; //TBD - dt from commandline
+    NS_LOG_LOGIC("processRate flow rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId());
+
+    double res = target_rate * (1000000.0/8.0) * 0.0002; //TBD - dt from commandline
     m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
     //  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
 
-//    std::cout<<"m_cWnd "<<m_cWnd<<" res "<<res<<std::endl; 
+//    NS_LOG_LOGIC("m_cWnd "<<m_cWnd<<" res "<<res); 
 
     if(m_cWnd < 1* m_segmentSize) 
     {
      
-    // std::cout<<"flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd<<std::endl;
+    // NS_LOG_LOGIC("flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd);
       m_cWnd = 1 * m_segmentSize;
     }
     m_ssThresh = m_cWnd;
@@ -285,7 +286,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
        dctcp_alpha = (1.0 - beta)*dctcp_alpha + beta* new_alpha;
        total_bytes_acked = 0;
        bytes_with_ecn = 0; 
-       //std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<" ssthresh "<<m_ssThresh<<" initcwnd "<<m_initialCWnd<<std::endl;
+       //NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<" ssthresh "<<m_ssThresh<<" initcwnd "<<m_initialCWnd);
        last_outstanding_num = m_highTxMark;
      }
    }
@@ -297,7 +298,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
  //   NS_LOG_INFO("ProcessECN .. ACK recvd for seq "<<ack_num<<" ecn_highest set to "<<ecn_highest<< "current highest "<<m_highTxMark); 
 
     if(m_dctcp) {
-   //   std::cout<<"m_dctcp is true"<<std::endl;
+   //   NS_LOG_LOGIC("m_dctcp is true");
       //NS_LOG_UNCOND("bytes_with_ecn "<<bytes_with_ecn<<" totalbytes "<<total_bytes_acked);
       if(ack_num >= ecn_highest) {
 
@@ -452,7 +453,7 @@ TcpNewReno::InitializeCwnd (void)
   m_cWnd = m_initialCWnd * m_segmentSize;
   m_ssThresh = m_initialSsThresh;
 
-  std::cout<<" InitializeCwnd : "<<m_initialCWnd<<" "<<m_cWnd<<" "<<m_ssThresh<<std::endl;
+  NS_LOG_LOGIC(" InitializeCwnd : "<<m_initialCWnd<<" "<<m_cWnd<<" "<<m_ssThresh);
 }
 
 void
@@ -460,7 +461,7 @@ TcpNewReno::resetSSThresh(uint32_t ssthresh)
 {
   m_initialSsThresh = ssthresh;
   m_ssThresh = m_initialSsThresh;
-  std::cout<<" ssthresh reset to "<<m_ssThresh<<std::endl;
+  NS_LOG_LOGIC(" ssthresh reset to "<<m_ssThresh);
 }
 
 void

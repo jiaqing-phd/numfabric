@@ -9,7 +9,9 @@ class PriHeader
 {
   public:
     double wfq_weight;
-    PriHeader(double wfq_weight);
+	  double residue;
+	  double netw_price;
+    PriHeader(double wfq_weight, double res, double price);
 };
 
 
@@ -30,6 +32,8 @@ public:
      PriHeader GetData (void) const;
 private:
      double m_wfq_weight;
+	 double m_residue;
+	 double m_netw_price;
 };
 }
 #endif

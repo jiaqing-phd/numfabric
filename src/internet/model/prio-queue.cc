@@ -15,8 +15,64 @@ NS_LOG_COMPONENT_DEFINE ("PrioQueue");
 
 double eps_diff = 0.0;
 
-static double MAX_DOUBLE = 10;
+static double MAX_DOUBLE = 10000.0;
 namespace ns3 {
+
+
+ TypeId 
+ MyTag::GetTypeId (void)
+ {
+   static TypeId tid = TypeId ("ns3::MyTag")
+     .SetParent<Tag> ()
+     .AddConstructor<MyTag> ()
+     .AddAttribute ("SimpleValue",
+                    "A simple value",
+                    EmptyAttributeValue (),
+                    MakeDoubleAccessor (&MyTag::GetValue),
+                    MakeDoubleChecker<double> ())
+   ;
+   return tid;
+ }
+ TypeId 
+ MyTag::GetInstanceTypeId (void) const
+ {
+   return GetTypeId ();
+ }
+ uint32_t 
+ MyTag::GetSerializedSize (void) const
+ {
+   return sizeof(double);
+ }
+ void 
+ MyTag::Serialize (TagBuffer i) const
+ {
+     uint8_t a[sizeof(double)];
+     memcpy((void *)a, (void *)&m_Value, sizeof(double));
+  
+     i.Write(a, sizeof(double));
+ }
+ void 
+ MyTag::Deserialize (TagBuffer i)
+ {
+  uint8_t a[sizeof(double)];
+  i.Read(a, sizeof(double)); 
+  memcpy((void *)&m_Value, (void *)a, sizeof(double));
+ }
+ void 
+ MyTag::Print (std::ostream &os) const
+ {
+   os << "v=" << (double)m_Value;
+ }
+ void 
+ MyTag::SetValue (double value)
+ {
+   m_Value = value;
+ }
+ double 
+ MyTag::GetValue (void) const
+ {
+   return m_Value;
+ }
 
 NS_OBJECT_ENSURE_REGISTERED (PrioQueue);
 
@@ -81,6 +137,38 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeUintegerAccessor (&PrioQueue::vpackets),
                    MakeUintegerChecker<uint32_t> ())
 
+    .AddAttribute ("xfabric_price", 
+                   "Calculate network price according to xfabric",
+                   BooleanValue (true),
+                   MakeBooleanAccessor (&PrioQueue::xfabric_price),
+                   MakeBooleanChecker ())
+	 .AddAttribute("target_queue",
+                  "Target Queue",
+                  DoubleValue(10000.0),
+                  MakeDoubleAccessor (&PrioQueue::m_target_queue),
+                  MakeDoubleChecker <double> ())
+
+
+    .AddAttribute ("gamma", 
+                   "gamma value for DGD",
+                   DoubleValue(0.000001),
+                   MakeDoubleAccessor (&PrioQueue::m_gamma),
+                   MakeDoubleChecker <double> ())
+    .AddAttribute ("gamma1", 
+                   "Value of gamma1 for DGD",
+                   DoubleValue(10.0),
+                   MakeDoubleAccessor (&PrioQueue::m_gamma1),
+                   MakeDoubleChecker <double>())
+    .AddAttribute ("alpha", 
+                   "gamma value for xfabric",
+                   DoubleValue(0.01),
+                   MakeDoubleAccessor (&PrioQueue::m_alpha),
+                   MakeDoubleChecker <double> ())
+    .AddAttribute ("PriceUpdateTime", 
+                   "The time after which to update priority",
+                   TimeValue(Seconds(0.0001)),
+                   MakeTimeAccessor (&PrioQueue::m_updatePriceTime),
+                   MakeTimeChecker())
 ;
   return tid;
 }
@@ -99,8 +187,12 @@ PrioQueue::PrioQueue () :
   total_samples = 0;
   current_virtualtime = 0.0;
   updated_virtual_time = 0.0;
+  current_price = 0.0;
+
+  xfabric_price = true;
+  Simulator::Schedule(Seconds(1.0), &ns3::PrioQueue::updateLinkPrice, this);
   
-  std::cout<<" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold<<std::endl;
+  NS_LOG_LOGIC(" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold);
 }
 
 uint32_t
@@ -108,7 +200,7 @@ PrioQueue::getFlowID(Ptr<Packet> p)
 {
   std::string flowkey = GetFlowKey(p);
   if (flow_ids.find(flowkey) != flow_ids.end()) {
-//    std::cout<<"flowkey "<<flowkey<<" fid "<<flow_ids[flowkey]<<std::endl;
+//    NS_LOG_LOGIC("flowkey "<<flowkey<<" fid "<<flow_ids[flowkey]);
     return flow_ids[flowkey];
   }
   return 0; //TBD - convert flows to ids
@@ -117,14 +209,14 @@ PrioQueue::getFlowID(Ptr<Packet> p)
 void
 PrioQueue::setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t known)
 {
- // std::cout<<"SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid<<std::endl;
+ // NS_LOG_LOGIC("SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid);
   flow_ids[flowkey] = fid;
   flow_weights[fid] = fweight;
   flow_known[fid] = known;
 
 }
 
-/*
+
 double
 PrioQueue::getRateDifference(Time time_interval)
 {
@@ -134,9 +226,9 @@ PrioQueue::getRateDifference(Time time_interval)
     double rate_difference = link_incoming_rate - available_capacity;
 
     if(nodeid == 0 || nodeid == 1) {
-//      std::cout<<Simulator::Now().GetSeconds()<<" queue_id "<<nodeid<<" Incoming bytes "<<incoming_bytes<<" link_incoming_rate "<<link_incoming_rate<<" available capacity "<<available_capacity<<" rate_difference "<<rate_difference<<std::endl;
+//      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" queue_id "<<nodeid<<" Incoming bytes "<<incoming_bytes<<" link_incoming_rate "<<link_incoming_rate<<" available capacity "<<available_capacity<<" rate_difference "<<rate_difference);
     }
-    current_incoming_rate = link_incoming_rate;
+    //current_incoming_rate = link_incoming_rate;
     incoming_bytes = 0.0;
     return rate_difference;
 }
@@ -150,7 +242,8 @@ PrioQueue::getRateDifferenceNormalized(Time time_interval)
     double ratio = 1.0 - link_incoming_rate / available_capacity;
     //double ratio1 = std::max(0.0, ratio);
  
-    current_incoming_rate = link_incoming_rate;
+    //current_incoming_rate = link_incoming_rate;
+    //std::cout<<" queuerate "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" current_incoming_rate "<<link_incoming_rate<<" bytes "<<incoming_bytes<<" available_capacity "<<available_capacity<<" ratio "<<ratio<<std::endl;
     incoming_bytes = 0.0;
     return ratio;
 }
@@ -166,7 +259,7 @@ void
 PrioQueue::updateLinkPrice(void)
 {
 
-  if(!m_margin_util_price) 
+  if(!xfabric_price) 
   {
 
     //NS_LOG_UNCOND("Using updateLinkPrice");
@@ -179,27 +272,16 @@ PrioQueue::updateLinkPrice(void)
     current_price = std::max(current_price, 0.0);
     current_price = std::min(current_price, 1.0);
 
-    if(m_is_switch) {
+//    if(m_is_switch) {
       //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<< " current price "<<current_price<<" node "<<nodeid<<" price_raise "<<price_hike<<" queue_term "<< (m_alpha *(current_queue - m_target_queue))<<" rate_term "<<price_hike<<" current_queue "<<current_queue<<" target_queue "<<m_target_queue);
-    } 
-//    std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<nodeid<<" old_price "<<current_price<<" min_price_inc "<<price_hike<<" rate_increase "<<0<<" new_price "<<current_price<<" current_price "<<current_price<<" link_incoming_rate "<<current_incoming_rate<<" current_virtualtime "<<current_virtualtime<<std::endl; 
-    Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
-  }
- 
-}
-
-
-void PrioQueue::updateMinPrio(void)
-{
-
-  if(m_margin_util_price) {
-
+ //   } 
+    NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" min_price_inc "<<price_hike);
+  } else {
     if(running_min_prio != MAX_DOUBLE) {
       latest_min_prio = running_min_prio;
     } else {
       latest_min_prio = 0.0;
     }
-    running_min_prio = MAX_DOUBLE;
 
     if(total_samples > 0) {
       latest_avg_prio = running_avg_prio/(total_samples*1.0);
@@ -209,21 +291,22 @@ void PrioQueue::updateMinPrio(void)
     //reset values
     running_avg_prio = 0.0;
     total_samples = 0;
+    running_min_prio = MAX_DOUBLE;
+
+    NS_LOG_LOGIC("running_min_prio_log nodeid "<<nodeid<<" "<<latest_min_prio);
     
-    if(m_is_switch) {
+    //if(m_is_switch) {
      //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" queueu_id "<<nodeid<<" copied running_min_prio "<<latest_min_prio<<" as latest");
-    }
+    //}
   
   
     double old_price = current_price;
     double min_price_inc = old_price + latest_min_prio;
     double rate_increase = getRateDifferenceNormalized(m_updatePriceTime);
 
-    double incr = std::max(rate_increase, 0.0); // we don't want this term to increase rate
+    double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
   
     double new_price = min_price_inc - m_gamma1*incr*current_price;
-  
-   
     
    if(new_price < 0.0) {
     new_price = 0.0;
@@ -231,11 +314,14 @@ void PrioQueue::updateMinPrio(void)
    //current_price = new_price;
    current_price = 0.5*new_price + 0.5*current_price;
   
-   Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateMinPrio, this);
+    NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
+  // std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<std::endl;
   }
-  
+  Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
+ 
 }
-*/
+
+
 PrioQueue::~PrioQueue ()
 {
 //  NS_LOG_FUNCTION (this);
@@ -243,7 +329,7 @@ PrioQueue::~PrioQueue ()
 
 void PrioQueue::SetNodeID(uint32_t node_id)
 {
-  std::cout<<"setnodeid prioqueue"<<std::endl;
+  NS_LOG_LOGIC("setnodeid prioqueue");
   nodeid = node_id;
 }
 
@@ -255,7 +341,7 @@ void PrioQueue::SetLinkID(uint32_t link_id)
 void PrioQueue::SetLinkIDString(std::string linkid_string1)
 {
   linkid_string = linkid_string1;
-  std::cout<<"setting node id "<<nodeid<<" linkid_string "<<linkid_string<<std::endl;
+  NS_LOG_LOGIC("setting node id "<<nodeid<<" linkid_string "<<linkid_string);
 }
 
 std::string PrioQueue::GetLinkIDString(void)
@@ -512,9 +598,10 @@ PrioQueue::get_highest_tagid()
   struct tag_elem elem;
   elem.deadline = 0;
   elem.pktid = -1;
-  if(pkt_tag.empty()) {
+  if(pkt_tag.empty() && !m_packets.empty()) {
     // should not happen
-    NS_LOG_UNCOND("get_lowest_tagid.. something happened.. it's empty");
+    NS_LOG_UNCOND("get_highest_tagid.. something happened.. it's empty while there are packets");
+    
     return elem;
   }
   std::map<uint64_t, double>::iterator min_item = pkt_tag.begin();
@@ -540,7 +627,7 @@ PrioQueue::get_highest_tagid()
 
 
     
-
+/*
 inline double
 PrioQueue::get_lowest_deadline()
 {
@@ -562,17 +649,45 @@ PrioQueue::get_lowest_deadline()
 //  NS_LOG_UNCOND("returning packet with tag "<<lowest_tagid<<" packet id "<<lowest_pktid);
   return lowest_tagid;
 }
+*/
 
+Ptr<Packet>
+PrioQueue::get_lowest_tag_packet()
+{
+  double lowest_tag = 11111111111;
+  Ptr<Packet> pkt_ptr;
 
+  typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
+  for (PacketQueueI pp = m_packets.begin (); pp != m_packets.end (); pp++)
+  {
+      /* get the tag */
+      MyTag t1; 
+      (*pp)->PeekPacketTag(t1);
+      double tagval = t1.GetValue();
+
+      if(tagval < lowest_tag || lowest_tag == 11111111111) {
+        lowest_tag = tagval;
+        pkt_ptr = (*pp);
+      }
+
+  }
+
+  NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" get_lowest_tagid RETURNING "<<" tagid "<<lowest_tag);
+  return pkt_ptr;
+}
+
+/*
 inline struct tag_elem
 PrioQueue::get_lowest_tagid()
 {
   struct tag_elem elem;
   elem.deadline = 0;
   elem.pktid = -1;
-  if(pkt_tag.empty()) {
+  if(pkt_tag.empty() && !m_packets.empty()) {
     // should not happen
-    NS_LOG_UNCOND("get_lowest_tagid.. something happened.. it's empty");
+    //NS_LOG_UNCOND("get_lowest_tagid.. something happened.. it's empty");
+    //NS_LOG_UNCOND("get_lowest_tagid.. something happened.. it's empty while there are packets");
+    NS_LOG_LOGIC("get_lowest_tagid.. something happened.. it's empty while there are "<< m_packets.size()<<" packets "<<(m_packets.front())->GetUid());
     return elem;
   }
   std::map<uint64_t, double>::iterator min_item = pkt_tag.begin();
@@ -582,6 +697,7 @@ PrioQueue::get_lowest_tagid()
    
   for(; it != pkt_tag.end(); ++it)
   {
+    NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" get_lowest_tagid tag "<<it->second);
     if(it->second < lowest_tagid) {
       lowest_tagid = it->second;
       lowest_pktid = it->first;
@@ -593,10 +709,11 @@ PrioQueue::get_lowest_tagid()
   pkt_tag.erase(min_item);
   elem.deadline = lowest_tagid;
   elem.pktid = lowest_pktid;
+  NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" get_lowest_tagid RETURNING "<<elem.deadline<<" "<<elem.pktid<<" tagid "<<lowest_tagid);
   return elem;
 }
 
-
+*/
     
      
  
@@ -631,9 +748,6 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 {
   NS_LOG_FUNCTION (this << p);
 
-
-  incoming_bytes += p->GetSize(); 
-
   Ipv4Address min_source, min_dest;
   Ipv4Header h1 = GetIPHeader(p);
   PrioHeader pheader  = GetPrioHeader(p);
@@ -646,6 +760,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   Ptr<Packet> min_pp = p;
   PriHeader min_prio_header = pheader.GetData();
   double min_wfq_weight = min_prio_header.wfq_weight; //this is the deadline  
+  double p_residue = min_prio_header.residue;
 
   bool control_packet = false;
 
@@ -653,22 +768,30 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     control_packet = true;
   }
   uint32_t pkt_uid = min_pp->GetUid();
+//  NS_LOG_LOGIC("ENQUEU PKT WITH UID "<<pkt_uid<<" AT QUEUE "<<linkid_string);
+
+   if(p_residue < running_min_prio && !control_packet) {
+     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" updating running_min_prio to "<<running_min_prio<<" to residue "<<p_residue);
+     running_min_prio = p_residue;
+   }
 
   if(m_pkt_tagged) {
+    MyTag tag;
     std::string flowkey = GetFlowKey(min_pp);
     double deadline = get_stored_deadline(flowkey);
     if(deadline == -1 || control_packet) {
-      //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" nodeid "<<nodeid<<" pkt_flow "<<flowkey<<" not found deadline = "<<current_virtualtime);
-      pkt_tag[pkt_uid] = current_virtualtime*1.0;
+//      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" linkid "<<linkid_string<<" pkt_flow "<<flowkey<<" not found deadline = "<<current_virtualtime<<" pktid "<<min_pp->GetUid());
+      //pkt_tag[pkt_uid] = current_virtualtime*1.0;
+      tag.SetValue(current_virtualtime * 1.0);
     } else {
       double new_start_time= std::max(current_virtualtime*1.0, deadline);
-      pkt_tag[pkt_uid] = new_start_time;   //  + min_wfq_weight;
-      //pkt_tag[pkt_uid] = deadline + min_wfq_weight;
+      tag.SetValue(new_start_time);
+//      pkt_tag[pkt_uid] = new_start_time;   //  + min_wfq_weight;
     }
+    p->AddPacketTag(tag);
     // insert the new deadline now
-      //NS_LOG_UNCOND("deadline_at_switch "<<Simulator::Now().GetSeconds()<<" nodeid "<<nodeid<<" pkt_flow "<<flowkey<<" found_vtime= "<<current_virtualtime<<" inc= "<<deadline+min_prio<<" inserting_deadline "<<new_deadline);
-    set_stored_deadline(flowkey, pkt_tag[pkt_uid]+ (p->GetSize()*8.0/min_wfq_weight));
-    //set_stored_deadline(flowkey, pkt_tag[pkt_uid]+ (min_wfq_weight));
+//      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" nodeid "<<linkid_string<<" pkt_flow "<<flowkey<<" storing deadline = "<< tag.GetValue()+ min_wfq_weight<<" tagged packet with "<<tag.GetValue()<<" pktid "<<p->GetUid());
+    set_stored_deadline(flowkey, tag.GetValue()+ min_wfq_weight); //there is no need to divide 8/16
   }
 
   /* Also store time of arrival for each packet */
@@ -750,7 +873,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
             if(!min_pp) {
               NS_LOG_UNCOND("could not get packet with id "<<highest_tag_id);
             }
-            std::cout<<"marking pkt at enqueue"<<std::endl;
+            NS_LOG_LOGIC("marking pkt at enqueue");
           } 
           
         // Now add ECN bit to the IP header of the min packet 
@@ -795,9 +918,13 @@ PrioQueue::DoDequeue (void)
 //  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
 //  double rand_num = uv->GetValue(0.0, 1.0);
   Ptr<Packet> p = m_packets.front ();
+  incoming_bytes += p->GetSize(); 
+
+
+
   double lowest_deadline = 0.0;
 
-  if(!m_pkt_tagged) {
+  if(!m_pkt_tagged) { // complete hack - remove the second condition
 
     typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
 	  double highest_wfq_weight_;
@@ -843,7 +970,7 @@ PrioQueue::DoDequeue (void)
 		  }
 	  }
     //if(nodeid == 0) {
-//    std::cout<<Simulator::Now().GetSeconds()<<" node "<<nodeid<<" prio "<<highest_prio_<<" flowkey "<<GetFlowKey(p)<<"linkid "<<linkid<<" DEQUEUED "<<std::endl;
+//    NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<nodeid<<" prio "<<highest_prio_<<" flowkey "<<GetFlowKey(p)<<"linkid "<<linkid<<" DEQUEUED ");
     //}
   
     p = (*pItr);
@@ -851,14 +978,19 @@ PrioQueue::DoDequeue (void)
   else if (m_pkt_tagged)
   {
     // determine the packet id with the highest tag 
-    struct tag_elem elem = get_lowest_tagid(); //get the lowest deadline pkt and remove it
-    uint64_t lowest_tag_id = elem.pktid;
-    lowest_deadline = elem.deadline;
-    p = get_packet_with_id(lowest_tag_id);
+    //struct tag_elem elem = get_lowest_tagid(); //get the lowest deadline pkt and remove it
+    //uint64_t lowest_tag_id = elem.pktid;
+    //lowest_deadline = elem.deadline;
+    //p = get_packet_with_id(lowest_tag_id); 
+    p = get_lowest_tag_packet();
     if(!p) {
-      std::cout<<"could not get packet with id "<<lowest_tag_id<<" deadline "<<lowest_deadline<<" "<<linkid_string<<std::endl;
+      NS_LOG_LOGIC("could not get packet with "<<linkid_string);
     }
+    MyTag t1;
+    p->RemovePacketTag(t1);
+    lowest_deadline = t1.GetValue();
 
+    //std::cout<<"packetdeadline "<<Simulator::Now().GetSeconds()<<" "<<lowest_deadline<<" removed at node "<<nodeid<<" "<<GetFlowKey(p)<<std::endl;
     // increment virtual time
     current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
 
@@ -866,10 +998,12 @@ PrioQueue::DoDequeue (void)
     if(virtualtime_updated >= vpackets) {
      virtualtime_updated = 0;
      current_slope = CalcSlope();
-     std::cout<<"SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope<<std::endl;
-    } 
+//     NS_LOG_LOGIC("SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope);
+    }
+    //std::cout<<"virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime<<std::endl;  
     
   } 
+ 
 
    // debug 
    Ptr<Packet> ret_packet = p;
@@ -878,15 +1012,32 @@ PrioQueue::DoDequeue (void)
      NS_LOG_UNCOND("ERROR !! Remove failed for packet "<<p->GetUid());
    }
 
+   /* At Dequeue, update the network price field of the packet with the current link price */
+
+   PppHeader temp_ppp;
+   PrioHeader temp_pheader;
+
+    ret_packet->RemoveHeader(temp_ppp);
+    ret_packet->RemoveHeader(temp_pheader);
+
+    PriHeader ph = temp_pheader.GetData();
+     ph.netw_price += current_price;
+     temp_pheader.SetData(ph);
+
+    ret_packet->AddHeader(temp_pheader);
+    ret_packet->AddHeader(temp_ppp);
+
+
    if(delay_mark) {
     double pkt_depart = Simulator::Now().GetNanoSeconds();
     double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
     ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
     std::string flowkey = GetFlowKey(ret_packet);
-    if(linkid_string == "0_0_1") {
-      std::cout<<"QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow_ids[flowkey]<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string<<std::endl;
-      std::cout<<"DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow_ids[flowkey]<<" pkt size "<<ret_packet->GetSize()<<std::endl;
-    }
+  //  if(linkid_string == "0_0_1") {
+ //     NS_LOG_LOGIC("QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow_ids[flowkey]<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string);
+//      NS_LOG_LOGIC("DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow_ids[flowkey]<<" pkt size "<<ret_packet->GetSize());
+   // }
+//    NS_LOG_LOGIC(" DEQUEUE PKT "<<ret_packet->GetUid()<<" link "<<linkid_string);
   
     if(pkt_wait_duration > ecn_delaythreshold) {
         Ipv4Header ipheader;
@@ -904,13 +1055,16 @@ PrioQueue::DoDequeue (void)
         ret_packet->AddHeader(ppp);
 
         //std::string flowkey = GetFlowKey(ret_packet);
-        //std::cout<<"marking pkt from flow "<<flowkey<<std::endl;
+        //NS_LOG_LOGIC("marking pkt from flow "<<flowkey);
 
     }
   }
 
+  /* Update the network price - 08/09 kn */
+	
 
-    return ret_packet;
+
+  return ret_packet;
 }
 
 void

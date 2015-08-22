@@ -927,6 +927,8 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port
       return; // Discard invalid packet
     }
 
+  current_netw_price = tcpHeader.GetPrice();
+
   ReadOptions (tcpHeader);
 
   if (tcpHeader.GetFlags () & TcpHeader::ACK)   // kanthi 5/10/2015
@@ -1171,6 +1173,8 @@ TcpSocketBase::ReceivedAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
 
   /* Sender functionality II */
   processRate(tcpHeader);
+
+  recvr_measured_rate = tcpHeader.GetRate();
 
   // Received ACK. Compare the ACK number against highest unacked seqno
   if (0 == (tcpHeader.GetFlags () & TcpHeader::ACK))
@@ -1649,8 +1653,9 @@ TcpSocketBase::SendEmptyPacket (uint8_t flags)
   if(flags & TcpHeader::ECE) {
     header.SetECN(1);
   }
-
+  header.SetPrice(current_netw_price); //KN - send the current netw price back in the TCP header - copy it from ACK
   header.SetRate(recvr_measured_rate);
+  NS_LOG_LOGIC("Sendemptypacket : current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId());
 
   /*
    * Add tags for each socket option.
@@ -1924,6 +1929,8 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
   uint8_t flags = withAck ? TcpHeader::ACK : 0;
   uint32_t remainingData = m_txBuffer.SizeFromSequence (seq + SequenceNumber32 (sz));
 
+  NS_LOG_LOGIC("** senddatapacket pkt "<<p->GetUid()<<" size "<<maxSize <<" psize "<<p->GetSize()<<" seq = "<<seq<<" remainingdata = "<<remainingData<<" **** ");
+
   /*
    * Add tags for each socket option.
    * Note that currently the socket adds both IPv4 tag and IPv6 tag
@@ -1976,6 +1983,10 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
   header.SetFlags (flags);
   header.SetSequenceNumber (seq);
   header.SetAckNumber (m_rxBuffer.NextRxSequence ());
+  NS_LOG_LOGIC("Senddatapacket : "<<Simulator::Now().GetSeconds()<<" current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId());
+  header.SetPrice(current_netw_price); // kn - this is just to send it to the IP layer along with the packet
+  header.SetRate(recvr_measured_rate); //kn - ditto as above
+
   if (m_endPoint)
     {
       header.SetSourcePort (m_endPoint->GetLocalPort ());
@@ -2001,6 +2012,7 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
     {
       m_tcp->SendPacket (p, header, m_endPoint->GetLocalAddress (),
                          m_endPoint->GetPeerAddress (), m_boundnetdevice);
+      NS_LOG_LOGIC(" sent pkt with id "<<p->GetUid()<<" node "<<m_node->GetId());
     }
   else
     {
@@ -2015,6 +2027,7 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
     }
   // Update highTxMark
   m_highTxMark = std::max (seq + sz, m_highTxMark.Get ());
+  NS_LOG_LOGIC(" senddatapacket sz = "<<sz);
   return sz;
 }
 
@@ -2142,7 +2155,7 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
     recvr_measured_rate = ipv4->GetCSFQRate(flowkey); //kanthi - checking 5/12
 
   /* if(flowkey == "10.1.0.1:10.1.2.2:2") {
-      std::cout<<"inter_pkt_delay "<<inter_pkt_delay<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<std::endl;
+      NS_LOG_LOGIC("inter_pkt_delay "<<inter_pkt_delay<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey);
     } */
   }
 

@@ -148,6 +148,7 @@ public:
   void setEpochUpdate(double qtime);
   double getflowsize(std::string flowkey);
   uint64_t current_epoch;
+  double getXFabricPrice(Ptr<Packet> packet, Ipv4Header &ipHeader);
 
 
   void printSumThr(void);
@@ -168,6 +169,8 @@ public:
   FlowRP_ flow_rates;
   PriHeader AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader);
   double pre_set_wfq_weight;
+  double pre_set_netw_price;
+  double pre_set_residue;
   void setfctAlpha(double fct);
 
   std::vector<std::string> sort_by_priority(FlowRP_ prios);
@@ -557,7 +560,8 @@ private:
   void updateRate(std::string fkey);
   void updateAllRates(void);
   void updateCurrentEpoch(void);
-  void updateFlowRate(std::string flowkey, uint32_t pktsize);
+  void updateFlowRate(std::string flowkey, uint32_t pktsize, uint32_t);
+  void updateMarginalUtility(std::string fkey, double cur_rate);
 
   /// Trace of sent packets
   TracedCallback<const Ipv4Header &, Ptr<const Packet>, uint32_t> m_sendOutgoingTrace;
