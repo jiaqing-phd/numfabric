@@ -46,6 +46,8 @@ uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
 uint32_t weight_normalized = 0;
 
+uint32_t const max_flows = 5;
+
 /* Queue variables */
 uint32_t max_ecn_thresh = 50000;
 uint32_t max_queue_size = 450000000;

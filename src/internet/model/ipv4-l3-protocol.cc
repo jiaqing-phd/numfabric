@@ -1343,7 +1343,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     priheader.wfq_weight = current_deadline;
 	  priheader.residue = (store_prio[flowkey] - current_netw_price);
 	  priheader.netw_price = 0.0;  // start the network price at zero
-    //std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowkey "<<flowkey<<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<std::endl;
+    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowkey "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" pktsize "<<pktsize<<std::endl;
 
  
   } else {

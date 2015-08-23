@@ -315,7 +315,7 @@ PrioQueue::updateLinkPrice(void)
    current_price = 0.5*new_price + 0.5*current_price;
   
     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
-  // std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<std::endl;
+   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<std::endl;
   }
   Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
@@ -764,14 +764,16 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   bool control_packet = false;
 
-  if(p->GetSize() <= 94) {
+
+/*  if(p->GetSize() <= 94) {
     control_packet = true;
   }
+*/
   uint32_t pkt_uid = min_pp->GetUid();
 //  NS_LOG_LOGIC("ENQUEU PKT WITH UID "<<pkt_uid<<" AT QUEUE "<<linkid_string);
 
    if(p_residue < running_min_prio && !control_packet) {
-     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" updating running_min_prio to "<<running_min_prio<<" to residue "<<p_residue);
+     std::cout<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" updating running_min_prio to "<<running_min_prio<<" to residue "<<p_residue<<std::endl;
      running_min_prio = p_residue;
    }
 

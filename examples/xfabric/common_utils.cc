@@ -175,6 +175,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("scheduler_mode_edf", "scheduler_mode_edf", scheduler_mode_edf);
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
+  cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
 
   return cmd;
 }

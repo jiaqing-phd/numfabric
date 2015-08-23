@@ -442,21 +442,21 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
   return SendingApp;
 }
 
-const uint32_t max_flows = 5;
+const uint32_t max_flows=5;
 uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
 
-int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
-//int weights[6][5] = {{1,5,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
+//int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
+int weights[6][5] = {{1,1,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
 int run_num = 0;
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes, uint32_t flow_id)
 {
     std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<std::endl;
 
-    for(uint32_t i=0; i<max_flows; i++) {
-//    for(uint32_t i=0; i<2; i++) {
+//    for(uint32_t i=0; i<max_flows; i++) {
+    for(uint32_t i=0; i<2; i++) {
         uint32_t source_node = sourcenodes[i];
         uint32_t sink_node = sinknodes[i];
 
@@ -477,13 +477,13 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
           flow_started[i] = 1;
           std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<std::endl;
         }
-         else {
-          change_weight(source_node, sink_node, clientNodes, rand_weight);
-       }
+     //    else {
+     //     change_weight(source_node, sink_node, clientNodes, rand_weight);
+     //  }
     }
     run_num++;
 
-    Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
+    //Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
 
 }
 

@@ -156,11 +156,10 @@ MyApp::SendPacket (void)
 //    std::cout<<" flow_id "<<m_fid<<" sent "<<ret_val<<" bytes total bytes so far "<<m_totBytes<<std::endl;
 //  NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" bytes sent "<<m_totBytes<<" maxBytes "<<m_maxBytes);
 
-  //if (++m_packetsSent < m_nPackets)
-  if (m_totBytes < m_maxBytes)
-    {
+  //if (m_totBytes < m_maxBytes)
+  //  {
       ScheduleTx ();
-    }
+  //  }
   
 }
 
@@ -168,11 +167,11 @@ void
 MyApp::ScheduleTx (void)
 {
   //if (m_running)
-  if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
-    {
+  //if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
+  //  {
       Time tNext (Seconds ((m_packetSize+38) * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
-    } else {
-      StopApplication();
-    }
+   // } else {
+   //   StopApplication();
+   // }
 }
