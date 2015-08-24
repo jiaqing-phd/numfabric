@@ -179,6 +179,7 @@ public:
   double last_deadline;
   bool epoch_changed;
   bool rate_based;
+  bool host_compensate;
   uint32_t bytes_in_queue;
   double deq_bytes;
   std::map<std::string, double> cnp;

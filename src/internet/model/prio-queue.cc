@@ -142,6 +142,11 @@ TypeId PrioQueue::GetTypeId (void)
                    BooleanValue (true),
                    MakeBooleanAccessor (&PrioQueue::xfabric_price),
                    MakeBooleanChecker ())
+    .AddAttribute ("host_compensate", 
+                   "host compensates for the price",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&PrioQueue::host_compensate),
+                   MakeBooleanChecker ())
 	 .AddAttribute("target_queue",
                   "Target Queue",
                   DoubleValue(10000.0),
@@ -306,25 +311,42 @@ PrioQueue::updateLinkPrice(void)
 
     double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
   
-    double new_price = min_price_inc - m_gamma1*incr*current_price;
+    //double new_price = min_price_inc - m_gamma1*incr*current_price;
+    double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma
     
    if(new_price < 0.0) {
     new_price = 0.0;
    }
    //current_price = new_price;
-   current_price = 0.5*new_price + 0.5*current_price;
+   //
+   if(!host_compensate) {
+     current_price = 0.5*new_price + 0.5*current_price;
+   } else {
+     current_price = new_price;
+   }
   
     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
-   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<std::endl;
+   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
+   // when you update the price - set a timer to not update the minimum for an interval
+   update_minimum = false;
+   std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" disabling update minimum "<<std::endl;
+   Simulator::Schedule(Seconds(0.01), &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
   Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }
 
+void
+PrioQueue::enableUpdates(void)
+{
+  std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" enabling update minimum "<<std::endl;
+  update_minimum = true;
+}
 
 PrioQueue::~PrioQueue ()
 {
 //  NS_LOG_FUNCTION (this);
+  update_minimum = true;
 }
 
 void PrioQueue::SetNodeID(uint32_t node_id)
@@ -772,7 +794,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   uint32_t pkt_uid = min_pp->GetUid();
 //  NS_LOG_LOGIC("ENQUEU PKT WITH UID "<<pkt_uid<<" AT QUEUE "<<linkid_string);
 
-   if(p_residue < running_min_prio && !control_packet) {
+   if(p_residue < running_min_prio && !control_packet && update_minimum) {
      std::cout<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" updating running_min_prio to "<<running_min_prio<<" to residue "<<p_residue<<std::endl;
      running_min_prio = p_residue;
    }

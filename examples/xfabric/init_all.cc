@@ -55,6 +55,8 @@ std::string queue_type = "WFQ";
 bool delay_mark_value = true;
 uint32_t vpackets = 1;
 
+bool host_compensate;
+
 /* TCP variables */
 uint32_t max_segment_size = 1414;
 uint32_t ssthresh_value = 3000;

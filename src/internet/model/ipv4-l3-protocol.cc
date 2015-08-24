@@ -68,6 +68,11 @@ Ipv4L3Protocol::GetTypeId (void)
                   BooleanValue(false),
                   MakeBooleanAccessor (&Ipv4L3Protocol::rate_based),
                   MakeBooleanChecker ())
+    .AddAttribute("host_compensate",
+                  "Enable or disable host based compensation for network price",
+                  BooleanValue(false),
+                  MakeBooleanAccessor (&Ipv4L3Protocol::host_compensate),
+                  MakeBooleanChecker ())
     .AddAttribute("m_wfq",
                   "Enable or disable wfq like behavior",
                   BooleanValue(false),
@@ -985,6 +990,8 @@ Ipv4L3Protocol::DoSend (Ptr<Packet> packet,
     }
   else
     {
+
+      std::cout<<" node "<<m_node->GetId()<<"No route to host.  Drop."<<std::endl;
       NS_LOG_WARN ("No route to host.  Drop.");
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), 0);
     }
@@ -1342,8 +1349,17 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
     priheader.wfq_weight = current_deadline;
 	  priheader.residue = (store_prio[flowkey] - current_netw_price);
+
+    if(host_compensate) {
+      if(flowids[flowkey] == 1) {
+        priheader.residue = priheader.residue / 4.0;
+      } 
+      if(flowids[flowkey] == 2) {
+        priheader.residue = priheader.residue / 5.0;
+      }
+    }
 	  priheader.netw_price = 0.0;  // start the network price at zero
-    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowkey "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" pktsize "<<pktsize<<std::endl;
+    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
 
  
   } else {
@@ -1387,6 +1403,9 @@ Ipv4L3Protocol::setFlowSizes(std::map<uint32_t, double> fsizes)
 
 void Ipv4L3Protocol::setFlow(std::string flow, uint32_t flowid, double fsize, uint32_t weight)
 {
+
+    std::cout<<" Ipv4L3Protocol::SetFlow "<<m_node->GetId()<<" flowid "<<flowid<<" flow "<<flow<<" size "<<fsize<<" weight "<<weight<<std::endl;
+
 	  flowids[flow] = flowid;
     fsizes_copy[flowid] = fsize;
     fweights_copy[flowid] = weight;

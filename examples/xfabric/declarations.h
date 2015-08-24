@@ -137,6 +137,8 @@ void setuptracing(uint32_t sindex, Ptr<Socket> skt);
 void run_scheduler(FlowData fdata, uint32_t eventtype);
 void run_scheduler_edf(FlowData fdata, uint32_t eventtype);
 
+extern bool host_compensate;
+
 //extern uint32_t const max_flows;
 
 #endif 

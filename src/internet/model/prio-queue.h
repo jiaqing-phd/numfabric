@@ -103,6 +103,10 @@ public:
   double m_gamma, m_gamma1, m_alpha; // TBD - initialize these
   double m_target_queue;
 
+  bool update_minimum;
+  void enableUpdates(void);
+  bool host_compensate;
+
 
   /**
    * Get the encapsulation mode of this device.

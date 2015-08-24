@@ -231,7 +231,7 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, tcp);
 
   // Get source address
-  std::cout<<"Gettong source address for node "<<sourceN<<" num nodes "<<sourceNodes.GetN()<<std::endl;
+  std::cout<<"Getting source address for node "<<sourceN<<" num nodes "<<sourceNodes.GetN()<<std::endl;
   Ptr<Ipv4L3Protocol> source_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); 
   Ipv4Address sourceIp = source_node_ipv4->GetAddress (1,0).GetLocal();
   Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
@@ -985,6 +985,7 @@ void rocket_createTopology(void)
     for ( iter = inFile->LinksBegin (); iter != inFile->LinksEnd (); iter++, i++ )
     {
       nc[i] = NodeContainer (iter->GetFromNode (), iter->GetToNode ());
+      std::cout<<"set up nodecontainer between nodes "<<iter->GetFromNode()->GetId()<<" to node "<<iter->GetToNode()->GetId()<<std::endl;
     }
 
 
@@ -1095,6 +1096,8 @@ main(int argc, char *argv[])
 {
 
     ///////////////////////////////////
+    LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
+
     CommandLine cmd = addCmdOptions();
     cmd.Parse (argc, argv);
     common_config(); 

@@ -550,6 +550,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("scheduler_mode_edf", "scheduler_mode_edf", scheduler_mode_edf);
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
+  cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
 
   cmd.Parse (argc, argv);
 
@@ -610,6 +611,8 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
 
+  Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
+
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   NS_LOG_UNCOND("Set max_ecn_thresh at "<<max_ecn_thresh);
 
@@ -619,6 +622,8 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(m_pfabric));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
+  Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
+
 
 
 

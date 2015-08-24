@@ -176,6 +176,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
+  cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
+
 
   return cmd;
 }
@@ -226,6 +228,8 @@ void common_config(void)
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
+  Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
+  Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
 
   flowTracker = new Tracker();
   flowTracker->register_callback(scheduler_wrapper);
