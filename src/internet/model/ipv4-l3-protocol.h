@@ -105,6 +105,12 @@ public:
     FCTUTILITY=2,
     ALPHA1UTILITY=3
   };
+  enum Term
+  {
+    LONGER = 1,
+    SHORTER = 2
+  };
+
 
   /* Data structures required for priority kanthi */
   typedef std::map< std::string, uint32_t> FlowId_;
@@ -120,7 +126,7 @@ public:
   void addToDropList(uint32_t id);
   std::map<uint32_t, uint32_t> drop_list;
 
-  double kay;
+  double long_ewma_const, short_ewma_const;
   std::map<std::string, EventId> m_sendEvent;
 //  EventId m_sendEvent;
   
@@ -129,12 +135,18 @@ public:
   void setFlowIdealRate(uint32_t, double);
   std::map<uint32_t, double> flow_idealrate;
   void setAlpha(double alpha);
+  void setlong_ewma_const(double kvalue);
+  void setshort_ewma_const(double kvalue);
+
   void setKay(double kvalue);
+  void updateAverages(std::string flowkey, double inter_arrival, double pktsize);
+  
   double GetStoreRate(std::string fkey);
   double GetStoreDestRate(std::string fkey);
   double GetStorePrio(std::string fkey);
   double GetStoreDestPrio(std::string fkey);
   double GetCSFQRate(std::string fkey);
+  double GetShortRate(std::string fkey);
   void setFlow(std::string flow, uint32_t fid, double size=0.0, uint32_t weight = 1.0);
   void setFlows(FlowId_ flowid_set);
   void setFlowUtils(std::vector<double> futils);
@@ -148,13 +160,16 @@ public:
   void setEpochUpdate(double qtime);
   double getflowsize(std::string flowkey);
   uint64_t current_epoch;
-  double getXFabricPrice(Ptr<Packet> packet, Ipv4Header &ipHeader);
+  double getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHeader);
+  double getInterArrival(std::string fkey);
+  
 
 
   void printSumThr(void);
   void setSimTime(double sim_time);
  
   std::map<std::string, uint32_t > data_recvd; 
+  std::map<std::string, double > inter_arrival;
 
   std::map<std::string, std::queue<Ptr<Packet> > > our_packets;
   std::map<std::string, std::queue<Ipv4Address> >src_address;
@@ -191,6 +206,10 @@ public:
   double getCurrentNetwPrice(std::string fkey);
   double getCurrentDeadline(void);
   double getCurrentTargetRate(void);
+
+  double GetRate(std::string, Term t);
+  double GetShortTermRate(std::string);
+
   
   void setCurrentNetwPrice(double cnp_sample, std::string fkey);
   double getAlternateDeadline(Ptr<Packet> packet, Ipv4Header &iph);
@@ -551,7 +570,8 @@ private:
   std::map<std::string, int> total_samples;
 
   std::map<std::string, double> last_arrival;
-  std::map<std::string, double> old_rate;
+  std::map<std::string, double> long_term_ewma_rate;
+  std::map<std::string, double> short_term_ewma_rate;
 
 
   double QUERY_TIME;
@@ -561,7 +581,7 @@ private:
   void updateRate(std::string fkey);
   void updateAllRates(void);
   void updateCurrentEpoch(void);
-  void updateFlowRate(std::string flowkey, uint32_t pktsize, uint32_t);
+  void updateInterArrival(std::string flowkey);
   void updateMarginalUtility(std::string fkey, double cur_rate);
 
   /// Trace of sent packets

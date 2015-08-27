@@ -40,7 +40,7 @@ double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
 double price_update_time = 0.01; //90us //TODO ITEM
 double gamma_value = 0.00001; // price too jagged but values ok
-float sampling_interval = 0.001;
+float sampling_interval = 0.00001;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
@@ -75,7 +75,7 @@ double fraction_flows_deadline = .5;
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
-double link_delay = 5.0; //in microseconds
+double link_delay = 10.0; //in microseconds
 bool rate_based  = false;
 
 

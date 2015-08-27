@@ -330,7 +330,7 @@ PrioQueue::updateLinkPrice(void)
    // when you update the price - set a timer to not update the minimum for an interval
    update_minimum = false;
    std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" disabling update minimum "<<std::endl;
-   Simulator::Schedule(Seconds(0.01), &ns3::PrioQueue::enableUpdates, this); // 10ms
+   Simulator::Schedule(Seconds(0.0005), &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
   Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  

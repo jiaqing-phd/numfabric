@@ -76,6 +76,7 @@ protected:
   SequenceNumber32 ecn_highest;
   SequenceNumber32 last_outstanding_num;
   double d0, dt;
+  uint32_t getBytesAcked(const TcpHeader &tcpheader);
 
   // Implementing ns3::TcpSocket -- Attribute get/set
   virtual void     SetSegSize (uint32_t size);

@@ -193,7 +193,8 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   QUERY_TIME = 0.0001;
   alpha = 1.0/16.0;
     
-  kay = 50000;
+  long_ewma_const = 50000;
+  short_ewma_const = 10000;
   next_deadline = 0.0;
   last_deadline = 0.0;
 
@@ -292,8 +293,21 @@ void Ipv4L3Protocol::setQueryTime(double qtime)
 
 void Ipv4L3Protocol::setKay(double kvalue)
 {
-  NS_LOG_LOGIC("Setting kay to "<<kvalue);
-  kay = kvalue;
+  // set default values
+  //
+  setlong_ewma_const(50000);
+  setshort_ewma_const(10000);
+}
+void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
+{
+  NS_LOG_LOGIC("Setting long_ewma_const to "<<kvalue);
+  long_ewma_const = kvalue;
+}
+
+void Ipv4L3Protocol::setshort_ewma_const(double kvalue)
+{
+  NS_LOG_LOGIC("Setting short_ewma_const to "<<kvalue);
+  short_ewma_const = kvalue;
 }
 
 void Ipv4L3Protocol::setAlpha(double qtime)
@@ -1053,11 +1067,33 @@ double Ipv4L3Protocol::GetStoreRate(std::string fkey)
   return store_rate[fkey];
 }
 
-double Ipv4L3Protocol::GetCSFQRate(std::string fkey)
+double Ipv4L3Protocol::GetShortTermRate(std::string fkey)
 {
-  return old_rate[fkey];
+  return GetRate(fkey, SHORTER);
 }
 
+double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
+{
+  if(term == LONGER) { 
+    return long_term_ewma_rate[fkey];
+  }
+  if(term == SHORTER) {
+    return short_term_ewma_rate[fkey];
+  }
+
+  return -1;
+    
+}
+
+double Ipv4L3Protocol::GetCSFQRate(std::string fkey)
+{
+  return long_term_ewma_rate[fkey];
+}
+
+double Ipv4L3Protocol::GetShortRate(std::string fkey)
+{
+  return short_term_ewma_rate[fkey];
+}
 double Ipv4L3Protocol::GetStoreDestRate(std::string fkey)
 {
   //NS_LOG_UNCOND("GetStoreRate: for key "<<fkey);
@@ -1096,7 +1132,7 @@ void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate)
     pri = 1.0;
  } // we don't care about rates lower than 1Mbps - kn - is this right?
 
-  //std::cout<<"node "<<m_node->GetId()<<" flow "<<fkey<<" flow "<<fid<<" priority "<<pri<<" rate "<<cur_rate<<std::endl;
+  std::cout<<"UpdateMarginalUtility node "<<m_node->GetId()<<" flow "<<fkey<<" flow "<<fid<<" priority "<<pri<<" rate "<<cur_rate<<std::endl;
   store_prio[fkey] = pri;
 }		
 
@@ -1154,7 +1190,7 @@ double Ipv4L3Protocol::utilInverse(std::string s, double link_price, int method)
 }
 
 
-double Ipv4L3Protocol::getXFabricPrice(Ptr<Packet> packet, Ipv4Header &ipHeader)
+double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHeader)
 {
    /* What flow does this packet represnt ?*/
    TcpHeader tcph;
@@ -1183,8 +1219,6 @@ double Ipv4L3Protocol::getXFabricPrice(Ptr<Packet> packet, Ipv4Header &ipHeader)
    double limit_tr = 1000.0;
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
-//      NS_LOG_LOGIC("current_netw_price "<<current_netw_price);
-
       if(m_method == 1) {
         target_rate = utilInverse(flowkey, current_netw_price, LOGUTILITY);
       } else if(m_method == 2) {
@@ -1204,6 +1238,25 @@ double Ipv4L3Protocol::getXFabricPrice(Ptr<Packet> packet, Ipv4Header &ipHeader)
        * So, their deadlines are closest - in the past ! */
       return 0.0;
     }
+
+  
+
+    if(Simulator::Now().GetSeconds() < 1.02) {
+      if(flowids[flowkey] == 1)
+        target_rate = 1.0; //kanthicn test 
+      if(flowids[flowkey] == 2)
+        target_rate = 1.0; //kanthicn test 
+      if(flowids[flowkey] == 3)
+        target_rate = 8.0; //kanthicn test 
+    } else {
+      if(flowids[flowkey] == 1)
+        target_rate = 1.0; //kanthicn test 
+      if(flowids[flowkey] == 2)
+        target_rate = 2.0; //kanthicn test 
+      if(flowids[flowkey] == 3)
+        target_rate = 1.0; //kanthicn test 
+    }
+    
 
     // how long will it take to send this pkt out ?
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
@@ -1268,34 +1321,52 @@ double Ipv4L3Protocol::get_wfq_weight(Ptr<Packet> packet, Ipv4Header &ipHeader)
 //   return ((packet->GetSize()+30.0)*8.0) / fweight;
 }
 
-void Ipv4L3Protocol::updateFlowRate(std::string flowkey, uint32_t pktsize, uint32_t src)
+void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, double pktsize)
 {
 
-  if (last_arrival.find(flowkey) == last_arrival.end()) {
-    last_arrival[flowkey] = 0.0;
-    old_rate[flowkey] = 0.0;
-  }
-  NS_LOG_LOGIC("pkt arrived at "<<Simulator::Now().GetNanoSeconds()<<" nodeid "<<m_node->GetId()<<" kay = "<<kay);   
-  double inter_arrival = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
   double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
 
-  double epower = exp((-1.0*inter_arrival)/kay);
+  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
+
+  double epower = exp((-1.0*inter_arrival)/long_ewma_const);
   double first_term = (1.0 - epower)*pkt_rate;
-  double second_term = epower * old_rate[flowkey];
- 
+  double second_term = epower * long_term_ewma_rate[flowkey];
   double new_rate = first_term + second_term;
+  long_term_ewma_rate[flowkey] = new_rate;
 
-  old_rate[flowkey] = new_rate;
-  //old_rate[flowkey] = pkt_rate;
+
+  // calculate short term ewma
+  //
+  epower = exp((-1.0*inter_arrival)/short_ewma_const);
+  first_term = (1.0 - epower)*pkt_rate;
+  second_term = epower * short_term_ewma_rate[flowkey];
+  short_term_ewma_rate[flowkey] = first_term + second_term;
+
+  std::cout<<" node "<<m_node->GetId()<<" update rate interarrival "<<inter_arrival<<" pkt size "<<pktsize<<std::endl;
+}
+
+
+void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
+{
+
+  if ((last_arrival.find(flowkey) == last_arrival.end()) || ((Simulator::Now().GetNanoSeconds() - last_arrival[flowkey]) > 1000000000))  {
+  //if (last_arrival.find(flowkey) == last_arrival.end()){
+    // first packet of the flow
+    last_arrival[flowkey] = Simulator::Now().GetNanoSeconds() - 1.0;
+//    long_term_ewma_rate[flowkey] = 0.0;
+ //  short_term_ewma_rate[flowkey] = 0.0;
+  }
+  double inter_arr = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
+  //double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
+  inter_arrival[flowkey]  = inter_arr;
   last_arrival[flowkey] = Simulator::Now().GetNanoSeconds();
+  std::cout<<"pkt arrived at "<<Simulator::Now().GetNanoSeconds()<<" nodeid "<<m_node->GetId()<<" inter_arrival "<<inter_arr<<" flow "<<flowids[flowkey]<<std::endl;   
+}
 
-  //if(src == 1) { //right now do it at src only
-    //updateMarginalUtility(flowkey, new_rate);
-  //}
-
-  //NS_LOG_LOGIC("updateFlowRate "<<flowkey<<" "<<Simulator::Now().GetNanoSeconds()<<" drate "<<GetStoreDestRate(flowkey)<<" srate "<<GetStoreRate(flowkey)<<" csfq_rate "<<new_rate<<" first_term "<<first_term<<" second_term "<<second_term<<" epower "<<epower<<" old_rate "<<old_rate[flowkey]<<" last_arrived "<<last_arrival[flowkey]<<"interarrival "<<inter_arrival<<" pktsize "<<pktsize<<" nodeid "<<m_node->GetId());
-
-} 
+double Ipv4L3Protocol::getInterArrival(std::string fkey)
+{
+  return inter_arrival[fkey];
+}
   
 
 PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader)
@@ -1329,25 +1400,18 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
   
 
    double wfqw = 1.0;
-   double current_deadline = 0.0; //current deadline
+   double virtual_pkt_length = 0.0; //current deadline
    double netw_price_init = 0.0;
-   PriHeader priheader = PriHeader(wfqw, current_deadline, netw_price_init);
+   PriHeader priheader = PriHeader(wfqw, virtual_pkt_length, netw_price_init);
 
   if (GetInterfaceForAddress(source) != -1) {
-    NS_LOG_LOGIC("tcph.GetRate is "<<tcph.GetRate()<<" node "<<m_node->GetId());
- 	  updateMarginalUtility(flowkey, tcph.GetRate());
-    //updateFlowRate(flowkey, pktsize, 1); //last argument says this is at source
-	  current_deadline = getXFabricPrice(packet, ipHeader);
-    // current_deadline = get_wfq_weight(packet, ipHeader); 
+ 	  updateMarginalUtility(flowkey, GetRate(flowkey, LONGER));
+	  virtual_pkt_length = getVirtualPktLength(packet, ipHeader);
 
-    NS_LOG_LOGIC("NODE "<<m_node->GetId()<<" getXfabricprice returned "<<current_deadline);
-    //if(m_node->GetId() == 3)
-    //  current_deadline = 1/2.0; //kanthicn test 
-    //else
-    //  current_deadline = 1.0; //kanthicn test 
-    
+    NS_LOG_LOGIC("NODE "<<m_node->GetId()<<" getVirtualPacketLength returned "<<virtual_pkt_length);
 
-    priheader.wfq_weight = current_deadline;
+
+    priheader.wfq_weight = virtual_pkt_length;
 	  priheader.residue = (store_prio[flowkey] - current_netw_price);
 
     if(host_compensate) {
@@ -1635,8 +1699,8 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
 {
   NS_LOG_FUNCTION (this << packet << &ip << iif);
   Ptr<Packet> p = packet->Copy (); // need to pass a non-const packet up
-  //uint32_t pktsize = p->GetSize() + 46;
-  uint32_t pktsize = p->GetSize();
+  uint32_t pktsize = p->GetSize() + 46;
+  //uint32_t pktsize = p->GetSize();
   Ipv4Header ipHeader = ip;
 
   // incoming packets priority and remaining priority
@@ -1660,11 +1724,11 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
     
     destination_bytes[flowkey] += pktsize;
     data_recvd[flowkey] += pktsize;
-//    tcp_header.SetRate(pre_set_rate); - not required kn
+
+
     tcp_header.SetPrice(pre_set_netw_price);
    
-    updateFlowRate(flowkey, pktsize, 2);
-//    NS_LOG_LOGIC("delivered pkt of pktsize "<<pktsize<<" "<<flowkey<<" "<<Simulator::Now().GetNanoSeconds()<<" "<<destination_bytes[flowkey]<<" time "<<Simulator::Now().GetMicroSeconds()<<" node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()); 
+    updateInterArrival(flowkey);
     
   } else {
  //   NS_LOG_UNCOND("LocalDeliver "<<Simulator::Now().GetSeconds()<<" node id "<<m_node->GetId()<<" Looks like an ACK packet.. leave it alone "<<tcp_header.GetCWR());

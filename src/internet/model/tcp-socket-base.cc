@@ -1174,7 +1174,7 @@ TcpSocketBase::ReceivedAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
   /* Sender functionality II */
   processRate(tcpHeader);
 
-  recvr_measured_rate = tcpHeader.GetRate();
+  //recvr_measured_rate = tcpHeader.GetRate();
 
   // Received ACK. Compare the ACK number against highest unacked seqno
   if (0 == (tcpHeader.GetFlags () & TcpHeader::ACK))
@@ -1655,7 +1655,7 @@ TcpSocketBase::SendEmptyPacket (uint8_t flags)
   }
   header.SetPrice(current_netw_price); //KN - send the current netw price back in the TCP header - copy it from ACK
   header.SetRate(recvr_measured_rate);
-  NS_LOG_LOGIC("Sendemptypacket : current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId());
+  std::cout<<"Sendemptypacket : current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<std::endl;
 
   /*
    * Add tags for each socket option.
@@ -2081,6 +2081,7 @@ TcpSocketBase::SendPendingData (bool withAck)
       m_nextTxSequence += sz;                     // Advance next tx sequence
     }
   NS_LOG_LOGIC ("SendPendingData sent " << nPacketsSent << " packets");
+  
   return (nPacketsSent > 0);
 }
 
@@ -2144,7 +2145,7 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
   ss<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetLocalPort();
   std::string flowkey = ss.str();
 
-  if(p->GetSize() > 500) { /* TBD : what is the size of ack, syn, fin? */
+//  if(p->GetSize() > 500) { /* TBD : what is the size of ack, syn, fin? */
     /* Note the time */
     //double t_now = Simulator::Now().GetNanoSeconds();
     //double inter_pkt_delay = t_now - last_data_recvd;
@@ -2152,12 +2153,12 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
     //last_data_recvd = t_now;
     
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
-    recvr_measured_rate = ipv4->GetCSFQRate(flowkey); //kanthi - checking 5/12
+    recvr_measured_rate = ipv4->getInterArrival(flowkey); //kanthi - checking 5/12
 
   /* if(flowkey == "10.1.0.1:10.1.2.2:2") {
       NS_LOG_LOGIC("inter_pkt_delay "<<inter_pkt_delay<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey);
     } */
-  }
+  //}
 
   /* process ECN first */
   TcpHeader::Flags_t ce_flag;
@@ -2243,6 +2244,7 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
   if(nextRtt != Time (0))
   {
     m_lastRtt = nextRtt;
+    std::cout<<"node "<<m_node->GetId()<<" rtt "<<m_lastRtt<<std::endl;
     NS_LOG_FUNCTION(this << m_lastRtt);
   }
 
@@ -2284,6 +2286,8 @@ TcpSocketBase::NewAck (SequenceNumber32 const& ack)
   // Note the highest ACK and tell app to send more
   NS_LOG_LOGIC ("TCP " << this << " NewAck " << ack <<
                 " numberAck " << (ack - m_txBuffer.HeadSequence ())); // Number bytes ack'ed
+  std::cout<<"TCP " << this << " NewAck " << ack <<
+                " numberAck " << (ack - m_txBuffer.HeadSequence ())<<std::endl;
   m_txBuffer.DiscardUpTo (ack);
   if (GetTxAvailable () > 0)
     {

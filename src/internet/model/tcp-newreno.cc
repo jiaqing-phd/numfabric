@@ -80,10 +80,8 @@ TcpNewReno::TcpNewReno (void)
   dctcp_alpha = 0.0;
   dctcp_reacted = false;
   xfabric_reacted = false;
-  d0 = 0.00001; //30us - TBD
-  dt = d0 * 1.0;
-  //d0 = 0.00003; //30us - TBD
-  //dt = d0 * 1.0;
+  d0 = 0.000045;
+  dt = 0.000012;
 
 }
 
@@ -163,6 +161,7 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
       NS_LOG_INFO ("Received full ACK. Leaving fast recovery with cwnd set to " << m_cWnd);
     }
 
+  if(!m_xfabric) {
   // Increase of cwnd based on current phase (slow start or congestion avoidance)
   if (m_cWnd < m_ssThresh)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
@@ -172,14 +171,13 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     }
   else
     { 
-      if(!m_xfabric || !m_dctcp) {
         // Congestion avoidance mode, increase by (segSize*segSize)/cwnd. (RFC2581, sec.3.1)
         // To increase cwnd for one segSize per RTT, it should be (ackBytes*segSize)/cwnd
         double adder = static_cast<double> (m_segmentSize * m_segmentSize) / m_cWnd.Get ();
         adder = std::max (1.0, adder);
         m_cWnd += static_cast<uint32_t> (adder);
-      }
     }
+  }
   TcpSocketBase::NewAck (seq);
 }
 
@@ -226,20 +224,32 @@ TcpNewReno::setxfabric(bool xfabric_value)
   m_xfabric = xfabric_value;
 }
 
+uint32_t
+TcpNewReno::getBytesAcked(const TcpHeader &tcpheader)
+{
+  uint32_t header_corrections = 86;
+  uint32_t bytes_acked = tcpheader.GetAckNumber() - m_txBuffer.HeadSequence();
+  std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" bytes_acked "<<bytes_acked<<std::endl;
+  return bytes_acked + header_corrections;
+} 
+
 void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
   if(m_xfabric) {
-    double target_rate = tcpHeader.GetRate();
     std::stringstream ss;
     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
     std::string flowkey = ss.str();
+    double inter_arrival = tcpHeader.GetRate();
 
-    // target_rate  = getFlowIdealRate(flowkey)/1000000.0;
-  
-    NS_LOG_LOGIC("processRate flow rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId());
-
-    double res = target_rate * (1000000.0/8.0) * 0.0002; //TBD - dt from commandline
+    /* get the ipv4 object */
+    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+    ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+    
+    /* Now get the short term average for setting window */
+    double target_rate = ipv4->GetShortTermRate(flowkey);
+     
+    double res = target_rate * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline
     m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
     //  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
@@ -252,6 +262,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     // NS_LOG_LOGIC("flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd);
       m_cWnd = 1 * m_segmentSize;
     }
+    std::cout<<"processRate flow rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" res is "<<res<<" m_cWnd is "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetSeconds()<<std::endl;
     m_ssThresh = m_cWnd;
   } else {
     // just a debug 
@@ -263,6 +274,10 @@ void
 TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 {
 
+  if(m_xfabric) {
+    return;
+  }
+  
   NS_LOG_FUNCTION (this << tcpHeader);
   SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
 

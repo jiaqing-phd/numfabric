@@ -22,14 +22,13 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 std::stringstream filePlotQueue;
 
-double prio_q_min_update_time = 0.001;
+double flow1_stoptime=1.3;
+double flow2_stoptime=1.3;
+double flow3_stoptime=1.3;
 
-double flow2_stoptime=1.5;
-double flow1_stoptime=1.2;
-double flow3_stoptime=1.5;
-double flow2_starttime=1.0;
 double flow1_starttime=1.0;
-double flow3_starttime=1.0;
+double flow2_starttime=1.01;
+double flow3_starttime=1.2;
 
 
 
@@ -233,13 +232,16 @@ CheckIpv4Rates (NodeContainer &allNodes)
     
       //double rate = ipv4->GetStoreRate (it->first);
       //double prio = ipv4->GetStorePrio (it->first);
-      double destrate = ipv4->GetStoreDestRate (it->first);
+//      double destrate = ipv4->GetStoreDestRate (it->first);
+      double destrate = ipv4->GetCSFQRate (it->first);
+      double srate = ipv4->GetShortRate (it->first);
       
 /*      if(((it->second == nid-2) && (it->second != 3)) || (it->second == 3 && nid == 8)) {
         std::cout<<"RatePrio flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate << " "<<prio<<" "<<flow_price<<" "<<increments<<std::endl;
       } */
-      if(((it->second == 1) && (nid == 5)) || ((it->second == 2) && (nid == 7)) || (it->second == 3 && nid == 6)) {
-        std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destrate<<std::endl;
+      //if(((it->second == 1) && (nid == 5)) || ((it->second == 2) && (nid == 7)) || (it->second == 3 && nid == 6)) {
+      if(((it->second == 1) && (nid == 3)) || ((it->second == 2) && (nid == 4)) || (it->second == 3 && nid == 8)) {
+        std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destrate<<" "<<srate<<std::endl;
       }
 
     }
@@ -321,6 +323,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("scheduler_mode_edf", "scheduler_mode_edf", scheduler_mode_edf);
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
+  cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
 
 
   cmd.Parse (argc, argv);
@@ -334,7 +337,7 @@ main (int argc, char *argv[])
 
   NS_LOG_UNCOND("file prefix "<<prefix);
 
-  double total_rtt = link_delay * 5.0;
+  double total_rtt = link_delay * 6.0;
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0 * 8.0);
   //uint32_t bdproduct = link_rate *total_rtt/(8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size)+1;
@@ -372,6 +375,8 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::m_wfq", BooleanValue(false));
 
+  Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
+  Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
   // Here, we will create N nodes in a star.
   NS_LOG_INFO ("Create nodes.");
 
@@ -416,7 +421,7 @@ main (int argc, char *argv[])
 
   PointToPointHelper p2pbottleneck;
   p2pbottleneck.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
-  p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(1.0)));
+  p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(0.5)));
 
 //  if(queue_type == "PrioQueue") {
     p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string));
@@ -599,7 +604,7 @@ main (int argc, char *argv[])
         std::string s = ss.str(); 
         flowids[s] = flow_id;
         ipv4->setFlow(s, flow_id, 0.0, 1.0); 
-        std::cout<<"in stop_flow : setting flow "<<s<<" to id "<<flow_id<<" weight 2.0"<<std::endl;
+        std::cout<<"in stop_flow : setting flow "<<s<<" to id "<<flow_id<<" weight 1.0"<<std::endl;
       }
 
       
@@ -627,7 +632,7 @@ main (int argc, char *argv[])
       std::string s = ss.str(); 
       
       flowids[s] = flow_id;
-      ipv4_1->setFlow(s, flow_id); 
+      ipv4_1->setFlow(s, flow_id, 0.0, 1.0); 
       std::cout<<"in stop_flow : setting flow "<<s<<" to id "<<flow_id<<std::endl;
 
   /* Manual setup end */
@@ -721,9 +726,9 @@ main (int argc, char *argv[])
   
 
   //configure tracing
-  std::string one = ".one";
-  std::string two(".two");
-  std::string three(".three");
+  std::string one = ".cwnd.1";
+  std::string two(".cwnd.2");
+  std::string three(".cwnd.3");
 
   std::string hname1 = prefix+one;
   

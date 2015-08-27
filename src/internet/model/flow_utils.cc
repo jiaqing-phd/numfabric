@@ -81,13 +81,25 @@ FlowUtil::getAlpha1InverseByFlowId(uint32_t fid, double price)
 double 
 FlowUtil::getUtilInverseByFlowId(uint32_t fid, double priority)
 {
-
+  /* here */
+  double ret_val = 1.0/priority;
+  if(Simulator::Now().GetSeconds() >= 1.2) { 
+    if(fid == 1) {
+     return 1.0/priority;
+    }
+    if(fid == 2) {
+    return 2.0/priority;
+    }
+    if(fid == 3) {
+     return 1.0/priority;
+    }
+  }
   if (flow_weights.find( fid ) != flow_weights.end()){
     //  NS_LOG_LOGIC("getUtilInverseByFlowId flowid "<<fid<<" flow_weight "<<flow_weights[fid]<<" priority "<<priority);
-      return flow_weights[fid]/priority;
+      ret_val = flow_weights[fid]/priority;
   }
   //NS_LOG_LOGIC(" default: getUtilInverseByFlowId flowid "<<fid<<" flow_weight "<<flow_weights[fid]<<" priority "<<priority);
-  return 1.0/priority;
+  return ret_val;
 }
 
 double 
