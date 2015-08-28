@@ -82,8 +82,7 @@ bool rate_based  = false;
 /* Overall simulation parameters */
 uint32_t N = 4; //number of nodes in the star
 uint32_t flows_per_host = 1;
-//std::string application_datarate = "10Gbps";
-std::string application_datarate = "1Gbps";
+std::string application_datarate = "10Gbps";
 
 bool pkt_tag = true;
 
@@ -102,7 +101,7 @@ NodeContainer sinkNodes;
 double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;
 //std::string link_rate_string = "10Gbps";
-std::string link_rate_string = "1Gbps";
+std::string link_rate_string = "10Gbps";
 
 double load = 0.05;
 double controller_estimated_unknown_load = 0.05;

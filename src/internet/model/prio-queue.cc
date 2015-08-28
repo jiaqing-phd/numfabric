@@ -16,6 +16,8 @@ NS_LOG_COMPONENT_DEFINE ("PrioQueue");
 double eps_diff = 0.0;
 
 static double MAX_DOUBLE = 10000.0;
+static double ONEPACKET = 1200.0;
+
 namespace ns3 {
 
 
@@ -41,7 +43,7 @@ namespace ns3 {
  uint32_t 
  MyTag::GetSerializedSize (void) const
  {
-   return sizeof(double);
+   return 2*sizeof(double);
  }
  void 
  MyTag::Serialize (TagBuffer i) const
@@ -50,6 +52,11 @@ namespace ns3 {
      memcpy((void *)a, (void *)&m_Value, sizeof(double));
   
      i.Write(a, sizeof(double));
+
+     uint8_t b[sizeof(double)];
+     memcpy((void *)b, (void *)&m_ArrTime, sizeof(double));
+  
+     i.Write(b, sizeof(double));
  }
  void 
  MyTag::Deserialize (TagBuffer i)
@@ -57,17 +64,30 @@ namespace ns3 {
   uint8_t a[sizeof(double)];
   i.Read(a, sizeof(double)); 
   memcpy((void *)&m_Value, (void *)a, sizeof(double));
+
+  uint8_t b[sizeof(double)];
+  i.Read(b, sizeof(double)); 
+  memcpy((void *)&m_ArrTime, (void *)b, sizeof(double));
  }
+
  void 
  MyTag::Print (std::ostream &os) const
  {
    os << "v=" << (double)m_Value;
  }
  void 
- MyTag::SetValue (double value)
+ MyTag::SetValue (double value, double arr_time)
  {
    m_Value = value;
+  m_ArrTime = arr_time;
  }
+
+ double 
+ MyTag::GetArrival (void) const
+ {
+    return m_ArrTime;
+ }
+
  double 
  MyTag::GetValue (void) const
  {
@@ -806,10 +826,10 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     if(deadline == -1 || control_packet) {
 //      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" linkid "<<linkid_string<<" pkt_flow "<<flowkey<<" not found deadline = "<<current_virtualtime<<" pktid "<<min_pp->GetUid());
       //pkt_tag[pkt_uid] = current_virtualtime*1.0;
-      tag.SetValue(current_virtualtime * 1.0);
+      tag.SetValue(current_virtualtime * 1.0, Simulator::Now().GetNanoSeconds());
     } else {
       double new_start_time= std::max(current_virtualtime*1.0, deadline);
-      tag.SetValue(new_start_time);
+      tag.SetValue(new_start_time, Simulator::Now().GetNanoSeconds());
 //      pkt_tag[pkt_uid] = new_start_time;   //  + min_wfq_weight;
     }
     p->AddPacketTag(tag);
@@ -926,6 +946,20 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   return true;
 }
 
+int
+PrioQueue::getflowid_temp(std::string fkey)
+{
+  if(fkey=="10.1.1.2:10.2.1.2:50000") {
+    return 1;
+  }
+  if(fkey=="10.1.2.2:10.3.2.2:50000") {
+    return 2;
+  }
+  if(fkey=="10.4.2.2:10.2.2.2:50000") {
+    return 3;
+  }
+  return 0;
+}
 
 Ptr<Packet>
 PrioQueue::DoDequeue (void)
@@ -947,8 +981,9 @@ PrioQueue::DoDequeue (void)
 
 
   double lowest_deadline = 0.0;
+  double pkt_wait_duration = 0.0;
 
-  if(!m_pkt_tagged) { // complete hack - remove the second condition
+  if(!m_pkt_tagged) { 
 
     typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
 	  double highest_wfq_weight_;
@@ -1014,6 +1049,9 @@ PrioQueue::DoDequeue (void)
     p->RemovePacketTag(t1);
     lowest_deadline = t1.GetValue();
 
+    double pkt_depart = Simulator::Now().GetNanoSeconds();
+    pkt_wait_duration = pkt_depart - t1.GetArrival();
+
     //std::cout<<"packetdeadline "<<Simulator::Now().GetSeconds()<<" "<<lowest_deadline<<" removed at node "<<nodeid<<" "<<GetFlowKey(p)<<std::endl;
     // increment virtual time
     current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
@@ -1040,21 +1078,36 @@ PrioQueue::DoDequeue (void)
 
    PppHeader temp_ppp;
    PrioHeader temp_pheader;
+   Ipv4Header  temp_ip_header;
+   TcpHeader   temp_tcpheader;  
 
-    ret_packet->RemoveHeader(temp_ppp);
-    ret_packet->RemoveHeader(temp_pheader);
+   ret_packet->RemoveHeader(temp_ppp);
+   ret_packet->RemoveHeader(temp_pheader);
+   ret_packet->RemoveHeader(temp_ip_header);
 
-    PriHeader ph = temp_pheader.GetData();
-     ph.netw_price += current_price;
-     temp_pheader.SetData(ph);
+   if(pkt_wait_duration >= 0) {
+    if(pkt_wait_duration > ONEPACKET) {
+      // bottlenecked
+      std::cout<<" setting ecn ";
+      temp_ip_header.SetEcn(Ipv4Header::ECN_CE);
+    } else {
+      std::cout<<" notsetting ecn ";
+    }
+   }
 
-    ret_packet->AddHeader(temp_pheader);
-    ret_packet->AddHeader(temp_ppp);
+   PriHeader ph = temp_pheader.GetData();
+   ph.netw_price += current_price;
+   temp_pheader.SetData(ph);
 
+   ret_packet->AddHeader(temp_ip_header);
+   ret_packet->AddHeader(temp_pheader);
+   ret_packet->AddHeader(temp_ppp);
+
+   std::cout<<"Queue "<<linkid_string<<" node "<<nodeid<<" pkt_wait_duration "<<pkt_wait_duration<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<getflowid_temp(GetFlowKey(ret_packet))<<" pkt "<<ret_packet->GetUid()<<std::endl;
 
    if(delay_mark) {
-    double pkt_depart = Simulator::Now().GetNanoSeconds();
-    double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
+    //double pkt_depart = Simulator::Now().GetNanoSeconds();
+    //double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
     ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
     std::string flowkey = GetFlowKey(ret_packet);
   //  if(linkid_string == "0_0_1") {

@@ -1239,7 +1239,9 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return 0.0;
     }
 
-  
+  target_rate = 1.0;
+
+  /*
 
     if(Simulator::Now().GetSeconds() < 1.02) {
       if(flowids[flowkey] == 1)
@@ -1256,6 +1258,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       if(flowids[flowkey] == 3)
         target_rate = 1.0; //kanthicn test 
     }
+
+    */
     
 
     // how long will it take to send this pkt out ?

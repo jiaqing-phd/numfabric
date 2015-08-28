@@ -56,10 +56,13 @@ class MyTag : public Tag
    virtual void Print (std::ostream &os) const;
  
    // these are our accessors to our tag structure
-   void SetValue (double value);
+   void SetValue (double tag_value, double arr_time);
    double GetValue (void) const;
+   double GetArrival (void) const;
+   
  private:
    double m_Value;
+   double m_ArrTime;
  };
  
 
@@ -96,6 +99,7 @@ public:
   double incoming_bytes;
    
   uint32_t getFlowID(Ptr<Packet> p);
+  int getflowid_temp(std::string);
   void setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t a);
   std::map<std::string, uint32_t>flow_ids;
   std::map<uint32_t, double>flow_weights;

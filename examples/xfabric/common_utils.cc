@@ -232,7 +232,7 @@ void common_config(void)
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
 
   flowTracker = new Tracker();
-  flowTracker->register_callback(scheduler_wrapper);
+  //flowTracker->register_callback(scheduler_wrapper);
 
   return;
 

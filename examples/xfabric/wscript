@@ -11,3 +11,6 @@ def build(bld):
 
     obj = bld.create_ns3_program('bt_traffic_test', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['bt_traffic_test.cc', 'init_all.cc', 'common_utils.cc','sending_app.cc']
+
+    obj = bld.create_ns3_program('single_link', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['single_link.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']

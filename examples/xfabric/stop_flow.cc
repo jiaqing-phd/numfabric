@@ -23,12 +23,12 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 std::stringstream filePlotQueue;
 
 double flow1_stoptime=1.3;
-double flow2_stoptime=1.3;
+double flow2_stoptime=1.03;
 double flow3_stoptime=1.3;
 
 double flow1_starttime=1.0;
-double flow2_starttime=1.01;
-double flow3_starttime=1.2;
+double flow2_starttime=1.0;
+double flow3_starttime=1.01;
 
 
 
@@ -342,6 +342,8 @@ main (int argc, char *argv[])
   //uint32_t bdproduct = link_rate *total_rtt/(8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size)+1;
   uint32_t ssthresh = initcwnd * max_segment_size;
+
+  std::cout<<"initcwnd "<<initcwnd<<" ssthresh "<<ssthresh<<std::endl;
 
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
   Config::SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue(max_segment_size));
@@ -674,6 +676,8 @@ main (int argc, char *argv[])
   Ptr<Queue> queue2 = nd2->GetQueue ();
   uint32_t nid = (nd2->GetNode())->GetId();
   StaticCast<PrioQueue> (queue2)->SetNodeID(nid);
+
+
   Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue2);
   
 
@@ -687,8 +691,17 @@ main (int argc, char *argv[])
   nid = (nd1->GetNode())->GetId();
   StaticCast<PrioQueue> (queue1)->SetNodeID(nid);
 
+  Ptr<PointToPointNetDevice> nd4 = StaticCast<PointToPointNetDevice> (bdevice1.Get(1));
+  Ptr<Queue> queue4 = nd4->GetQueue ();
+  nid = (nd4->GetNode())->GetId();
+  StaticCast<PrioQueue> (queue4)->SetNodeID(nid);
 
-/*
+  Ptr<PointToPointNetDevice> nd3 = StaticCast<PointToPointNetDevice> (bdevice2.Get(1));
+  Ptr<Queue> queue3 = nd3->GetQueue ();
+  nid = (nd3->GetNode())->GetId();
+  StaticCast<PrioQueue> (queue3)->SetNodeID(nid);
+
+
   for(uint32_t i=0; i<deviceAdjacencyList1.size (); ++i)
   {
     Ptr<PointToPointNetDevice> nd = StaticCast<PointToPointNetDevice> (deviceAdjacencyList1[i].Get(0));
@@ -714,7 +727,7 @@ main (int argc, char *argv[])
     StaticCast<PrioQueue> (queue1)->SetNodeID(nid1);
     //queue_id++;
   }
-*/
+
 
   Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue);
   Simulator::Schedule (Seconds (1.0), &CheckQueueSize, queue1);

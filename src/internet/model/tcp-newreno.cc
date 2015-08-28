@@ -81,7 +81,11 @@ TcpNewReno::TcpNewReno (void)
   dctcp_reacted = false;
   xfabric_reacted = false;
   d0 = 0.000045;
-  dt = 0.000012;
+  dt = 0.000048;
+  
+  utilize_link = false;
+  
+  std::cout<<"TcpNewReno constructor 1"<<std::endl;
 
 }
 
@@ -97,6 +101,7 @@ TcpNewReno::TcpNewReno (const TcpNewReno& sock)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_LOGIC ("Invoked the copy constructor");
+  std::cout<<"TcpNewReno constructor 2"<<std::endl;
 }
 
 TcpNewReno::~TcpNewReno (void)
@@ -233,6 +238,20 @@ TcpNewReno::getBytesAcked(const TcpHeader &tcpheader)
   return bytes_acked + header_corrections;
 } 
 
+bool
+TcpNewReno::link_underutilized(const TcpHeader &tcpHeader)
+{
+  if(tcpHeader.GetECN() == 1) {
+    return false;
+  } 
+
+  std::cout<<"path has no bottlenecks "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+  return true;
+
+}
+
+ 
+
 void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
@@ -244,25 +263,26 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
     /* get the ipv4 object */
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+
+    /* send the inter-arrival to update averages */
     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
     
     /* Now get the short term average for setting window */
     double target_rate = ipv4->GetShortTermRate(flowkey);
-     
     double res = target_rate * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline
-    m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
 
-    //  m_cWnd = ((uint32_t) (res/m_segmentSize) + 1) * m_segmentSize; //TBD
-
-//    NS_LOG_LOGIC("m_cWnd "<<m_cWnd<<" res "<<res); 
+    if(link_underutilized(tcpHeader) && utilize_link) {
+      m_cWnd = getBDP();
+    } else {
+      m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
+    }
 
     if(m_cWnd < 1* m_segmentSize) 
     {
      
-    // NS_LOG_LOGIC("flowideal rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" "<<m_cWnd);
       m_cWnd = 1 * m_segmentSize;
     }
-    std::cout<<"processRate flow rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" res is "<<res<<" m_cWnd is "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<"processRate flow rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" res is "<<res<<" m_cWnd is "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetSeconds()<<" link_util "<<link_underutilized(tcpHeader)<<std::endl;
     m_ssThresh = m_cWnd;
   } else {
     // just a debug 
@@ -451,6 +471,12 @@ TcpNewReno::SetInitialCwnd (uint32_t cwnd)
 {
   NS_ABORT_MSG_UNLESS (m_state == CLOSED, "TcpNewReno::SetInitialCwnd() cannot change initial cwnd after connection started.");
   m_initialCWnd = cwnd;
+}
+
+uint32_t
+TcpNewReno::getBDP(void)
+{
+  return GetInitialCwnd() * m_segmentSize;
 }
 
 uint32_t

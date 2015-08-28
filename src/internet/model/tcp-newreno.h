@@ -61,6 +61,9 @@ public:
   void setxfabric(bool);
   void resetSSThresh(uint32_t ssthresh);
   void resetInitCwnd(uint32_t cwnd);
+  uint32_t getBDP(void);
+  bool link_underutilized(const TcpHeader &tcpHeader);
+  
 
 protected:
   virtual uint32_t Window (void); // Return the max possible number of unacked bytes
@@ -106,6 +109,7 @@ protected:
   double                 beta, dctcp_alpha;
   SequenceNumber32       highest_ack_recvd;
   bool                   m_xfabric;   //enable xfabric like behavior
+  bool                   utilize_link;   //enable xfabric like behavior
 };
 
 } // namespace ns3
