@@ -2244,7 +2244,9 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
   if(nextRtt != Time (0))
   {
     m_lastRtt = nextRtt;
-    std::cout<<"node "<<m_node->GetId()<<" rtt "<<m_lastRtt<<std::endl;
+    lastRtt_copy = m_lastRtt;
+    std::cout<<"node "<<m_node->GetId()<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<std::endl;
+    
     NS_LOG_FUNCTION(this << m_lastRtt);
   }
 

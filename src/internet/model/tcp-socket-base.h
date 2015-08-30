@@ -638,7 +638,7 @@ protected:
   uint32_t          m_cnRetries;       //!< Number of connection retries before giving up
   TracedValue<Time> m_rto;             //!< Retransmit timeout
   TracedValue<Time> m_lastRtt;         //!< Last RTT sample collected
-  Time              lastRtt_usable;         //!< Last RTT sample collected
+  Time              lastRtt_copy;         //!< Last RTT sample collected
   double            lastRtt_usable_seconds;
   Time              m_delAckTimeout;   //!< Time to delay an ACK
   Time              m_persistTimeout;  //!< Time between sending 1-byte probes

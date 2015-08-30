@@ -168,7 +168,7 @@ void setQFlows()
 }
 
 
-void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known)
+void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, uint32_t flow_weight, uint32_t tcp, uint32_t known, double flow_stop)
 {
   ports[sinkN]++;
   // Socket at the source
@@ -182,7 +182,7 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   Ipv4Address sourceIp = source_node_ipv4->GetAddress (1,0).GetLocal();
   Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
   Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
-  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), tcp, known);
+  SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), tcp, known, flow_stop);
 
   (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
       
@@ -203,6 +203,8 @@ void startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flo
   sink_node_ipv4->setFlow(s, flow_id, flow_size, flow_weight);
 
   sink_node_ipv4->setSimTime(sim_time);
+
+  setQFlows();
   
   //flow_id++;
 }
@@ -228,10 +230,15 @@ void startFlowsStatic(void)
         double flow_size = 12500000000; 
         flow_start_time = time_now + 0.0001;
         NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
-        uint32_t flow_weight = 1.0 * flow_num;
+        uint32_t flow_weight = 1.0;
         uint32_t known = 1;
-          
-        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, flows_tcp, known); 
+        double flow_stop = 1.05;
+        //if(i%2 == 0) {
+        if(flow_num == 16) {
+          flow_stop = 2.0;
+        }
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, flows_tcp, known, flow_stop); 
+        
         flow_num++;
         flow_counter++;
       }

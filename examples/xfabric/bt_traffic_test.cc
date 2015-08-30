@@ -875,6 +875,7 @@ void rocket_createTopology(void)
     if (inFile != 0)
     {
       allNodes = inFile->Read ();
+      N = allNodes.GetN();
     }
 
     if (inFile->LinksSize () == 0)
@@ -1096,7 +1097,7 @@ main(int argc, char *argv[])
 {
 
     ///////////////////////////////////
-    LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
+    //LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
 
     CommandLine cmd = addCmdOptions();
     cmd.Parse (argc, argv);

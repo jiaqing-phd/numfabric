@@ -36,7 +36,7 @@ MyApp::ChangeRate (DataRate passed_in_rate)
 void
 //MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate, Ptr<RandomVariableStream> interArrival)
 //MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode)
-MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode, uint32_t fid, Ptr<Node> dNode, uint32_t tcp, uint32_t fknown)
+MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode, uint32_t fid, Ptr<Node> dNode, uint32_t tcp, uint32_t fknown, double stop_time)
 {
   //m_socket = socket;
   m_peer = address;
@@ -58,6 +58,8 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   myAddress = ownaddress;
   srcNode = sNode;
   destNode = dNode;
+
+  m_stoptime = stop_time;
 
   //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
   m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
@@ -102,7 +104,7 @@ MyApp::StartApplication (void)
       nReno->resetSSThresh(ssthresh);
     }
   }
-  //setuptracing(m_fid, ns3TcpSocket);
+  setuptracing(m_fid, ns3TcpSocket);
   m_socket = ns3TcpSocket;
   if (InetSocketAddress::IsMatchingType (m_peer))
   { 
@@ -146,7 +148,7 @@ MyApp::SendPacket (void)
   Ptr<Packet> packet = Create<Packet> (m_packetSize);
 
   int ret_val = m_socket->Send( packet ); 
-  std::cout<<"***  "<<Simulator::Now().GetSeconds()<<" sent packet with id "<<packet->GetUid()<<" size "<<packet->GetSize()<<" flowid "<<m_fid<<" source "<<srcNode->GetId()<<" destNode "<<destNode->GetId()<<" myaddress "<<myAddress<<" peeraddress "<<m_peer<<" *** "<<std::endl;  
+//  std::cout<<"***  "<<Simulator::Now().GetSeconds()<<" sent packet with id "<<packet->GetUid()<<" size "<<packet->GetSize()<<" flowid "<<m_fid<<" source "<<srcNode->GetId()<<" destNode "<<destNode->GetId()<<" myaddress "<<myAddress<<" peeraddress "<<m_peer<<" *** "<<std::endl;  
   if(ret_val != -1) {
     m_totBytes += packet->GetSize();
   } else {
@@ -158,8 +160,11 @@ MyApp::SendPacket (void)
 
   //if (m_totBytes < m_maxBytes)
   //  {
+    if((m_stoptime != -1) && (Simulator::Now().GetSeconds() < m_stoptime)) {
       ScheduleTx ();
-  //  }
+    } else {
+      StopApplication();
+    }
   
 }
 

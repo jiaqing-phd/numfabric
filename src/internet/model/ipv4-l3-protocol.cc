@@ -295,7 +295,7 @@ void Ipv4L3Protocol::setKay(double kvalue)
 {
   // set default values
   //
-  setlong_ewma_const(50000);
+  setlong_ewma_const(30000);
   setshort_ewma_const(10000);
 }
 void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
@@ -1241,8 +1241,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
 
   target_rate = 1.0;
 
-  /*
-
+/*
     if(Simulator::Now().GetSeconds() < 1.02) {
       if(flowids[flowkey] == 1)
         target_rate = 1.0; //kanthicn test 
@@ -1259,7 +1258,16 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
         target_rate = 1.0; //kanthicn test 
     }
 
-    */
+ */ 
+
+    if(Simulator::Now().GetSeconds() > 1.01 && Simulator::Now().GetSeconds() <= 1.02) {
+      if(flowids[flowkey] == 3)
+        target_rate = 9.0; //kanthicn test 
+    } else {
+      if(flowids[flowkey] == 3)
+        target_rate = 1.0/9.0; //kanthicn test 
+    }
+
     
 
     // how long will it take to send this pkt out ?

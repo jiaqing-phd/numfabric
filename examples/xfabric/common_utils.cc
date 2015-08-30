@@ -189,7 +189,7 @@ void common_config(void)
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
 
-  std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<std::endl;  
+  std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<std::endl;  
 
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
   Config::SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue(max_segment_size));
@@ -304,6 +304,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 //      double rate = ipv4->GetStoreRate (it->first);
       double destRate = ipv4->GetStoreDestRate (it->first);
       double csfq_rate = ipv4->GetCSFQRate (it->first);
+      double short_rate = ipv4->GetShortTermRate(it->first);
 
       uint32_t s = it->second;
 
@@ -315,10 +316,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
       std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<nid<<std::endl;
-         if(!(s==1 || s==2 || s ==3 || s == 4 || s==5 || s==6 || s==7 || s==8)) {
-           current_dest_rate += destRate; // hack - hardcoded only for this experiment - remove later
-         }
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<short_rate<<std::endl;
       }
     }
   }

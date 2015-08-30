@@ -421,44 +421,30 @@ uint32_t
 PrioQueue::GetCurSize(void)
 {
 
-  /*
+  
    typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
-   std::map<std::string,uint32_t> flow_count;
+   std::map<uint32_t,uint32_t> flow_count;
    uint32_t total_pkts = 0;
  
  
    //NS_LOG_UNCOND("Current queue .. "); 
    for (PacketQueueI pp = m_packets.begin (); pp != m_packets.end (); pp++)
    {
-       Ipv4Header h;
-       PrioHeader pheader;
-       PppHeader ppp;
 
-       (*(pp))->RemoveHeader(ppp);
-       (*(pp))->RemoveHeader(pheader);
-       (*(pp))->PeekHeader(h);
-       (*(pp))->AddHeader(pheader);
-       (*(pp))->AddHeader(ppp);
-
-       Ipv4Address src = h.GetSource();
-       Ipv4Address dst = h.GetDestination();
-
-       std::stringstream ss;
-       ss <<src<<":"<<dst;
-       std::string flowkey = ss.str();
-
-       flow_count[flowkey] += 1;
+//       std::string flowkey = GetFlowKey(*pp);
+       uint32_t fid = getFlowID(*pp);
+       flow_count[fid] += 1;
    } 
   
-   std::map<std::string,uint32_t>::iterator it;
-   for (std::map<std::string,uint32_t>::iterator it=flow_count.begin(); it!=flow_count.end(); ++it)
+   std::map<uint32_t,uint32_t>::iterator it;
+   for (std::map<uint32_t,uint32_t>::iterator it=flow_count.begin(); it!=flow_count.end(); ++it)
    {
-       NS_LOG_UNCOND("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" nodeid "<<nodeid);
+     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string<<std::endl;
      total_pkts += it->second;
    }
   
-   NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" totalpktscounter "<<total_pkts<<" nodeid "<<nodeid);  
-   */
+   //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" totalpktscounter "<<total_pkts<<" nodeid "<<nodeid);  
+   
 
   return m_bytesInQueue;
 }
