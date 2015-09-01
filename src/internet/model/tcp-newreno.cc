@@ -259,7 +259,6 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
   if(m_xfabric) {
 
-    
 
     std::stringstream ss;
     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
@@ -267,46 +266,69 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     double inter_arrival = tcpHeader.GetRate();
     // get the ipv4 object 
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
-    double window_spread_factor = 0.001;
+    double window_spread_factor = 100;
     double dmin=0.000004;
     uint32_t bytes_acked = getBytesAcked(tcpHeader);
     double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
-/*
-    m_cWnd = 10*1000000000.0/8.0 * (dt+d0);
-    m_ssThresh = m_cWnd;
-    ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
 
-    return;
-*/
-    std::cout<<" instant_rate "<<instant_rate<<" bytes_acked "<<bytes_acked<<" inter_arrival "<<inter_arrival<<std::endl;
-    if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) { // 10us
-      m_cWnd = 10*1000000000.0/8.0 * (dt+d0);
-      std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "<<std::endl; 
-    } else {
+    bool fixed_window = false;
+    bool scheme2 = false;
 
-      // send the inter-arrival to update averages 
+    if(fixed_window) 
+    {
+      unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
       ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
-      double Rsmall = ipv4->GetShortTermRate(flowkey);
-      // Now get the short term average for setting window 
-      target_cwnd = Rsmall * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline 
-
-      std::cout<<"difference "<<int(target_cwnd-m_cWnd)<<std::endl;
-      double ste_size = (int((target_cwnd - m_cWnd)*bytes_acked) / int(window_spread_factor * m_cWnd));
-      double temp_cwnd = int(m_cWnd) + ste_size;
-      double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+dmin);
+    } 
+    else if(scheme2) 
+    {
     
-      if(temp_cwnd < cur_possible_min) {
-        m_cWnd = cur_possible_min; // ceil(cur_possible_min/m_segmentSize) * m_segmentSize;
+      if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
+        unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
+        std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" unquantized_window "<<unquantized_window<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "<<std::endl; 
       } else {
-        std::cout<<" assigning temp_cwnd "<<temp_cwnd<<std::endl;
-        m_cWnd = temp_cwnd; //ceil(temp_cwnd/m_segmentSize) * m_segmentSize;
-      } 
-      std::cout<<" additional_info node "<<m_node->GetId()<<" decrease "<< (target_cwnd - m_cWnd)*bytes_acked / (window_spread_factor * m_cWnd) <<" difference "<<target_cwnd - m_cWnd<<" Rsmall thing "<<cur_possible_min<<" m_cwnd "<<m_cWnd<<" target "<<target_cwnd<<" rsmall "<<Rsmall<<" temp_cwnd "<<temp_cwnd<<" step_size "<<ste_size<<std::endl;
-      
-      std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" cur_possible_min "<<cur_possible_min<<" temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<" step_size "<<ste_size<<std::endl; 
-   }
 
+        // send the inter-arrival to update averages 
+        ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+        double Rsmall = ipv4->GetShortTermRate(flowkey);
+        // Now get the short term average for setting window 
+        target_cwnd = Rsmall * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline 
+
+        double ste_size = (int((target_cwnd - unquantized_window)*bytes_acked) / int(window_spread_factor * unquantized_window));
+        double temp_cwnd = unquantized_window + ste_size;
+        double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+dmin);
+
+        unquantized_window = std::max(temp_cwnd, cur_possible_min);
+    
+        std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+        <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
+        " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
+        lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" cur_possible_min "<<cur_possible_min<<
+        " temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<std::endl;
+      }
+    }
+    else 
+    {
+      Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+      ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+      /* Now get the short term average for setting window */
+      double target_rate = ipv4->GetShortTermRate(flowkey);
+      unquantized_window = target_rate * (1000000.0/8.0) * (d0+dt);
+      std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+      <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
+      " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
+      lastRtt_copy.GetNanoSeconds()<<std::endl;
+      
+      // our old xfabric scheme
+    }
+
+    // common stuff
+
+    m_cWnd = (ceil) (unquantized_window/m_segmentSize) * m_segmentSize;
+    if(m_cWnd < 1* m_segmentSize) 
+    {
+      m_cWnd = 1 * m_segmentSize;
+    }
     m_ssThresh = m_cWnd;
   } else {
     // just a debug 
@@ -519,6 +541,8 @@ TcpNewReno::InitializeCwnd (void)
    */
   m_cWnd = m_initialCWnd * m_segmentSize;
   m_ssThresh = m_initialSsThresh;
+
+  unquantized_window = m_cWnd * 1.0;
 
   NS_LOG_LOGIC(" InitializeCwnd : "<<m_initialCWnd<<" "<<m_cWnd<<" "<<m_ssThresh);
 }

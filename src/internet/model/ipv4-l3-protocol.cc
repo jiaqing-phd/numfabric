@@ -1257,8 +1257,9 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       if(flowids[flowkey] == 3)
         target_rate = 1.0; //kanthicn test 
     }
+*/
+  
 
- */ 
 
     if(Simulator::Now().GetSeconds() > 1.01 && Simulator::Now().GetSeconds() <= 1.02) {
       if(flowids[flowkey] == 3)
@@ -1267,6 +1268,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       if(flowids[flowkey] == 3)
         target_rate = 1.0/9.0; //kanthicn test 
     }
+  
 
     
     std::cout<<"getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId()<<std::endl;

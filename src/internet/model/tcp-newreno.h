@@ -94,6 +94,7 @@ protected:
 private:
 
 protected:
+  double                 unquantized_window;
   TracedValue<uint32_t>  m_cWnd;         //!< Congestion window
   TracedValue<uint32_t>  m_ssThresh;     //!< Slow Start Threshold
   uint32_t               m_initialCWnd;  //!< Initial cWnd value
