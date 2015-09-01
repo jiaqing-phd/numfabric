@@ -259,61 +259,61 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
   if(m_xfabric) {
 
+    
+
     std::stringstream ss;
     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
     std::string flowkey = ss.str();
     double inter_arrival = tcpHeader.GetRate();
     // get the ipv4 object 
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
-    double window_spread_factor = 2.0;
-    double dmin=4800.0;
-
-    if((lastRtt_copy.GetNanoSeconds() - d0*1000000000.0) < 5000) { // 10us
-
-      // accept this only of the rate that it is reporting is less than my current rate
-      float reported_rate = getBytesAcked(tcpHeader) * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
-      float current_rate = ipv4->GetShortTermRate(flowkey);
-      if(reported_rate > current_rate) {
-        m_cWnd = getBDP();
-        m_ssThresh = m_cWnd;
-        std::cout<<Simulator::Now().GetSeconds()<<" rtt is close to d0; NOT ignoring this inter-arrival sample rtt "<<lastRtt_copy.GetNanoSeconds()<<" d0 "<<d0*1000000000.0<<" node "<<m_node->GetId()<<" instant_rate "<<reported_rate<<" current_ewma_rate "<<current_rate<<std::endl;
-      } else {
-        // ignore;
-        std::cout<<Simulator::Now().GetSeconds()<<" rtt is close to d0; ignoring this inter-arrival sample rtt "<<lastRtt_copy.GetNanoSeconds()<<" d0 "<<d0*1000000000.0<<" node "<<m_node->GetId()<<" instant_rate "<<reported_rate<<" current_ewma_rate "<<current_rate<<std::endl;
-      }
-      return; 
-    }
-
-   
-    // send the inter-arrival to update averages 
+    double window_spread_factor = 0.001;
+    double dmin=0.000004;
+    uint32_t bytes_acked = getBytesAcked(tcpHeader);
+    double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
+    double target_cwnd = 0;
+/*
+    m_cWnd = 10*1000000000.0/8.0 * (dt+d0);
+    m_ssThresh = m_cWnd;
     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
-    
-    // Now get the short term average for setting window 
-    double target_rate = ipv4->GetShortTermRate(flowkey);
-    double res = target_rate * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline
 
-    if(link_underutilized(tcpHeader) && utilize_link) {
-      m_cWnd = getBDP();
+    return;
+*/
+    std::cout<<" instant_rate "<<instant_rate<<" bytes_acked "<<bytes_acked<<" inter_arrival "<<inter_arrival<<std::endl;
+    if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) { // 10us
+      m_cWnd = 10*1000000000.0/8.0 * (dt+d0);
+      std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "<<std::endl; 
     } else {
-      m_cWnd = ceil(res/m_segmentSize) * m_segmentSize;
-    }
 
-    if(m_cWnd < 1* m_segmentSize) 
-    {
-     
-      m_cWnd = 1 * m_segmentSize;
-    }
+      // send the inter-arrival to update averages 
+      ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+      double Rsmall = ipv4->GetShortTermRate(flowkey);
+      // Now get the short term average for setting window 
+      target_cwnd = Rsmall * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline 
 
-//    m_cWnd = 10*1000000000.0/8.0 * (dt+d0);
+      std::cout<<"difference "<<int(target_cwnd-m_cWnd)<<std::endl;
+      double ste_size = (int((target_cwnd - m_cWnd)*bytes_acked) / int(window_spread_factor * m_cWnd));
+      double temp_cwnd = int(m_cWnd) + ste_size;
+      double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+dmin);
     
-    std::cout<<"processRate flow rate "<<target_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0<<" res is "<<res<<" m_cWnd is "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" link_util "<<link_underutilized(tcpHeader)<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<std::endl; 
+      if(temp_cwnd < cur_possible_min) {
+        m_cWnd = cur_possible_min; // ceil(cur_possible_min/m_segmentSize) * m_segmentSize;
+      } else {
+        std::cout<<" assigning temp_cwnd "<<temp_cwnd<<std::endl;
+        m_cWnd = temp_cwnd; //ceil(temp_cwnd/m_segmentSize) * m_segmentSize;
+      } 
+      std::cout<<" additional_info node "<<m_node->GetId()<<" decrease "<< (target_cwnd - m_cWnd)*bytes_acked / (window_spread_factor * m_cWnd) <<" difference "<<target_cwnd - m_cWnd<<" Rsmall thing "<<cur_possible_min<<" m_cwnd "<<m_cWnd<<" target "<<target_cwnd<<" rsmall "<<Rsmall<<" temp_cwnd "<<temp_cwnd<<" step_size "<<ste_size<<std::endl;
+      
+      std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" cur_possible_min "<<cur_possible_min<<" temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<" step_size "<<ste_size<<std::endl; 
+   }
+
     m_ssThresh = m_cWnd;
   } else {
     // just a debug 
   }
 }
    
- 
+
 void
 TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 {

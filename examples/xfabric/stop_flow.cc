@@ -23,12 +23,12 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 std::stringstream filePlotQueue;
 
 double flow1_stoptime=1.3;
-double flow2_stoptime=1.03;
+double flow2_stoptime=1.3;
 double flow3_stoptime=1.3;
 
 double flow1_starttime=1.0;
 double flow2_starttime=1.0;
-double flow3_starttime=1.01;
+double flow3_starttime=1.0;
 
 
 

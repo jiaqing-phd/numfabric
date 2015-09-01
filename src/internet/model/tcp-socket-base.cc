@@ -2064,6 +2064,7 @@ TcpSocketBase::SendPendingData (bool withAck)
       
       if (w < m_segmentSize && m_txBuffer.SizeFromSequence (m_nextTxSequence) > w)
         {
+          std::cout<<" brek here.. window less than segment size algorithm "<<std::endl;
           break; // No more
         }
       
@@ -2079,6 +2080,7 @@ TcpSocketBase::SendPendingData (bool withAck)
       uint32_t sz = SendDataPacket (m_nextTxSequence, s, withAck);
       nPacketsSent++;                             // Count sent this loop
       m_nextTxSequence += sz;                     // Advance next tx sequence
+      std::cout<<"node "<<m_node->GetId()<<" sendpendingdata size "<<sz<<std::endl;
     }
   NS_LOG_LOGIC ("SendPendingData sent " << nPacketsSent << " packets");
   

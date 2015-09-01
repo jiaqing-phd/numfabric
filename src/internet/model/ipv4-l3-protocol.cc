@@ -1269,7 +1269,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     }
 
     
-
+    std::cout<<"getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId()<<std::endl;
     // how long will it take to send this pkt out ?
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
 //    double current_deadline = std::max(current_pathprice*1.0, last_deadline + pkt_dur);
