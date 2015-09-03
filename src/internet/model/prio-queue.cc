@@ -349,7 +349,7 @@ PrioQueue::updateLinkPrice(void)
    std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
    // when you update the price - set a timer to not update the minimum for an interval
    update_minimum = false;
-   std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" disabling update minimum "<<std::endl;
+   //std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" disabling update minimum "<<std::endl;
    Simulator::Schedule(Seconds(0.0005), &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
   Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
@@ -431,15 +431,29 @@ PrioQueue::GetCurSize(void)
    for (PacketQueueI pp = m_packets.begin (); pp != m_packets.end (); pp++)
    {
 
-//       std::string flowkey = GetFlowKey(*pp);
-       uint32_t fid = getFlowID(*pp);
-       flow_count[fid] += 1;
+       std::string flowkey = GetFlowKey(*pp);
+        /* temporary hack..  please remove */
+        uint32_t fid=0;
+        if(flowkey == "10.1.2.2:10.3.2.2:50000") {
+          fid = 2;
+        }
+        if(flowkey == "10.1.1.2:10.2.1.2:50000") {
+          fid = 1;
+        }
+        if(flowkey == "10.4.2.2:10.2.2.2:50000") {
+          fid = 3;
+        }
+        if(flow_count.find(fid) == flow_count.end()) {
+         flow_count[fid] = 0;
+        }
+        flow_count[fid] += 1;
    } 
   
    std::map<uint32_t,uint32_t>::iterator it;
    for (std::map<uint32_t,uint32_t>::iterator it=flow_count.begin(); it!=flow_count.end(); ++it)
    {
-     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string<<std::endl;
+     //std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string<<std::endl;
+     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<std::endl;
      total_pkts += it->second;
    }
   
@@ -833,6 +847,9 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 //  double rand_num = uv->GetValue(0.0, 1.0);
 
   enqueue(min_pp);
+  
+  // dummy call for getting debug output
+//  GetCurSize();
 
   /* First check if the queue size exceeded */
   if ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue >= m_maxBytes)) ||
@@ -1074,10 +1091,10 @@ PrioQueue::DoDequeue (void)
    if(pkt_wait_duration >= 0) {
     if(pkt_wait_duration > ONEPACKET) {
       // bottlenecked
-      std::cout<<" setting ecn ";
+     // std::cout<<" setting ecn ";
       temp_ip_header.SetEcn(Ipv4Header::ECN_CE);
     } else {
-      std::cout<<" notsetting ecn ";
+     // std::cout<<" notsetting ecn ";
     }
    }
 
@@ -1089,7 +1106,7 @@ PrioQueue::DoDequeue (void)
    ret_packet->AddHeader(temp_pheader);
    ret_packet->AddHeader(temp_ppp);
 
-   std::cout<<"Queue "<<linkid_string<<" node "<<nodeid<<" pkt_wait_duration "<<pkt_wait_duration<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<getflowid_temp(GetFlowKey(ret_packet))<<" pkt "<<ret_packet->GetUid()<<std::endl;
+   //std::cout<<"Queue "<<linkid_string<<" node "<<nodeid<<" pkt_wait_duration "<<pkt_wait_duration<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<getflowid_temp(GetFlowKey(ret_packet))<<" pkt "<<ret_packet->GetUid()<<std::endl;
 
    if(delay_mark) {
     //double pkt_depart = Simulator::Now().GetNanoSeconds();
@@ -1124,7 +1141,8 @@ PrioQueue::DoDequeue (void)
   }
 
   /* Update the network price - 08/09 kn */
-	
+
+//  GetCurSize(); // dummy call to get debug output	
 
 
   return ret_packet;

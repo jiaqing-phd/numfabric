@@ -80,7 +80,7 @@ bool rate_based  = false;
 
 
 /* Overall simulation parameters */
-uint32_t N = 8; //number of nodes in the star
+uint32_t N = 4; //number of nodes in the star
 uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
 

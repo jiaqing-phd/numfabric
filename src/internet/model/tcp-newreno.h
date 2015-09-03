@@ -111,6 +111,8 @@ protected:
   SequenceNumber32       highest_ack_recvd;
   bool                   m_xfabric;   //enable xfabric like behavior
   bool                   utilize_link;   //enable xfabric like behavior
+  SequenceNumber32       one_rtt;
+   
 };
 
 } // namespace ns3

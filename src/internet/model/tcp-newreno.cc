@@ -82,10 +82,10 @@ TcpNewReno::TcpNewReno (void)
   xfabric_reacted = false;
   d0 = 0.000045;
   //dt = 0.000048;
-  //dt = 0.000012;
   dt = 0.000024;
   
   utilize_link = true;
+  one_rtt = 0;
   
   std::cout<<"TcpNewReno constructor 1"<<std::endl;
 
@@ -104,6 +104,7 @@ TcpNewReno::TcpNewReno (const TcpNewReno& sock)
   NS_LOG_FUNCTION (this);
   NS_LOG_LOGIC ("Invoked the copy constructor");
   std::cout<<"TcpNewReno constructor 2"<<std::endl;
+  one_rtt = 0;
 }
 
 TcpNewReno::~TcpNewReno (void)
@@ -266,26 +267,48 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     double inter_arrival = tcpHeader.GetRate();
     // get the ipv4 object 
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
-    double window_spread_factor = 100;
+    double window_spread_factor = 10.0;
     double dmin=0.000004;
     uint32_t bytes_acked = getBytesAcked(tcpHeader);
     double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
+    uint32_t burst_size = 4;
 
     bool fixed_window = false;
     bool scheme2 = false;
+    bool scheme3 = false;
 
     if(fixed_window) 
     {
       unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
       ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
     } 
-    else if(scheme2) 
+    else if(scheme2 || scheme3) 
     {
     
-      if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
-        unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
-        std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" unquantized_window "<<unquantized_window<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "<<std::endl; 
+      //ecn_highest = m_highTxMark;
+      //if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
+      if(lastRtt_copy.GetNanoSeconds()  < 0) { // KANTHI - REMOVE THIS
+
+        if(scheme2) {
+          unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
+          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey
+          <<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" unquantized_window "<<unquantized_window
+          <<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "
+          <<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "
+          <<std::endl; 
+        } else if(scheme3) {
+          SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
+          if(ack_num >= one_rtt) {
+            double old_window = unquantized_window;
+         	  unquantized_window = unquantized_window + burst_size*m_segmentSize;
+            one_rtt = m_highTxMark + unquantized_window;
+            std::cout<<"Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
+            <<one_rtt<<" cwnd "<<unquantized_window<<" m_highTxMark "<<m_highTxMark<<" old_window "<<old_window<<
+            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<std::endl;
+          } // no else.. we don't do anything if it's too early
+        }
+        
       } else {
 
         // send the inter-arrival to update averages 
@@ -296,7 +319,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
         double ste_size = (int((target_cwnd - unquantized_window)*bytes_acked) / int(window_spread_factor * unquantized_window));
         double temp_cwnd = unquantized_window + ste_size;
-        double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+dmin);
+        double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+2.0*dmin);
 
         unquantized_window = std::max(temp_cwnd, cur_possible_min);
     

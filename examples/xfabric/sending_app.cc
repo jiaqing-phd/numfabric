@@ -148,7 +148,7 @@ MyApp::SendPacket (void)
   Ptr<Packet> packet = Create<Packet> (m_packetSize);
 
   int ret_val = m_socket->Send( packet ); 
-//  std::cout<<"***  "<<Simulator::Now().GetSeconds()<<" sent packet with id "<<packet->GetUid()<<" size "<<packet->GetSize()<<" flowid "<<m_fid<<" source "<<srcNode->GetId()<<" destNode "<<destNode->GetId()<<" myaddress "<<myAddress<<" peeraddress "<<m_peer<<" *** "<<std::endl;  
+  //std::cout<<"***  "<<Simulator::Now().GetSeconds()<<" sent packet with id "<<packet->GetUid()<<" size "<<packet->GetSize()<<" flowid "<<m_fid<<" source "<<srcNode->GetId()<<" destNode "<<destNode->GetId()<<" myaddress "<<myAddress<<" peeraddress "<<m_peer<<" *** "<<std::endl;  
   if(ret_val != -1) {
     m_totBytes += packet->GetSize();
   } else {
@@ -160,7 +160,7 @@ MyApp::SendPacket (void)
 
   //if (m_totBytes < m_maxBytes)
   //  {
-    if((m_stoptime != -1) && (Simulator::Now().GetSeconds() < m_stoptime)) {
+    if((m_stoptime == -1) || ((m_stoptime != -1) && (Simulator::Now().GetSeconds() < m_stoptime))) {
       ScheduleTx ();
     } else {
       StopApplication();

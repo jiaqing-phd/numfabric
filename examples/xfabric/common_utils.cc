@@ -81,12 +81,12 @@ CheckQueueSize (Ptr<Queue> queue)
     checkTimes++;
     std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<cur_price<<std::endl;
     std::map<std::string, uint32_t>::iterator it;
-    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
+/*    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
       double virtual_time = StaticCast<PrioQueue> (queue)->get_virtualtime();
       double current_slope = StaticCast<PrioQueue> (queue)->getCurrentSlope();
       std::cout<<"QueueStats1 "<<qname<<" "<<Simulator::Now().GetSeconds()<<" "<<it->second<<" "<<dline<<" "<<virtual_time<<" "<<" "<<current_slope<<" "<<cur_price<<" "<<nid<<std::endl;
-    }
+    } */
   } 
   if(queue_type == "W2FQ") {
     uint32_t qSize = StaticCast<W2FQ> (queue)->GetCurSize (0);
@@ -313,7 +313,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 //         std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
 //         current_rate += rate;
 //      }
-      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
+//      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<<short_rate<<std::endl;

@@ -1132,7 +1132,7 @@ void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate)
     pri = 1.0;
  } // we don't care about rates lower than 1Mbps - kn - is this right?
 
-  std::cout<<"UpdateMarginalUtility node "<<m_node->GetId()<<" flow "<<fkey<<" flow "<<fid<<" priority "<<pri<<" rate "<<cur_rate<<std::endl;
+//  std::cout<<"UpdateMarginalUtility node "<<m_node->GetId()<<" flow "<<fkey<<" flow "<<fid<<" priority "<<pri<<" rate "<<cur_rate<<std::endl;
   store_prio[fkey] = pri;
 }		
 
@@ -1258,20 +1258,21 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
         target_rate = 1.0; //kanthicn test 
     }
 */
-  
 
-
-    if(Simulator::Now().GetSeconds() > 1.01 && Simulator::Now().GetSeconds() <= 1.02) {
-      if(flowids[flowkey] == 3)
-        target_rate = 9.0; //kanthicn test 
-    } else {
-      if(flowids[flowkey] == 3)
-        target_rate = 1.0/9.0; //kanthicn test 
+/*
+    if(flowids[flowkey] == 1) {
+      target_rate = 4.0;
     }
-  
 
-    
-    std::cout<<"getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId()<<std::endl;
+    if(flowids[flowkey] == 3) {
+      if(Simulator::Now().GetSeconds() > 1.01 && Simulator::Now().GetSeconds() <= 1.02) {
+        target_rate = 4.0 * 19.0; //kanthicn test 
+      } else {
+        target_rate = 1.0; //kanthicn test 
+      }
+    }
+  */  
+//    std::cout<<"getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId()<<std::endl;
     // how long will it take to send this pkt out ?
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
 //    double current_deadline = std::max(current_pathprice*1.0, last_deadline + pkt_dur);
@@ -1338,7 +1339,10 @@ double Ipv4L3Protocol::get_wfq_weight(Ptr<Packet> packet, Ipv4Header &ipHeader)
 void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, double pktsize)
 {
 
-  double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
+  double pkt_rate = 10000.0;
+  if(inter_arrival > 0.000000000001) { // bug fix - verify later
+    pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
+  }
 
   std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
 
@@ -1356,7 +1360,6 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   second_term = epower * short_term_ewma_rate[flowkey];
   short_term_ewma_rate[flowkey] = first_term + second_term;
 
-  std::cout<<" node "<<m_node->GetId()<<" update rate interarrival "<<inter_arrival<<" pkt size "<<pktsize<<std::endl;
 }
 
 
@@ -1374,7 +1377,6 @@ void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
   //double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
   inter_arrival[flowkey]  = inter_arr;
   last_arrival[flowkey] = Simulator::Now().GetNanoSeconds();
-  std::cout<<"pkt arrived at "<<Simulator::Now().GetNanoSeconds()<<" nodeid "<<m_node->GetId()<<" inter_arrival "<<inter_arr<<" flow "<<flowids[flowkey]<<std::endl;   
 }
 
 double Ipv4L3Protocol::getInterArrival(std::string fkey)
@@ -1437,7 +1439,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
       }
     }
 	  priheader.netw_price = 0.0;  // start the network price at zero
-    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
+//    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
 
  
   } else {

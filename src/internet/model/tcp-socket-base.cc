@@ -1655,7 +1655,7 @@ TcpSocketBase::SendEmptyPacket (uint8_t flags)
   }
   header.SetPrice(current_netw_price); //KN - send the current netw price back in the TCP header - copy it from ACK
   header.SetRate(recvr_measured_rate);
-  std::cout<<"Sendemptypacket : current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<std::endl;
+//  std::cout<<"Sendemptypacket : current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<std::endl;
 
   /*
    * Add tags for each socket option.
@@ -2064,7 +2064,7 @@ TcpSocketBase::SendPendingData (bool withAck)
       
       if (w < m_segmentSize && m_txBuffer.SizeFromSequence (m_nextTxSequence) > w)
         {
-          std::cout<<" brek here.. window less than segment size algorithm "<<std::endl;
+//          std::cout<<" brek here.. window less than segment size algorithm "<<std::endl;
           break; // No more
         }
       
@@ -2080,7 +2080,7 @@ TcpSocketBase::SendPendingData (bool withAck)
       uint32_t sz = SendDataPacket (m_nextTxSequence, s, withAck);
       nPacketsSent++;                             // Count sent this loop
       m_nextTxSequence += sz;                     // Advance next tx sequence
-      std::cout<<"node "<<m_node->GetId()<<" sendpendingdata size "<<sz<<std::endl;
+//      std::cout<<"node "<<m_node->GetId()<<" sendpendingdata size "<<sz<<std::endl;
     }
   NS_LOG_LOGIC ("SendPendingData sent " << nPacketsSent << " packets");
   
@@ -2247,7 +2247,7 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
   {
     m_lastRtt = nextRtt;
     lastRtt_copy = m_lastRtt;
-    std::cout<<"node "<<m_node->GetId()<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<std::endl;
+//    std::cout<<"node "<<m_node->GetId()<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<std::endl;
     
     NS_LOG_FUNCTION(this << m_lastRtt);
   }
@@ -2290,8 +2290,8 @@ TcpSocketBase::NewAck (SequenceNumber32 const& ack)
   // Note the highest ACK and tell app to send more
   NS_LOG_LOGIC ("TCP " << this << " NewAck " << ack <<
                 " numberAck " << (ack - m_txBuffer.HeadSequence ())); // Number bytes ack'ed
-  std::cout<<"TCP " << this << " NewAck " << ack <<
-                " numberAck " << (ack - m_txBuffer.HeadSequence ())<<std::endl;
+//  std::cout<<"TCP " << this << " NewAck " << ack <<
+                //" numberAck " << (ack - m_txBuffer.HeadSequence ())<<std::endl;
   m_txBuffer.DiscardUpTo (ack);
   if (GetTxAvailable () > 0)
     {

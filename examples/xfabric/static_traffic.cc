@@ -827,7 +827,7 @@ void startFlowsStatic(void)
         // flow size 
         double flow_size = 12500000000; 
         flow_start_time = time_now + 0.0001;
-        NS_LOG_UNCOND("flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num);
+        std::cout<<"flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
         uint32_t flow_weight = 1.0 * flow_num;
         uint32_t known = 1;
           
