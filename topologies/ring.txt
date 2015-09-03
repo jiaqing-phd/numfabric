@@ -1,0 +1,10 @@
+Budapest London 2
+London Paris 2
+Paris Tokyo 2
+Tokyo Budapest 2
+London Budapest 2
+Paris London 2
+Tokyo Paris 2
+Budapest Tokyo 2
+Budapest Paris 2
+Paris Budapest 2

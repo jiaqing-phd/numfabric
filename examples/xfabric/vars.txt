@@ -1,0 +1,17 @@
+variables used elsewhere
+
+sourceNodes: list of nodes in nodeContainer
+sinkNodes
+
+ports = new uint16_t [sinkNodes.GetN()];
+
+allNodes 
+
+allNodes = NodeContainer (bottleNeckNode, sourceNodes, sinkNodes);
+
+AllQueues
+
+INTERNAL:
+source_links, sink_links
+
+

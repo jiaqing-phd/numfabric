@@ -1,0 +1,13 @@
+small topo: 4 nodes, links ring topo
+
+- flow 3 from 3 to 0 always fails
+
+IF SMALL_TOPO:
+3 of flows start and size is 1/3 * 1000
+
+IF RING: only 2 flows start
+DestRate flowid 3 1.07634 0 0 0 4 0
+DestRate flowid 1 1.07634 0 0 0 4 0
+DestRate flowid 4 1.07634 5016 0 1 4 0
+DestRate flowid 2 1.07634 4992 0 1 4 0
+
