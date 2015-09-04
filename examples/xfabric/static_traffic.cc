@@ -872,7 +872,12 @@ void rocket_createTopology(void)
     // BT Europe
     //std::string input ("topologies/BT_Europe.txt");
     //std::string input ("topologies/small_topo.txt");
-    std::string input ("topologies/ring.txt");
+    //std::string input ("topologies/ring.txt");
+    
+    //std::string input ("topologies/Iinet.hand.txt");
+    //std::string input ("topologies/Iinet.noLoop.txt");
+    std::string input ("topologies/dumbbell.txt");
+    //std::string input ("topologies/ring.txt");
 
     ns3::TopologyReaderHelper topoHelp;
     topoHelp.SetFileName (input);
