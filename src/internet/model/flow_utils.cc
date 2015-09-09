@@ -65,14 +65,16 @@ FlowUtil::getFCTInverseByFlowId(uint32_t fid, double price)
 double 
 FlowUtil::getAlpha1InverseByFlowId(uint32_t fid, double price)
 {
-  double flow_size = flow_sizes[fid]/1000000.0;
+/*  double flow_size = flow_sizes[fid]/1000000.0;
   if(flow_size == 0) {
     flow_size = 0.000688; //size of the smallest pkt I have seen 
   }
+*/
   if(price == 0) {
     price = 0.000000000000000001;
   }
-  double inverse = 1.0 / (price * flow_size);
+//  double inverse = 1.0 / (price * flow_size);
+  double inverse = 1.0 / price;
   double utilinverse = pow(inverse, 1.0/fct_alpha);
   return utilinverse;
 }
@@ -109,15 +111,17 @@ FlowUtil::getFCTUtilByFlowID(uint32_t fid, double price)
 double
 FlowUtil::getAlpha1UtilByFlowID(uint32_t fid, double rate)
 {
-  double flow_size = flow_sizes[fid]/1000000.0;
+/*  double flow_size = flow_sizes[fid]/1000000.0;
   if(flow_size == 0) {
     flow_size = 0.000688; //size of the smallest pkt I have seen 
   }
+*/
   if(rate == 0) {
     rate = 0.000000000000000001;
   }
   double xpower = pow(rate, fct_alpha);
-  double inverse = 1.0 / (xpower* flow_size);
+//  double inverse = 1.0 / (xpower* flow_size);
+  double inverse = 1.0 / (xpower);
   return inverse;
 }
    

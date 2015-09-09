@@ -14,4 +14,4 @@ rate_based=0
 price_update_time=0.000180
 host_compensate=false
 util_method=3
-fctalpha=0.1
+fct_alpha=0.1
