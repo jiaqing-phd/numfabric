@@ -82,12 +82,12 @@ TcpNewReno::TcpNewReno (void)
   xfabric_reacted = false;
   d0 = 0.000200; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
   //dt = 0.000048;
-  dt = 0.000200;
+  dt = 0.000024;
   
   utilize_link = true;
   one_rtt = 0;
   
-  std::cout<<"TcpNewReno constructor 1"<<std::endl;
+  std::cout<<"TcpNewReno constructor-1 "<<std::endl;
 
 }
 
@@ -103,7 +103,7 @@ TcpNewReno::TcpNewReno (const TcpNewReno& sock)
 {
   NS_LOG_FUNCTION (this);
   NS_LOG_LOGIC ("Invoked the copy constructor");
-  std::cout<<"TcpNewReno constructor 2"<<std::endl;
+  std::cout<<"TcpNewReno constructor-2 "<<std::endl;
   one_rtt = 0;
 }
 
@@ -237,7 +237,7 @@ TcpNewReno::getBytesAcked(const TcpHeader &tcpheader)
 {
   uint32_t header_corrections = 86;
   uint32_t bytes_acked = tcpheader.GetAckNumber() - m_txBuffer.HeadSequence();
-  std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" bytes_acked "<<bytes_acked<<std::endl;
+  //std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" bytes_acked "<<bytes_acked<<std::endl;
   return bytes_acked + header_corrections;
 } 
 
@@ -248,7 +248,7 @@ TcpNewReno::link_underutilized(const TcpHeader &tcpHeader)
     return false;
   } 
 
-  std::cout<<"path has no bottlenecks "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+  //std::cout<<"path has no bottlenecks "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl;
   return true;
 
 }
@@ -272,7 +272,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     uint32_t bytes_acked = getBytesAcked(tcpHeader);
     double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
-    uint32_t burst_size = 4;
+    uint32_t burst_size = 2;
 
     bool fixed_window = false;
     bool scheme2 = false;
@@ -280,7 +280,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
     if(lastRtt_copy.GetNanoSeconds() / 1000000000.0 < d0) {
       d0 = lastRtt_copy.GetNanoSeconds() / 1000000000.0;
-      std::cout<<"updated d0 to "<<d0<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+      //std::cout<<"updated d0 to "<<d0<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
     }
 
     if(fixed_window) 
@@ -297,20 +297,21 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
         if(scheme2) {
           unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
-          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey
+          std::cout<<"scheme2 is true "<<std::endl;
+/*          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey
           <<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" unquantized_window "<<unquantized_window
           <<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "
           <<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "
-          <<std::endl; 
+          <<std::endl; */
         } else {
           SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
           if(ack_num >= one_rtt) {
             double old_window = unquantized_window;
          	  unquantized_window = unquantized_window + burst_size*m_segmentSize;
             one_rtt = m_highTxMark + unquantized_window;
-            std::cout<<"Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
+         std::cout<<"Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
             <<one_rtt<<" cwnd "<<unquantized_window<<" m_highTxMark "<<m_highTxMark<<" old_window "<<old_window<<
-            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<std::endl;
+            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<"flowkey "<<flowkey<<std::endl; 
           } // no else.. we don't do anything if it's too early
         }
         
@@ -330,11 +331,11 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
           unquantized_window = std::max(temp_cwnd, cur_possible_min);
     
-          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+         /* std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
           <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
           " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
           lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" cur_possible_min "<<cur_possible_min<<
-          " temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<std::endl;
+          " temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<std::endl; */
         }
         else 
         {
@@ -346,7 +347,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
           <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
           " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
-          lastRtt_copy.GetNanoSeconds()<<std::endl;
+          lastRtt_copy.GetNanoSeconds()<<std::endl; 
       
           // our old xfabric scheme
         }

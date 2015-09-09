@@ -510,7 +510,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
     }
     run_num++;
 
-    Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
+    Simulator::Schedule (Seconds (0.01), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
 
 }
 

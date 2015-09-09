@@ -1346,7 +1346,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
     pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
   }
 
-  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
+//  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
 
   double epower = exp((-1.0*inter_arrival)/long_ewma_const);
   double first_term = (1.0 - epower)*pkt_rate;
@@ -1441,7 +1441,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
       }
     }
 	  priheader.netw_price = 0.0;  // start the network price at zero
-    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
+//    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
 
  
   } else {
