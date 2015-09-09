@@ -56,6 +56,12 @@ std::map<uint32_t, uint16_t> flow_dest_port;
 //int checkTimes = 0;
 uint16_t port = 5000;
 
+static void
+CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
+{
+//  NS_LOG_UNCOND (Simulator::Now ().GetSeconds () << "\t" << newCwnd);
+  *stream->GetStream () << Simulator::Now ().GetSeconds () << "\t" << oldCwnd << "\t" << newCwnd << std::endl;
+}
 
 double SOME_LARGE_VALUE = 12500000000000;
 
@@ -141,6 +147,23 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   std::cout<<"flow_start "<<m_fid<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" at "<<(Simulator::Now()).GetNanoSeconds()<<" "<<m_maxBytes<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" weight "<<m_weight<<std::endl;
 }
 
+void setuptracing(uint32_t sindex, Ptr<Socket> skt)
+{
+  
+    //configure tracing
+    std::string one = ".cwnd";
+    std::stringstream ss;
+    ss << "."<<sindex;
+    std::string str = ss.str();
+    std::string hname1 = prefix+one+str;
+    std::cout<<"cwnd output in "<<hname1<<std::endl;
+   
+    AsciiTraceHelper asciiTraceHelper;
+    Ptr<OutputStreamWrapper> stream0 = asciiTraceHelper.CreateFileStream (hname1);
+    skt->TraceConnectWithoutContext ("CongestionWindow", MakeBoundCallback (&CwndChange, stream0));
+  
+}
+
 void
 MyApp::StartApplication (void)
 {
@@ -164,6 +187,7 @@ MyApp::StartApplication (void)
   Ptr<Socket> ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
   ns3TcpSockets.push_back(ns3TcpSocket);
   m_socket = ns3TcpSocket;
+  setuptracing(m_fid, m_socket);
   NS_LOG_UNCOND("number of sockets at node "<<srcNode->GetId()<<" = "<<ns3TcpSockets.size());
   if (InetSocketAddress::IsMatchingType (m_peer))
     { 
@@ -298,22 +322,25 @@ CheckIpv4Rates (NodeContainer &allNodes)
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
     {
     
-      double rate = ipv4->GetStoreRate (it->first);
+      double rate = ipv4->GetCSFQRate (it->first);
       double prio = ipv4->GetStorePrio (it->first);
       //double netw_price = ipv4->getCurrentNetwPrice(it->first);
-      double destrate = ipv4->GetStoreDestRate (it->first);
-      double destprio = ipv4->GetStoreDestPrio (it->first);
+      //double destrate = ipv4->GetCSFQRate (it->first);
+      //double destprio = ipv4->GetStoreDestPrio (it->first);
       uint32_t s = it->second;
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-         std::cout<<"RatePrio flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate << " "<<prio<<" "<<std::endl;
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate << " "<<prio<<" "<<std::endl;
          current_rate += rate;
       }
+
+      /*
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destrate << " "<<destprio<<std::endl;
          current_rate += rate;
       }
+      */
     }
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
@@ -447,16 +474,16 @@ uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
 
-//int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
-int weights[6][5] = {{1,1,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
+int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
+//int weights[6][5] = {{5,1,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
 int run_num = 0;
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes, uint32_t flow_id)
 {
     std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<std::endl;
 
-//    for(uint32_t i=0; i<max_flows; i++) {
-    for(uint32_t i=0; i<2; i++) {
+    for(uint32_t i=0; i<max_flows; i++) {
+//    for(uint32_t i=0; i<2; i++) {
         uint32_t source_node = sourcenodes[i];
         uint32_t sink_node = sinknodes[i];
 
@@ -477,15 +504,16 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
           flow_started[i] = 1;
           std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<std::endl;
         }
-     //    else {
-     //     change_weight(source_node, sink_node, clientNodes, rand_weight);
-     //  }
+         else {
+          change_weight(source_node, sink_node, clientNodes, rand_weight);
+       }
     }
     run_num++;
 
-    //Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
+    Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
 
 }
+
 
 int 
 main (int argc, char *argv[])

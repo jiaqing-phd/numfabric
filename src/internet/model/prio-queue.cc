@@ -191,8 +191,13 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeDoubleChecker <double> ())
     .AddAttribute ("PriceUpdateTime", 
                    "The time after which to update priority",
-                   TimeValue(Seconds(0.0001)),
+                   TimeValue(Seconds(0.000090)),
                    MakeTimeAccessor (&PrioQueue::m_updatePriceTime),
+                   MakeTimeChecker())
+    .AddAttribute ("guardTime", 
+                   "The time after which to consider residue",
+                   TimeValue(Seconds(0.000100)),
+                   MakeTimeAccessor (&PrioQueue::m_guardTime),
                    MakeTimeChecker())
 ;
   return tid;
@@ -289,7 +294,7 @@ PrioQueue::updateLinkPrice(void)
 
     //NS_LOG_UNCOND("Using updateLinkPrice");
 
-    double current_queue = GetCurSize();
+    double current_queue = m_bytesInQueue; //GetCurSize();
     
     double price_hike = m_gamma * getRateDifference(m_updatePriceTime) + m_alpha * (current_queue - m_target_queue);
     current_price = current_price + price_hike;
@@ -344,13 +349,24 @@ PrioQueue::updateLinkPrice(void)
    } else {
      current_price = new_price;
    }
+
+//    set  optimal price - testing
+/*   if(GetLinkIDString() == "0_0_1") {
+    current_price = 0.001343;
+   }
+   if(GetLinkIDString() == "1_1_3") {
+    current_price = 0.000662;
+   }
+   if(GetLinkIDString() == "3_3_5") {
+    current_price = 0.002293;
+   }
+ */  
   
     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
    std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
    // when you update the price - set a timer to not update the minimum for an interval
    update_minimum = false;
-   //std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" disabling update minimum "<<std::endl;
-   Simulator::Schedule(Seconds(0.0005), &ns3::PrioQueue::enableUpdates, this); // 10ms
+   Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
   Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
@@ -359,7 +375,6 @@ PrioQueue::updateLinkPrice(void)
 void
 PrioQueue::enableUpdates(void)
 {
-  std::cout<<Simulator::Now().GetSeconds()<<" updateminimum Queue_id "<<GetLinkIDString()<<" enabling update minimum "<<std::endl;
   update_minimum = true;
 }
 
@@ -423,7 +438,7 @@ PrioQueue::GetCurSize(void)
 
   
    typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
-   std::map<uint32_t,uint32_t> flow_count;
+   std::map<std::string,uint32_t> flow_count;
    uint32_t total_pkts = 0;
  
  
@@ -432,28 +447,18 @@ PrioQueue::GetCurSize(void)
    {
 
        std::string flowkey = GetFlowKey(*pp);
-        /* temporary hack..  please remove */
-        uint32_t fid=0;
-        if(flowkey == "10.1.2.2:10.3.2.2:50000") {
-          fid = 2;
+
+        if(flow_count.find(flowkey) == flow_count.end()) {
+         flow_count[flowkey] = 0;
         }
-        if(flowkey == "10.1.1.2:10.2.1.2:50000") {
-          fid = 1;
-        }
-        if(flowkey == "10.4.2.2:10.2.2.2:50000") {
-          fid = 3;
-        }
-        if(flow_count.find(fid) == flow_count.end()) {
-         flow_count[fid] = 0;
-        }
-        flow_count[fid] += 1;
+        flow_count[flowkey] += 1;
    } 
   
-   std::map<uint32_t,uint32_t>::iterator it;
-   for (std::map<uint32_t,uint32_t>::iterator it=flow_count.begin(); it!=flow_count.end(); ++it)
+   std::map<std::string,uint32_t>::iterator it;
+   for (it=flow_count.begin(); it!=flow_count.end(); ++it)
    {
      //std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string<<std::endl;
-     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<std::endl;
+     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString()<<std::endl;
      total_pkts += it->second;
    }
   
@@ -815,7 +820,6 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 //  NS_LOG_LOGIC("ENQUEU PKT WITH UID "<<pkt_uid<<" AT QUEUE "<<linkid_string);
 
    if(p_residue < running_min_prio && !control_packet && update_minimum) {
-     std::cout<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" updating running_min_prio to "<<running_min_prio<<" to residue "<<p_residue<<std::endl;
      running_min_prio = p_residue;
    }
 

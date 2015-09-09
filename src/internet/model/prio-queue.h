@@ -90,6 +90,7 @@ public:
   double eps;
   Time m_updateMinPrioTime;
   Time m_updatePriceTime;
+  Time m_guardTime;
   double latest_avg_prio, running_avg_prio;
   int total_samples;
   double latest_min_prio, running_min_prio;

@@ -80,9 +80,9 @@ TcpNewReno::TcpNewReno (void)
   dctcp_alpha = 0.0;
   dctcp_reacted = false;
   xfabric_reacted = false;
-  d0 = 0.000045;
+  d0 = 0.000200; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
   //dt = 0.000048;
-  dt = 0.000024;
+  dt = 0.000200;
   
   utilize_link = true;
   one_rtt = 0;
@@ -278,17 +278,22 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     bool scheme2 = false;
     bool scheme3 = false;
 
+    if(lastRtt_copy.GetNanoSeconds() / 1000000000.0 < d0) {
+      d0 = lastRtt_copy.GetNanoSeconds() / 1000000000.0;
+      std::cout<<"updated d0 to "<<d0<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+    }
+
     if(fixed_window) 
     {
       unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
       ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
     } 
-    else if(scheme2 || scheme3) 
+    //else if(scheme2 || scheme3) 
+    else 
     {
     
       //ecn_highest = m_highTxMark;
-      //if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
-      if(lastRtt_copy.GetNanoSeconds()  < 0) { // KANTHI - REMOVE THIS
+      if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
 
         if(scheme2) {
           unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
@@ -297,7 +302,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           <<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "
           <<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "
           <<std::endl; 
-        } else if(scheme3) {
+        } else {
           SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
           if(ack_num >= one_rtt) {
             double old_window = unquantized_window;
@@ -309,41 +314,44 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           } // no else.. we don't do anything if it's too early
         }
         
-      } else {
+      } else { // for usable RTT
 
-        // send the inter-arrival to update averages 
-        ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
-        double Rsmall = ipv4->GetShortTermRate(flowkey);
-        // Now get the short term average for setting window 
-        target_cwnd = Rsmall * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline 
+        if(scheme2 || scheme3) {
 
-        double ste_size = (int((target_cwnd - unquantized_window)*bytes_acked) / int(window_spread_factor * unquantized_window));
-        double temp_cwnd = unquantized_window + ste_size;
-        double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+2.0*dmin);
+          // send the inter-arrival to update averages 
+          ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+          double Rsmall = ipv4->GetShortTermRate(flowkey);
+          // Now get the short term average for setting window 
+          target_cwnd = Rsmall * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline 
 
-        unquantized_window = std::max(temp_cwnd, cur_possible_min);
+          double ste_size = (int((target_cwnd - unquantized_window)*bytes_acked) / int(window_spread_factor * unquantized_window));
+          double temp_cwnd = unquantized_window + ste_size;
+          double cur_possible_min = Rsmall * (1000000.0/8.0)* (d0+2.0*dmin);
+
+          unquantized_window = std::max(temp_cwnd, cur_possible_min);
     
-        std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
-        <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
-        " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
-        lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" cur_possible_min "<<cur_possible_min<<
-        " temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<std::endl;
-      }
-    }
-    else 
-    {
-      Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
-      ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
-      /* Now get the short term average for setting window */
-      double target_rate = ipv4->GetShortTermRate(flowkey);
-      unquantized_window = target_rate * (1000000.0/8.0) * (d0+dt);
-      std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
-      <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
-      " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
-      lastRtt_copy.GetNanoSeconds()<<std::endl;
+          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+          <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
+          " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
+          lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" cur_possible_min "<<cur_possible_min<<
+          " temp_cwnd "<<temp_cwnd<<"  outhere difference "<<target_cwnd-m_cWnd<<" bytes_acked "<<bytes_acked<<std::endl;
+        }
+        else 
+        {
+          Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+          ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+          /* Now get the short term average for setting window */
+          double target_rate = ipv4->GetShortTermRate(flowkey);
+          unquantized_window = target_rate * (1000000.0/8.0) * (d0+dt);
+          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+          <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
+          " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
+          lastRtt_copy.GetNanoSeconds()<<std::endl;
       
-      // our old xfabric scheme
-    }
+          // our old xfabric scheme
+        }
+      } // usable RTT end
+    } // fixed window else end
 
     // common stuff
 

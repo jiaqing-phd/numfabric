@@ -875,8 +875,8 @@ void rocket_createTopology(void)
     //std::string input ("topologies/ring.txt");
     
     //std::string input ("topologies/Iinet.hand.txt");
-    //std::string input ("topologies/Iinet.noLoop.txt");
-    std::string input ("topologies/dumbbell.txt");
+    std::string input ("topologies/Iinet.noLoop.txt");
+    //std::string input ("topologies/dumbbell.txt");
     //std::string input ("topologies/ring.txt");
 
     ns3::TopologyReaderHelper topoHelp;

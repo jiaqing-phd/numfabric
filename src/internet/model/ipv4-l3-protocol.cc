@@ -150,7 +150,7 @@ void Ipv4L3Protocol::updateRate(std::string fkey)
 
 }
 
-
+/*
 void 
 Ipv4L3Protocol::updateAllRates(void)
 {
@@ -161,7 +161,8 @@ Ipv4L3Protocol::updateAllRates(void)
   }
   Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
- 
+*/
+
 void
 Ipv4L3Protocol::printSumThr(void)
 {
@@ -193,14 +194,14 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   QUERY_TIME = 0.0001;
   alpha = 1.0/16.0;
     
-  long_ewma_const = 50000;
+  long_ewma_const = 30000;
   short_ewma_const = 10000;
   next_deadline = 0.0;
   last_deadline = 0.0;
 
   //Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
   //Simulator::Schedule(Seconds (epoch_update_time), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
-  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateAllRates, this);
+//  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateAllRates, this);
 //  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
 //  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::CheckToSend, this);
   bytes_in_queue = 0;
@@ -300,13 +301,13 @@ void Ipv4L3Protocol::setKay(double kvalue)
 }
 void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
 {
-  NS_LOG_LOGIC("Setting long_ewma_const to "<<kvalue);
+  std::cout<<"Setting long_ewma_const to "<<kvalue<<std::endl;
   long_ewma_const = kvalue;
 }
 
 void Ipv4L3Protocol::setshort_ewma_const(double kvalue)
 {
-  NS_LOG_LOGIC("Setting short_ewma_const to "<<kvalue);
+  std::cout<<"Setting short_ewma_const to "<<kvalue<<std::endl;
   short_ewma_const = kvalue;
 }
 
@@ -1157,6 +1158,7 @@ bool Ipv4L3Protocol::isDestination(std::string node)
 
 void Ipv4L3Protocol::addToDropList(uint32_t id)
 {
+  std::cout<<Simulator::Now().GetSeconds()<<" nodeid "<<m_node->GetId()<<" added flow "<<id<<" to drop list"<<std::endl;
   drop_list[id] = 1;
 }
 
@@ -1239,7 +1241,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return 0.0;
     }
 
-  target_rate = 1.0;
+//  target_rate = 1.0;
 
 /*
     if(Simulator::Now().GetSeconds() < 1.02) {
@@ -1439,7 +1441,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
       }
     }
 	  priheader.netw_price = 0.0;  // start the network price at zero
-//    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
+    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl;
 
  
   } else {
