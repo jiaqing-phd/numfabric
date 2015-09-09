@@ -85,6 +85,7 @@ extern double meanflowsize ; // what TBD?
 extern std::vector< Ptr<Socket> > ns3TcpSockets;
 extern std::string prefix;
 extern uint32_t util_method ;
+extern double fct_alpha;
 extern uint16_t *ports;
 
 extern void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes);

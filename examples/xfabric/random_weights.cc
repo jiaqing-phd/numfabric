@@ -539,6 +539,7 @@ main (int argc, char *argv[])
   // Allow the user to override any of the defaults and the above
   // Config::SetDefault()s at run-time, via command-line arguments
   CommandLine cmd;
+  cmd.AddValue("fct_alpha", "fct_alpha",  fct_alpha);
   cmd.AddValue("util_method", "util_method",  util_method);
   cmd.AddValue("m_pfabric", "m_pfabric",  m_pfabric);
   cmd.AddValue("pkt_tag","pkt_tag",pkt_tag);
@@ -898,6 +899,8 @@ main (int argc, char *argv[])
      StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0);
      StaticCast<Ipv4L3Protocol> (ipv4)->setKay(kvalue);
      //StaticCast<Ipv4L3Protocol> (ipv4)->setFlowUtils(futils);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);
+     
 
   }
   Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);

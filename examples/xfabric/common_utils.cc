@@ -149,6 +149,7 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;  
+  cmd.AddValue ("fctalpha", "fctalpha for utility", fct_alpha);
   cmd.AddValue ("nNodes", "Number of nodes", N);
   cmd.AddValue ("prefix", "Output prefix", prefix);
   cmd.AddValue ("queuetype", "Queue Type", queue_type);
@@ -169,17 +170,15 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("hostflows", "hostflows",flows_per_host);
   cmd.AddValue ("flows_tcp", "flows_tcp", flows_tcp);
   cmd.AddValue ("weight_change", "weight_change", weight_change);
-  cmd.AddValue ("weight_norm", "weight_norm", weight_normalized);
+  //cmd.AddValue ("weight_norm", "weight_norm", weight_normalized);
   cmd.AddValue ("rate_based", "rate_based", rate_based);
-  cmd.AddValue ("UNKNOWN_FLOW_SIZE_CUTOFF", "unknown_flow_size_cutoff", UNKNOWN_FLOW_SIZE_CUTOFF);
+  //cmd.AddValue ("UNKNOWN_FLOW_SIZE_CUTOFF", "unknown_flow_size_cutoff", UNKNOWN_FLOW_SIZE_CUTOFF);
   cmd.AddValue ("scheduler_mode_edf", "scheduler_mode_edf", scheduler_mode_edf);
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
-  cmd.AddValue ("fct_alpha", "fct_alpha", fct_alpha);
-
 
   return cmd;
 }
@@ -232,7 +231,7 @@ void common_config(void)
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
-  Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
+  //Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
 
   flowTracker = new Tracker();
   //flowTracker->register_callback(scheduler_wrapper);

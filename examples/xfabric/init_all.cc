@@ -113,7 +113,7 @@ double meanflowsize = 1138*1460 ; // what TBD?
 std::vector< Ptr<Socket> > ns3TcpSockets;
 std::string prefix ="test";
 uint32_t util_method =1;
-double fct_alpha = 1.0;
+double fct_alpha=0.1;
 uint16_t *ports;
 
 void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes);
