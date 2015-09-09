@@ -96,6 +96,10 @@ Ipv4L3Protocol::GetTypeId (void)
                    UintegerValue (1),
                    MakeUintegerAccessor (&Ipv4L3Protocol::m_method),
                    MakeUintegerChecker<uint8_t> ())
+    .AddAttribute ("fct_alpha", "fct_alpha",
+                   DoubleValue (1.0),
+                   MakeUintegerAccessor (&Ipv4L3Protocol::m_method),
+                   MakeUintegerChecker<uint8_t> ())
     .AddAttribute ("DefaultTtl", "The TTL value set by default on all outgoing packets generated on this node.",
                    UintegerValue (64),
                    MakeUintegerAccessor (&Ipv4L3Protocol::m_defaultTtl),

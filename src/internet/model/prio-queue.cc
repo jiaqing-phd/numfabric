@@ -196,7 +196,7 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeTimeChecker())
     .AddAttribute ("guardTime", 
                    "The time after which to consider residue",
-                   TimeValue(Seconds(0.000100)),
+                   TimeValue(Seconds(0.000120)),
                    MakeTimeAccessor (&PrioQueue::m_guardTime),
                    MakeTimeChecker())
 ;
@@ -273,7 +273,7 @@ PrioQueue::getRateDifferenceNormalized(Time time_interval)
     //double ratio1 = std::max(0.0, ratio);
  
     //current_incoming_rate = link_incoming_rate;
-    //std::cout<<" queuerate "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" current_incoming_rate "<<link_incoming_rate<<" bytes "<<incoming_bytes<<" available_capacity "<<available_capacity<<" ratio "<<ratio<<std::endl;
+    //NS_LOG_LOGIC(" queuerate "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" current_incoming_rate "<<link_incoming_rate<<" bytes "<<incoming_bytes<<" available_capacity "<<available_capacity<<" ratio "<<ratio);
     incoming_bytes = 0.0;
     return ratio;
 }
@@ -363,7 +363,7 @@ PrioQueue::updateLinkPrice(void)
  */  
   
     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
-   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
+   NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate);
    // when you update the price - set a timer to not update the minimum for an interval
    update_minimum = false;
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
@@ -457,8 +457,8 @@ PrioQueue::GetCurSize(void)
    std::map<std::string,uint32_t>::iterator it;
    for (it=flow_count.begin(); it!=flow_count.end(); ++it)
    {
-     //std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string<<std::endl;
-     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString()<<std::endl;
+     //NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string);
+     NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString());
      total_pkts += it->second;
    }
   
@@ -1059,7 +1059,7 @@ PrioQueue::DoDequeue (void)
     double pkt_depart = Simulator::Now().GetNanoSeconds();
     pkt_wait_duration = pkt_depart - t1.GetArrival();
 
-    //std::cout<<"packetdeadline "<<Simulator::Now().GetSeconds()<<" "<<lowest_deadline<<" removed at node "<<nodeid<<" "<<GetFlowKey(p)<<std::endl;
+    //NS_LOG_LOGIC("packetdeadline "<<Simulator::Now().GetSeconds()<<" "<<lowest_deadline<<" removed at node "<<nodeid<<" "<<GetFlowKey(p));
     // increment virtual time
     current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
 
@@ -1069,7 +1069,7 @@ PrioQueue::DoDequeue (void)
      current_slope = CalcSlope();
 //     NS_LOG_LOGIC("SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope);
     }
-    //std::cout<<"virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime<<std::endl;  
+    //NS_LOG_LOGIC("virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime);  
     
   } 
  
@@ -1095,10 +1095,10 @@ PrioQueue::DoDequeue (void)
    if(pkt_wait_duration >= 0) {
     if(pkt_wait_duration > ONEPACKET) {
       // bottlenecked
-     // std::cout<<" setting ecn ";
+     // NS_LOG_LOGIC(" setting ecn ";
       temp_ip_header.SetEcn(Ipv4Header::ECN_CE);
     } else {
-     // std::cout<<" notsetting ecn ";
+     // NS_LOG_LOGIC(" notsetting ecn ";
     }
    }
 
@@ -1110,7 +1110,7 @@ PrioQueue::DoDequeue (void)
    ret_packet->AddHeader(temp_pheader);
    ret_packet->AddHeader(temp_ppp);
 
-   //std::cout<<"Queue "<<linkid_string<<" node "<<nodeid<<" pkt_wait_duration "<<pkt_wait_duration<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<getflowid_temp(GetFlowKey(ret_packet))<<" pkt "<<ret_packet->GetUid()<<std::endl;
+   //NS_LOG_LOGIC("Queue "<<linkid_string<<" node "<<nodeid<<" pkt_wait_duration "<<pkt_wait_duration<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<getflowid_temp(GetFlowKey(ret_packet))<<" pkt "<<ret_packet->GetUid());
 
    if(delay_mark) {
     //double pkt_depart = Simulator::Now().GetNanoSeconds();

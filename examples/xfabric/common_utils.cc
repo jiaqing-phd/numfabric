@@ -177,6 +177,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
+  cmd.AddValue ("util_method", "util_method", util_method);
+  cmd.AddValue ("fct_alpha", "fct_alpha", fct_alpha);
 
 
   return cmd;
@@ -230,6 +232,7 @@ void common_config(void)
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
+  Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
 
   flowTracker = new Tracker();
   //flowTracker->register_callback(scheduler_wrapper);
@@ -279,7 +282,7 @@ void setUpMonitoring(void)
      StaticCast<Ipv4L3Protocol> (ipv4)->setKay(kvalue);
      
      //StaticCast<Ipv4L3Protocol> (ipv4)->setEpochUpdate(epoch_update_time);
-     //StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);
   }
      
   //apps.Start (Seconds (1.0));
