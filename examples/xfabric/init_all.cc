@@ -32,6 +32,9 @@ std::map<uint32_t, double> flowweights;
 double sim_time = 1.3;
 double gamma1_value = 10.0;  //the weight to the rate term
 
+
+// All 3 variables for DGD price calculation
+double gamma_value = 0.00001; // price too jagged but values ok
 double alpha_value = 1*1e-10;
 double target_queue = 30000.0;
 
@@ -39,7 +42,6 @@ double target_queue = 30000.0;
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
-double gamma_value = 0.00001; // price too jagged but values ok
 float sampling_interval = 0.00001;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
@@ -63,7 +65,9 @@ uint32_t ssthresh_value = 3000;
 uint32_t recv_buf_size = 1310720;
 uint32_t send_buf_size = 1310720;
 bool xfabric = true;
+bool xfabric_price = true;
 bool dctcp = false;
+bool strawmancc = false;
 
 /* Deadline variables */
 bool deadline_mode = false;

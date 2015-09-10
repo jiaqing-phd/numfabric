@@ -326,6 +326,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
 
 
+
   cmd.Parse (argc, argv);
 
   if(link_rate == 10000000000) {
@@ -357,14 +358,13 @@ main (int argc, char *argv[])
 
   // Disable delayed ack
   Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
-  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(false));
-  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(true));
+  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
+  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
 
   Config::SetDefault("ns3::PrioQueue::m_pkt_tag", BooleanValue(pkt_tag));
- Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(pkt_tag));
 
 
   Config::SetDefault ("ns3::DropTailQueue::Mode" , StringValue("QUEUE_MODE_BYTES"));
@@ -379,6 +379,12 @@ main (int argc, char *argv[])
 
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
+
+  Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
+  Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
+
+  Config::SetDefault("ns3::PrioQueue::xfabric_price", BooleanValue(xfabric));
+  Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
   // Here, we will create N nodes in a star.
   NS_LOG_INFO ("Create nodes.");
 

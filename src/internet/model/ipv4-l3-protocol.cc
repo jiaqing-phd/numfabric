@@ -194,7 +194,7 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   QUERY_TIME = 0.0001;
   alpha = 1.0/16.0;
     
-  long_ewma_const = 30000;
+  long_ewma_const = 50000;
   short_ewma_const = 10000;
   next_deadline = 0.0;
   last_deadline = 0.0;
@@ -296,7 +296,7 @@ void Ipv4L3Protocol::setKay(double kvalue)
 {
   // set default values
   //
-  setlong_ewma_const(30000);
+  setlong_ewma_const(50000);
   setshort_ewma_const(10000);
 }
 void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
@@ -1169,6 +1169,12 @@ double Ipv4L3Protocol::getflowsize(std::string flowkey)
   return fsizes_copy[fid];
 }
 
+double Ipv4L3Protocol::utilInverse(std::string s, double link_price)
+{
+  return utilInverse(s, link_price, m_method);
+}
+     
+
 double Ipv4L3Protocol::utilInverse(std::string s, double link_price, int method)
 {
   uint32_t fid = 0;
@@ -1241,7 +1247,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return 0.0;
     }
 
-//  target_rate = 1.0;
+  // target_rate = 1.0;
 
 /*
     if(Simulator::Now().GetSeconds() < 1.02) {
@@ -1273,7 +1279,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
         target_rate = 1.0; //kanthicn test 
       }
     }
-  */  
+*/
+    
 //    NS_LOG_LOGIC("getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId());
     // how long will it take to send this pkt out ?
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds

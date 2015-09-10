@@ -179,6 +179,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
+  cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
 
   return cmd;
 }
@@ -213,6 +214,7 @@ void common_config(void)
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   Config::SetDefault ("ns3::PrioQueue::delay_mark", BooleanValue(delay_mark_value));
+  Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric_price));
 
 
   Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
@@ -228,10 +230,13 @@ void common_config(void)
   Config::SetDefault ("ns3::hybridQ::ECNThreshBytes", UintegerValue (max_ecn_thresh));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
-  Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(rate_based));
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
-  //Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
+  Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
+  
+  // rate_based 
+  Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
+  Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
 
   flowTracker = new Tracker();
   //flowTracker->register_callback(scheduler_wrapper);

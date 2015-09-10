@@ -169,26 +169,26 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeBooleanChecker ())
 	 .AddAttribute("target_queue",
                   "Target Queue",
-                  DoubleValue(10000.0),
+                  DoubleValue(30000.0),
                   MakeDoubleAccessor (&PrioQueue::m_target_queue),
                   MakeDoubleChecker <double> ())
 
 
     .AddAttribute ("gamma", 
                    "gamma value for DGD",
-                   DoubleValue(0.000001),
+                   DoubleValue(0.000000001),
                    MakeDoubleAccessor (&PrioQueue::m_gamma),
                    MakeDoubleChecker <double> ())
+    .AddAttribute ("alpha", 
+                   "alpha value for DGD",
+                   DoubleValue(0.0000000003),
+                   MakeDoubleAccessor (&PrioQueue::m_alpha),
+                   MakeDoubleChecker <double> ())
     .AddAttribute ("gamma1", 
-                   "Value of gamma1 for DGD",
+                   "Value of gamma1 for xfabric",
                    DoubleValue(10.0),
                    MakeDoubleAccessor (&PrioQueue::m_gamma1),
                    MakeDoubleChecker <double>())
-    .AddAttribute ("alpha", 
-                   "gamma value for xfabric",
-                   DoubleValue(0.01),
-                   MakeDoubleAccessor (&PrioQueue::m_alpha),
-                   MakeDoubleChecker <double> ())
     .AddAttribute ("PriceUpdateTime", 
                    "The time after which to update priority",
                    TimeValue(Seconds(0.000090)),
@@ -219,7 +219,6 @@ PrioQueue::PrioQueue () :
   updated_virtual_time = 0.0;
   current_price = 0.0;
 
-  xfabric_price = true;
   Simulator::Schedule(Seconds(1.0), &ns3::PrioQueue::updateLinkPrice, this);
   
   NS_LOG_LOGIC(" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold);
@@ -255,11 +254,9 @@ PrioQueue::getRateDifference(Time time_interval)
     double available_capacity = (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
     double rate_difference = link_incoming_rate - available_capacity;
 
-    if(nodeid == 0 || nodeid == 1) {
-//      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" queue_id "<<nodeid<<" Incoming bytes "<<incoming_bytes<<" link_incoming_rate "<<link_incoming_rate<<" available capacity "<<available_capacity<<" rate_difference "<<rate_difference);
-    }
-    //current_incoming_rate = link_incoming_rate;
     incoming_bytes = 0.0;
+
+    std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
     return rate_difference;
 }
 
@@ -302,10 +299,11 @@ PrioQueue::updateLinkPrice(void)
     current_price = std::max(current_price, 0.0);
     current_price = std::min(current_price, 1.0);
 
+
 //    if(m_is_switch) {
       //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<< " current price "<<current_price<<" node "<<nodeid<<" price_raise "<<price_hike<<" queue_term "<< (m_alpha *(current_queue - m_target_queue))<<" rate_term "<<price_hike<<" current_queue "<<current_queue<<" target_queue "<<m_target_queue);
  //   } 
-    NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" min_price_inc "<<price_hike);
+    std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
   } else {
     if(running_min_prio != MAX_DOUBLE) {
       latest_min_prio = running_min_prio;
@@ -458,7 +456,7 @@ PrioQueue::GetCurSize(void)
    for (it=flow_count.begin(); it!=flow_count.end(); ++it)
    {
      //NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string);
-     NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString());
+     std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString()<<std::endl;
      total_pkts += it->second;
    }
   

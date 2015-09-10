@@ -110,8 +110,10 @@ protected:
   double                 beta, dctcp_alpha;
   SequenceNumber32       highest_ack_recvd;
   bool                   m_xfabric;   //enable xfabric like behavior
+  bool                   m_strawmancc;
   bool                   utilize_link;   //enable xfabric like behavior
   SequenceNumber32       one_rtt;
+  double utilInverse(std::string, double lp);
    
 };
 

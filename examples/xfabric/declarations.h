@@ -42,6 +42,7 @@ extern std::string application_datarate;
 extern bool delay_mark_value;
 
 extern bool xfabric;
+extern bool xfabric_price;
 extern bool dctcp;
 extern uint32_t hostflows;
 

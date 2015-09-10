@@ -64,6 +64,10 @@ TcpNewReno::GetTypeId (void)
                    BooleanValue (true),
                    MakeBooleanAccessor (&TcpNewReno::m_xfabric),
                    MakeBooleanChecker ())
+    .AddAttribute ("strawman", "strawman",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&TcpNewReno::m_strawmancc),
+                   MakeBooleanChecker ())
  ;
   return tid;
 }
@@ -169,7 +173,7 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
       NS_LOG_INFO ("Received full ACK. Leaving fast recovery with cwnd set to " << m_cWnd);
     }
 
-  if(!m_xfabric) {
+  if(!m_xfabric && !m_strawmancc) {
   // Increase of cwnd based on current phase (slow start or congestion avoidance)
   if (m_cWnd < m_ssThresh)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
@@ -253,17 +257,48 @@ TcpNewReno::link_underutilized(const TcpHeader &tcpHeader)
 
 }
 
- 
+double 
+TcpNewReno::utilInverse(std::string ss, double cnp)
+{
+  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+  return ipv4->utilInverse(ss, cnp);
+} 
 
 void
 TcpNewReno::processRate(const TcpHeader &tcpHeader)
 {
+
+  std::stringstream ss;
+  ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
+  std::string flowkey = ss.str();
+
+  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+  if(m_strawmancc) {
+     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+//   current_netw_price = tcpHeader.GetCWR(); current_netw_price is already set in processAck in baseclass
+    double trate = 10000.0;
+    if(current_netw_price > 0.0) {
+      trate = utilInverse(flowkey, current_netw_price);
+    }
+    if(trate > 10000.0) {
+      trate = 10000.0;
+    }
+    double new_window_size = trate * lastRtt_copy.GetSeconds() * 1000000.0/8.0; 
+    m_cWnd = new_window_size;
+
+      if(m_cWnd < 1* m_segmentSize) 
+      {
+         m_cWnd = 1 * m_segmentSize;
+      }
+      m_ssThresh = m_cWnd;
+    std::cout<<"strawman "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" trate "<<trate<<" netw_price "<<current_netw_price<<" new_window_size "<<new_window_size<<" flow "<<flowkey<<" rtt "<<lastRtt_copy.GetSeconds()<<std::endl;
+
+    return;
+  }
+
   if(m_xfabric) {
 
 
-    std::stringstream ss;
-    ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
-    std::string flowkey = ss.str();
     double inter_arrival = tcpHeader.GetRate();
     // get the ipv4 object 
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
@@ -272,7 +307,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     uint32_t bytes_acked = getBytesAcked(tcpHeader);
     double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
-    uint32_t burst_size = 2;
+    uint32_t burst_size = 20;
 
     bool fixed_window = false;
     bool scheme2 = false;
@@ -344,10 +379,10 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           /* Now get the short term average for setting window */
           double target_rate = ipv4->GetShortTermRate(flowkey);
           unquantized_window = target_rate * (1000000.0/8.0) * (d0+dt);
-          NS_LOG_LOGIC("processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
           <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
           " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
-          lastRtt_copy.GetNanoSeconds()); 
+          lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<std::endl; 
       
           // our old xfabric scheme
         }
@@ -372,7 +407,7 @@ void
 TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 {
 
-  if(m_xfabric) {
+  if(m_xfabric || m_strawmancc) {
     return;
   }
   

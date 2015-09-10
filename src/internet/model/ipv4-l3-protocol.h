@@ -201,7 +201,8 @@ public:
   std::map<std::string, double> sample_target_rate;
   //double sample_target_rate;
   double sample_deadline;
-  double utilInverse(std::string s, double y, int method=LOGUTILITY);
+  double utilInverse(std::string s, double y, int method);
+  double utilInverse(std::string s, double y);
   double getDeadline(Ptr<Packet> packet, Ipv4Header &iph);
   double getCurrentNetwPrice(std::string fkey);
   double getCurrentDeadline(void);

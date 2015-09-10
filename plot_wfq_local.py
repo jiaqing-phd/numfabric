@@ -72,7 +72,7 @@ for line in f:
   l1 = line.rstrip();
   xy = l1.split(' ');
 
-  if(xy[0] == "QOCCU"):
+  if(xy[0] == "QOCCU1"):
     findi = xy[3]
     queue_id = xy[8]
     if(queue_id == "0_0_1"):

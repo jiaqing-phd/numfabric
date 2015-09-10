@@ -474,8 +474,8 @@ uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
 
-//int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
-int weights[6][5] = {{1,1,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
+int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
+//int weights[6][5] = {{1,1,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
 int run_num = 0;
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes, uint32_t flow_id)
@@ -510,7 +510,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
     }
     run_num++;
 
-    Simulator::Schedule (Seconds (0.01), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
+    Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
 
 }
 
@@ -519,9 +519,9 @@ int
 main (int argc, char *argv[])
 {
 
-/*  LogComponentEnable ("TcpSocketBase", LOG_LEVEL_ALL);
+/*  LogComponentEnable ("TcpSocketBase", LOG_LEVEL_ALL);*/
   LogComponentEnable ("TcpNewReno", LOG_LEVEL_ALL);
-  LogComponentEnable ("PrioQueue", LOG_LEVEL_ALL);
+/*  LogComponentEnable ("PrioQueue", LOG_LEVEL_ALL);
   LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
 */
 
