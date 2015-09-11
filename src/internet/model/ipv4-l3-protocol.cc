@@ -234,17 +234,16 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     DoSend(p, s, d, prot, r);
 
 
-    uint32_t fid = flowids[flowkey];
-    double trate = flow_idealrate[fid];
+    double trate = flow_target_rate[flowkey]; // flow_target_rate is in Mbps
     
     if(trate == 0.0) {
       /* should not happen.. a known flow must have a rate assigned */
-      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate is zero");
+      std::cout<<"ERROR "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate is zero"<<std::endl;
       return;
     }
-    double pkt_dur = ((p->GetSize()) * 8.0 * 1000000.0) / trate;  //in us since target_rate is in bps
-    Time tNext (NanoSeconds (pkt_dur*1000.0));
-    //NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds());
+    double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
+    Time tNext (NanoSeconds (pkt_dur));
+    std::cout<<"CheckToSend "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
   
@@ -270,6 +269,8 @@ Ipv4L3Protocol::QueueWithUs (Ptr<Packet> packet,
   route_q[flowkey].push(route);
 
   bytes_in_queue += packet->GetSize();
+
+  std::cout<<" bytes_in_IP_queue "<<bytes_in_queue<<std::endl;
 
   if(m_sendEvent.find(flowkey) == m_sendEvent.end()) {
     m_sendEvent[flowkey] = EventId();
@@ -1241,13 +1242,14 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       target_rate = limit_tr* link_rate;
     } 
 
+
     if(target_rate == 0.0) {
       /* This happens for unknown flows - currently for the ACK packets. They must get the highest priority
        * So, their deadlines are closest - in the past ! */
       return 0.0;
     }
 
-  // target_rate = 1.0;
+ //  target_rate = 1.0;
 
 /*
     if(Simulator::Now().GetSeconds() < 1.02) {
@@ -1278,8 +1280,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       } else {
         target_rate = 1.0; //kanthicn test 
       }
-    }
-*/
+    } */
+
     
 //    NS_LOG_LOGIC("getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId());
     // how long will it take to send this pkt out ?
@@ -1301,9 +1303,9 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
 //    NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" next_deadline "<<last_deadline<<" cur_deadline "<<current_deadline<<" arrival_time "<<arrival_time<<" current_netw_price "<<current_netw_price<<" target_rate "<<target_rate<<" sending_rate "<<store_rate[flowkey]<<" virtual_queue_size "<<virtual_queue_size<<" current_pathprice "<<current_pathprice); 
     last_deadline = current_deadline;
     sample_deadline = current_deadline;
-    sample_target_rate[flowkey] = target_rate;
+    flow_target_rate[flowkey] = target_rate;
 
-    //sample_target_rate = target_rate;
+
 /*
     if(m_wfq) {
       uint32_t fid = 0;
@@ -1312,7 +1314,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return ((packet->GetSize()+46)*8.0) / fweight;
     } 
 */
-    //NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price); 
+    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; 
     return current_deadline * 1.0;
 }
 

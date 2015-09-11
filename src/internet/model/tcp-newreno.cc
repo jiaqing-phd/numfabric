@@ -151,11 +151,13 @@ TcpNewReno::Fork (void)
 void
 TcpNewReno::NewAck (const SequenceNumber32& seq)
 {
+
   NS_LOG_FUNCTION (this << seq);
   NS_LOG_LOGIC ("TcpNewReno received ACK for seq " << seq <<
                 " cwnd " << m_cWnd <<
                 " ssthresh " << m_ssThresh);
 
+  if(!m_strawmancc) {
   // Check for exit condition of fast recovery
   if (m_inFastRec && seq < m_recover)
     { // Partial ACK, partial window deflation (RFC2582 sec.3 bullet #5 paragraph 3)
@@ -172,6 +174,7 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
       m_inFastRec = false;
       NS_LOG_INFO ("Received full ACK. Leaving fast recovery with cwnd set to " << m_cWnd);
     }
+  }
 
   if(!m_xfabric && !m_strawmancc) {
   // Increase of cwnd based on current phase (slow start or congestion avoidance)
@@ -271,40 +274,19 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   std::stringstream ss;
   ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
-
+  double inter_arrival = tcpHeader.GetRate();
+  uint32_t bytes_acked = getBytesAcked(tcpHeader);
+  // get the ipv4 object 
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+
   if(m_strawmancc) {
-     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
-//   current_netw_price = tcpHeader.GetCWR(); current_netw_price is already set in processAck in baseclass
-    double trate = 10000.0;
-    if(current_netw_price > 0.0) {
-      trate = utilInverse(flowkey, current_netw_price);
-    }
-    if(trate > 10000.0) {
-      trate = 10000.0;
-    }
-    double new_window_size = trate * lastRtt_copy.GetSeconds() * 1000000.0/8.0; 
-    m_cWnd = new_window_size;
-
-      if(m_cWnd < 1* m_segmentSize) 
-      {
-         m_cWnd = 1 * m_segmentSize;
-      }
-      m_ssThresh = m_cWnd;
-    std::cout<<"strawman "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" trate "<<trate<<" netw_price "<<current_netw_price<<" new_window_size "<<new_window_size<<" flow "<<flowkey<<" rtt "<<lastRtt_copy.GetSeconds()<<std::endl;
-
-    return;
+    ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
   }
 
   if(m_xfabric) {
 
-
-    double inter_arrival = tcpHeader.GetRate();
-    // get the ipv4 object 
-    Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
     double window_spread_factor = 10.0;
     double dmin=0.000004;
-    uint32_t bytes_acked = getBytesAcked(tcpHeader);
     double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
     uint32_t burst_size = 20;

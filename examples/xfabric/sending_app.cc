@@ -172,11 +172,11 @@ void
 MyApp::ScheduleTx (void)
 {
   //if (m_running)
-  //if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
-  //  {
+  if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
+    {
       Time tNext (Seconds ((m_packetSize+38) * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
-   // } else {
-   //   StopApplication();
-   // }
+    } else {
+      StopApplication();
+    }
 }

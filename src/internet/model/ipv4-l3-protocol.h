@@ -198,8 +198,7 @@ public:
   uint32_t bytes_in_queue;
   double deq_bytes;
   std::map<std::string, double> cnp;
-  std::map<std::string, double> sample_target_rate;
-  //double sample_target_rate;
+  std::map<std::string, double> flow_target_rate;
   double sample_deadline;
   double utilInverse(std::string s, double y, int method);
   double utilInverse(std::string s, double y);

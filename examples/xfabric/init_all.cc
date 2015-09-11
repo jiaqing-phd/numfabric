@@ -34,7 +34,7 @@ double gamma1_value = 10.0;  //the weight to the rate term
 
 
 // All 3 variables for DGD price calculation
-double gamma_value = 0.00001; // price too jagged but values ok
+double gamma_value = 0.0000001; 
 double alpha_value = 1*1e-10;
 double target_queue = 30000.0;
 
