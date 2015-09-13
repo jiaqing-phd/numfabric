@@ -487,6 +487,10 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         uint32_t source_node = sourcenodes[i];
         uint32_t sink_node = sinknodes[i];
 
+        if(source_node == 8) {
+          continue;
+        }
+
         double flow_size = SOME_LARGE_VALUE;
         double flow_start = Simulator::Now().GetSeconds();
       
@@ -502,15 +506,15 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
           sending_apps[i] = sendingApp;
           global_flowid++;
           flow_started[i] = 1;
-          std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<std::endl;
+          std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
         }
          else {
-          change_weight(source_node, sink_node, clientNodes, rand_weight);
+          //change_weight(source_node, sink_node, clientNodes, rand_weight);
        }
     }
     run_num++;
 
-    Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
+    //Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes, global_flowid);
 
 }
 
@@ -520,7 +524,7 @@ main (int argc, char *argv[])
 {
 
 /*  LogComponentEnable ("TcpSocketBase", LOG_LEVEL_ALL);*/
-  LogComponentEnable ("TcpNewReno", LOG_LEVEL_ALL);
+/*  LogComponentEnable ("TcpNewReno", LOG_LEVEL_ALL);*/
 /*  LogComponentEnable ("PrioQueue", LOG_LEVEL_ALL);
   LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
 */
@@ -559,7 +563,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("link_delay","link_delay",link_delay);
   cmd.AddValue ("ecn_thresh", "ecn_thresh", max_ecn_thresh);
 
-  cmd.AddValue("gamma", "gamma", gamma_value);
+  cmd.AddValue("dgd_gamma", "dgd_gamma", dgd_gamma);
   cmd.AddValue("margin_util_price", "margin_util_price", margin_util_price);
   cmd.AddValue("strawmancc", "strawmancc", strawmancc);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
@@ -628,10 +632,10 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::PrioQueue::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue",BooleanValue(m_pfabric));
 
-  Config::SetDefault("ns3::PrioQueue::alpha", DoubleValue(alpha_value));
+  Config::SetDefault("ns3::PrioQueue::dgd_alpha", DoubleValue(dgd_alpha));
   Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
 
-  Config::SetDefault("ns3::PrioQueue::gamma", DoubleValue(gamma_value));
+  Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
 
 
   Config::SetDefault ("ns3::DropTailQueue::Mode" , StringValue("QUEUE_MODE_BYTES"));

@@ -149,7 +149,7 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;  
-  cmd.AddValue ("fctalpha", "fctalpha for utility", fct_alpha);
+  cmd.AddValue ("fct_alpha", "fctalpha for utility", fct_alpha);
   cmd.AddValue ("nNodes", "Number of nodes", N);
   cmd.AddValue ("prefix", "Output prefix", prefix);
   cmd.AddValue ("queuetype", "Queue Type", queue_type);
@@ -180,6 +180,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
+  cmd.AddValue ("dgd_alpha", "dgd_alpha", dgd_alpha);
+  cmd.AddValue ("dgd_gamma", "dgd_gamma", dgd_gamma);
 
   return cmd;
 }
@@ -215,6 +217,8 @@ void common_config(void)
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   Config::SetDefault ("ns3::PrioQueue::delay_mark", BooleanValue(delay_mark_value));
   Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric_price));
+  Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
+  Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
 
 
   Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
@@ -298,8 +302,7 @@ void setUpMonitoring(void)
 void
 CheckIpv4Rates (NodeContainer &allNodes)
 {
-  //double current_rate = 0.0, current_dest_rate = 0.0;
-  double current_dest_rate = 0.0;
+  double current_rate = 0.0;
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
   {
@@ -309,18 +312,18 @@ CheckIpv4Rates (NodeContainer &allNodes)
     {
     
 //      double rate = ipv4->GetStoreRate (it->first);
-      double destRate = ipv4->GetStoreDestRate (it->first);
       double csfq_rate = ipv4->GetCSFQRate (it->first);
       double short_rate = ipv4->GetShortTermRate(it->first);
 
       uint32_t s = it->second;
 
       /* check if this flowid is from this source */
-//      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-//         std::cout<<"Rate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate <<std::endl;
-//         current_rate += rate;
-//      }
+      if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << csfq_rate <<" "<<short_rate<<std::endl;
+         current_rate += short_rate;
+      }
 //      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
+/*
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<< nid << " " << N << " " << short_rate << std::endl;
@@ -328,9 +331,10 @@ CheckIpv4Rates (NodeContainer &allNodes)
         current_dest_rate += destRate;
 
       }
+*/
     }
   }
-  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_dest_rate<<std::endl;
+  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (sampling_interval), &CheckIpv4Rates, allNodes);

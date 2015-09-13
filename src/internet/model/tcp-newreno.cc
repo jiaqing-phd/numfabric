@@ -78,22 +78,28 @@ TcpNewReno::TcpNewReno (void)
     m_limitedTx (false) // mute valgrind, actual value set by the attribute system
 {
   NS_LOG_FUNCTION (this);
+  NS_LOG_LOGIC("TcpNewReno constructor-1 ");
+  init_values();
+
+}
+
+void
+TcpNewReno::init_values(void)
+{
+  d0 = 0.000200; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
+  //dt = 0.000048;
+  dt = 0.000024;
   highest_ack_recvd = 0;
   beta = 1.0/32.0;
   bytes_with_ecn = total_bytes_acked = 0.0;
   dctcp_alpha = 0.0;
   dctcp_reacted = false;
   xfabric_reacted = false;
-  d0 = 0.000200; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
-  //dt = 0.000048;
-  dt = 0.000024;
-  
   utilize_link = true;
   one_rtt = 0;
   
-  NS_LOG_LOGIC("TcpNewReno constructor-1 ");
-
 }
+  
 
 TcpNewReno::TcpNewReno (const TcpNewReno& sock)
   : TcpSocketBase (sock),
@@ -109,6 +115,7 @@ TcpNewReno::TcpNewReno (const TcpNewReno& sock)
   NS_LOG_LOGIC ("Invoked the copy constructor");
   NS_LOG_LOGIC("TcpNewReno constructor-2 ");
   one_rtt = 0;
+  init_values();
 }
 
 TcpNewReno::~TcpNewReno (void)
@@ -287,22 +294,24 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
     double window_spread_factor = 10.0;
     double dmin=0.000004;
-    double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
+    //double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
-    uint32_t burst_size = 20;
+    uint32_t burst_size = 4;
 
-    bool fixed_window = false;
+    bool fixed_window = true;
     bool scheme2 = false;
     bool scheme3 = false;
+    double ONENANO = 1000000000.0;
 
-    if(lastRtt_copy.GetNanoSeconds() / 1000000000.0 < d0) {
-      d0 = lastRtt_copy.GetNanoSeconds() / 1000000000.0;
-      //NS_LOG_LOGIC("updated d0 to "<<d0<<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds());
+    if(lastRtt_copy.GetNanoSeconds() / ONENANO < d0) {
+      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+      d0 = lastRtt_copy.GetNanoSeconds() / ONENANO;
     }
 
     if(fixed_window) 
     {
-      unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
+      //unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
+      unquantized_window = 10*1000000000.0/8.0 * (dt+0.000045);
       ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
     } 
     //else if(scheme2 || scheme3) 
@@ -361,10 +370,10 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           /* Now get the short term average for setting window */
           double target_rate = ipv4->GetShortTermRate(flowkey);
           unquantized_window = target_rate * (1000000.0/8.0) * (d0+dt);
-          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
+/*          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
           <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
           " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
-          lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<std::endl; 
+          lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<std::endl; */
       
           // our old xfabric scheme
         }

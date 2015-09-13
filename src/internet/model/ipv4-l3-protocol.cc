@@ -243,7 +243,8 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     }
     double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
     Time tNext (NanoSeconds (pkt_dur));
-    std::cout<<"CheckToSend "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;
+/*    std::cout<<"CheckToSend "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;*/
+
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
   
@@ -270,7 +271,6 @@ Ipv4L3Protocol::QueueWithUs (Ptr<Packet> packet,
 
   bytes_in_queue += packet->GetSize();
 
-  std::cout<<" bytes_in_IP_queue "<<bytes_in_queue<<std::endl;
 
   if(m_sendEvent.find(flowkey) == m_sendEvent.end()) {
     m_sendEvent[flowkey] = EventId();
@@ -1119,7 +1119,8 @@ void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate)
       if(m_method == 1) { //kn - this is the default
         pri = flowutil.getPrioByFlowID(fid, cur_rate);
       } else if(m_method == 2) {
-        pri = flowutil.getFCTUtilByFlowID(fid, cur_rate);
+        //pri = flowutil.getFCTUtilByFlowID(fid, cur_rate);
+        pri = flowutil.getFCTUtilDerivative(fid, cur_rate);
       } else if(m_method == 3) {
         pri = flowutil.getAlpha1UtilByFlowID(fid, cur_rate);
       }
@@ -1185,10 +1186,10 @@ double Ipv4L3Protocol::utilInverse(std::string s, double link_price, int method)
   {
     case LOGUTILITY: 
       targetRate = flowutil.getUtilInverseByFlowId(fid, link_price);
-      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" getting log utility fid "<<fid<<" price "<<link_price<<" targetrate "<<targetRate);
       break;
     case FCTUTILITY:
-      targetRate = flowutil.getFCTInverseByFlowId(fid, link_price);
+      //targetRate = flowutil.getFCTInverseByFlowId(fid, link_price);
+      targetRate = flowutil.getFCTUtilDerivativeInverse(fid, link_price);
 //      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" getting fct utility fid "<<fid<<" price "<<link_price<<" targetrate "<<targetRate);
       break;
     case ALPHA1UTILITY:
@@ -1249,7 +1250,6 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return 0.0;
     }
 
- //  target_rate = 1.0;
 
 /*
     if(Simulator::Now().GetSeconds() < 1.02) {
@@ -1269,8 +1269,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     }
 */
 
-/*
-    if(flowids[flowkey] == 1) {
+
+   /* if(flowids[flowkey] == 1) {
       target_rate = 4.0;
     }
 
@@ -1280,11 +1280,14 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       } else {
         target_rate = 1.0; //kanthicn test 
       }
-    } */
+    }
+  */ 
 
     
 //    NS_LOG_LOGIC("getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId());
     // how long will it take to send this pkt out ?
+    std::cout<<"Node "<<m_node->GetId()<<" pkt size "<<packet->GetSize()<<" flowsize "<<std::endl;
+
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
 //    double current_deadline = std::max(current_pathprice*1.0, last_deadline + pkt_dur);
     //double current_deadline = last_deadline + pkt_dur;
@@ -1314,7 +1317,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return ((packet->GetSize()+46)*8.0) / fweight;
     } 
 */
-    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; 
+/*    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; */
     return current_deadline * 1.0;
 }
 
@@ -1441,16 +1444,21 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     priheader.wfq_weight = virtual_pkt_length;
 	  priheader.residue = (store_prio[flowkey] - current_netw_price);
 
-    if(host_compensate) {
-      if(flowids[flowkey] == 1) {
-        priheader.residue = priheader.residue / 4.0;
-      } 
-      if(flowids[flowkey] == 2) {
-        priheader.residue = priheader.residue / 5.0;
+    double num_hops = 1.0;
+/*    if(host_compensate) {
+      uint32_t f = flowids[flowkey];
+      if(f == 1 || f == 3 || f == 5) {
+        num_hops = 4.0;
+      }
+      if(f == 2 || f == 4) {
+        num_hops =  5.0;
       }
     }
+*/
+
+    priheader.residue = priheader.residue / num_hops;
 	  priheader.netw_price = 0.0;  // start the network price at zero
-//    NS_LOG_LOGIC("NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate);
+    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl; 
 
  
   } else {
@@ -1495,7 +1503,7 @@ Ipv4L3Protocol::setFlowSizes(std::map<uint32_t, double> fsizes)
 void Ipv4L3Protocol::setFlow(std::string flow, uint32_t flowid, double fsize, uint32_t weight)
 {
 
-    NS_LOG_LOGIC(" Ipv4L3Protocol::SetFlow "<<m_node->GetId()<<" flowid "<<flowid<<" flow "<<flow<<" size "<<fsize<<" weight "<<weight);
+    std::cout<<" Ipv4L3Protocol::SetFlow "<<m_node->GetId()<<" flowid "<<flowid<<" flow "<<flow<<" size "<<fsize<<" weight "<<weight<<std::endl;
 
 	  flowids[flow] = flowid;
     fsizes_copy[flowid] = fsize;

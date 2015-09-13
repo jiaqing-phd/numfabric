@@ -304,7 +304,8 @@ main (int argc, char *argv[])
   cmd.AddValue ("flow3_stoptime", "flow3_stoptime", flow3_stoptime);
   cmd.AddValue ("flow3_starttime", "flow3_starttime", flow3_starttime);
 
-  cmd.AddValue("gamma", "gamma", gamma_value);
+  cmd.AddValue("dgd_gamma", "dgd_gamma", dgd_gamma);
+  cmd.AddValue("dgd_alpha", "dgd_alpha", dgd_alpha);
   cmd.AddValue("margin_util_price", "margin_util_price", margin_util_price);
   cmd.AddValue("strawmancc", "strawmancc", strawmancc);
   cmd.AddValue ("load", "load",load);
@@ -385,6 +386,9 @@ main (int argc, char *argv[])
 
   Config::SetDefault("ns3::PrioQueue::xfabric_price", BooleanValue(xfabric));
   Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
+  Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
+  Config::SetDefault("ns3::PrioQueue::dgd_alpha", DoubleValue(dgd_alpha));
+  
   // Here, we will create N nodes in a star.
   NS_LOG_INFO ("Create nodes.");
 

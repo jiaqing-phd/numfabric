@@ -34,15 +34,16 @@ double gamma1_value = 10.0;  //the weight to the rate term
 
 
 // All 3 variables for DGD price calculation
-double gamma_value = 0.0000001; 
-double alpha_value = 1*1e-10;
+double dgd_gamma = 0.000000001; 
+double dgd_alpha = 3*1e-10;
 double target_queue = 30000.0;
 
 
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
-float sampling_interval = 0.00001;
+double gaurd_time = 0.000100; 
+float sampling_interval = 0.001;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
@@ -84,7 +85,7 @@ bool rate_based  = false;
 
 
 /* Overall simulation parameters */
-uint32_t N = 16; //number of nodes in the star
+uint32_t N = 4; //number of nodes in the star
 uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
 

@@ -72,10 +72,10 @@ for line in f:
   l1 = line.rstrip();
   xy = l1.split(' ');
 
-  if(xy[0] == "QOCCU1"):
+  if(xy[0] == "QOCCU"):
     findi = xy[3]
     queue_id = xy[8]
-    if(queue_id == "0_0_1"):
+    if(queue_id == "2_2_0"):
       if(findi not in qoccutimes0):
         qoccutimes0[findi] = []
       qoccutimes0[findi].append(float(xy[1]))
@@ -308,17 +308,17 @@ plt.draw()
 #plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_virtualtime"))
 #plt.draw()
 
-#plt.figure(6)
-#plt.title("FlowAggregatePrices")
-#i=0
-#for key in nprice_time:
-#      plt.plot(nprice_time[key], nprices[key], colors[i], label=str(key)) 
-#      i = (i+1)%len(colors)
-#plt.xlabel('Time in seconds')
-#plt.ylabel('Flow Aggregate Prices')
-#plt.legend(loc='lower right')
-#plt.savefig('%s/%s.%s.png' %(pre,pre,"flow_prices"))
-#plt.draw()
+plt.figure(6)
+plt.title("FlowAggregatePrices")
+i=0
+for key in nprice_time:
+      plt.plot(nprice_time[key], nprices[key], colors[i], label=str(key)) 
+      i = (i+1)%len(colors)
+plt.xlabel('Time in seconds')
+plt.ylabel('Flow Aggregate Prices')
+plt.legend(loc='lower right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"flow_prices"))
+plt.draw()
 
 
 
@@ -396,37 +396,37 @@ plt.ylabel('Weights')
 plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"WFQ_Weights"))
 plt.draw()
-cwndx = {}
-cwndy = {}
-for fid in range(1,17):
-  cwnd1 = sys.argv[1]+".cwnd."+`fid`
-  print("opening file %s" %cwnd1)
-  if(os.path.exists(cwnd1)):
-    f1 = open(cwnd1)
-    for line in f1:
-      L = line.rstrip();
-      xy1 = L.split('\t');
-      if(fid not in cwndx):
-        cwndx[fid] = []
-        cwndy[fid] = []
-      cwndx[fid].append(xy1[0])
-      cwndy[fid].append(xy1[2])
+#cwndx = {}
+#cwndy = {}
+#for fid in range(1,17):
+#  cwnd1 = sys.argv[1]+".cwnd."+`fid`
+#  print("opening file %s" %cwnd1)
+#  if(os.path.exists(cwnd1)):
+#    f1 = open(cwnd1)
+#    for line in f1:
+#      L = line.rstrip();
+#      xy1 = L.split('\t');
+#      if(fid not in cwndx):
+#        cwndx[fid] = []
+#        cwndy[fid] = []
+#      cwndx[fid].append(xy1[0])
+#      cwndy[fid].append(xy1[2])
 
-plt.figure(13)
-plt.title("Congestion Windows")
+#plt.figure(13)
+#plt.title("Congestion Windows")
+#
+#i=0
+#for key in cwndx:
+#  print("plotting flow id %d"%key)
+#  
+#  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
+#  i = (i+1)%len(colors)
+#plt.xlabel('Time in seconds')
+#plt.ylabel('Congestion windows')
+#plt.legend(loc='lower right')
+#plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
 
-i=0
-for key in cwndx:
-  print("plotting flow id %d"%key)
-  
-  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
-  i = (i+1)%len(colors)
-plt.xlabel('Time in seconds')
-plt.ylabel('Congestion windows')
-plt.legend(loc='lower right')
-plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
-
-plt.draw()
+#plt.draw()
 
 i=0
 plt.figure(5)
@@ -442,17 +442,17 @@ plt.ylabel('Number of Packets')
 plt.savefig('%s/%s.%s.jpg' %(pre,pre,"flow_queue_occupancy_switch0"))
 plt.draw()
 
-i=0
-plt.figure(6)
-plt.title("Queue flow-level occupancy - Switch1")
-for key in qoccups1:
-  plt.plot(qoccutimes1[key], qoccups1[key], colors[i], label=str(key))
-  i= (i+1)% len(colors)
+#i=0
+#plt.figure(6)
+#plt.title("Queue flow-level occupancy - Switch1")
+#for key in qoccups1:
+#  plt.plot(qoccutimes1[key], qoccups1[key], colors[i], label=str(key))
+#  i= (i+1)% len(colors)
 
 
-plt.legend(loc='upper right')
-plt.xlabel('Time in seconds')
-plt.ylabel('Number of Packets')
-plt.savefig('%s/%s.%s.jpg' %(pre,pre,"flow_queue_occupancy_switch1"))
-plt.draw()
+#plt.legend(loc='upper right')
+#plt.xlabel('Time in seconds')
+#plt.ylabel('Number of Packets')
+#plt.savefig('%s/%s.%s.jpg' %(pre,pre,"flow_queue_occupancy_switch1"))
+#plt.draw()
 plt.show()

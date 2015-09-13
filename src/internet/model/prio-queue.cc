@@ -174,16 +174,17 @@ TypeId PrioQueue::GetTypeId (void)
                   MakeDoubleChecker <double> ())
 
 
-    .AddAttribute ("gamma", 
+    .AddAttribute ("dgd_gamma", 
                    "gamma value for DGD",
                    DoubleValue(0.000000001),
                    MakeDoubleAccessor (&PrioQueue::m_gamma),
                    MakeDoubleChecker <double> ())
-    .AddAttribute ("alpha", 
+    .AddAttribute ("dgd_alpha", 
                    "alpha value for DGD",
                    DoubleValue(0.0000000003),
                    MakeDoubleAccessor (&PrioQueue::m_alpha),
                    MakeDoubleChecker <double> ())
+
     .AddAttribute ("gamma1", 
                    "Value of gamma1 for xfabric",
                    DoubleValue(10.0),
@@ -196,7 +197,7 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeTimeChecker())
     .AddAttribute ("guardTime", 
                    "The time after which to consider residue",
-                   TimeValue(Seconds(0.000120)),
+                   TimeValue(Seconds(0.005)),
                    MakeTimeAccessor (&PrioQueue::m_guardTime),
                    MakeTimeChecker())
 ;
@@ -291,6 +292,8 @@ PrioQueue::updateLinkPrice(void)
 
     //NS_LOG_UNCOND("Using updateLinkPrice");
 
+    // TBD - incoming_bytes should be really input rate 
+    // 30KB
     double current_queue = m_bytesInQueue; //GetCurSize();
     
     double price_hike = m_gamma * getRateDifference(m_updatePriceTime) + m_alpha * (current_queue - m_target_queue);

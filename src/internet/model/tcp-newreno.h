@@ -80,6 +80,7 @@ protected:
   SequenceNumber32 last_outstanding_num;
   double d0, dt;
   uint32_t getBytesAcked(const TcpHeader &tcpheader);
+  void init_values(void);
 
   // Implementing ns3::TcpSocket -- Attribute get/set
   virtual void     SetSegSize (uint32_t size);

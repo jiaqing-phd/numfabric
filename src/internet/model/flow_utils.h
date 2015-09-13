@@ -13,6 +13,8 @@ namespace ns3 {
 class FlowUtil
 {
 public:
+  double getFCTUtilDerivative(uint32_t fid, double price);
+  double getFCTUtilDerivativeInverse(uint32_t fid, double price);
   double getUtilInverseByFlowId(uint32_t fid, double priority);
   double getPrioByFlowID(uint32_t flowid, double rate);
   double getUtilByFlowID(uint32_t flowid, double rate);

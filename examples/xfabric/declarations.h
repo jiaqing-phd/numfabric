@@ -49,7 +49,7 @@ extern uint32_t hostflows;
 
 extern double price_update_time ;
 extern double rate_update_time ;
-extern double gamma_value ;
+extern double dgd_gamma;
 extern double flow2_stoptime;
 extern double flow1_stoptime;
 extern double flow3_stoptime;
@@ -57,7 +57,7 @@ extern double flow2_starttime;
 extern double flow1_starttime;
 extern double flow3_starttime;
 
-extern double alpha_value ;
+extern double dgd_alpha ;
 extern double target_queue ;
 
 /* Deadline variables */

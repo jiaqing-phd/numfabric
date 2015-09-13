@@ -50,17 +50,6 @@ FlowUtil::setWeights(std::map<uint32_t, double> fweights)
 }
 
 
-double 
-FlowUtil::getFCTInverseByFlowId(uint32_t fid, double price)
-{
-  double flow_size = flow_sizes[fid] /1000000.0;
-  if(flow_size == 0) {
-    flow_size = 688/1000000.0; //size of the smallest pkt I have seen 
-  }
-  double utilinverse = 1.0 / (price * flow_size);
-//  NS_LOG_LOGIC("getFCTInverseByFlowid fid "<<fid<<" size "<<flow_size<<" price "<<price<<" utilinverse "<<utilinverse);
-  return utilinverse;
-}
 
 double 
 FlowUtil::getAlpha1InverseByFlowId(uint32_t fid, double price)
@@ -86,27 +75,72 @@ FlowUtil::getUtilInverseByFlowId(uint32_t fid, double priority)
   /* here */
   double ret_val = 1.0/priority;
   if (flow_weights.find( fid ) != flow_weights.end()){
-    //  NS_LOG_LOGIC("getUtilInverseByFlowId flowid "<<fid<<" flow_weight "<<flow_weights[fid]<<" priority "<<priority);
       ret_val = flow_weights[fid]/priority;
   }
-  //NS_LOG_LOGIC(" default: getUtilInverseByFlowId flowid "<<fid<<" flow_weight "<<flow_weights[fid]<<" priority "<<priority);
   return ret_val;
 }
 
 double 
+FlowUtil::getFCTInverseByFlowId(uint32_t fid, double price)
+{
+  //double flow_size = flow_sizes[fid] /1000000.0;
+  double flow_size = flow_sizes[fid]/10000000000.0;
+  if(flow_size == 0) {
+    //flow_size = 688/1000000.0; //size of the smallest pkt I have seen 
+    flow_size = 688.0; //size of the smallest pkt I have seen 
+  }
+  double utilinverse = 1.0 / (price * flow_size);
+  std::cout<<"getFCTInverseByFlowid fid "<<fid<<" size "<<flow_size<<" price "<<price<<" utilinverse "<<utilinverse<<std::endl;
+  return utilinverse;
+}
+double 
 FlowUtil::getFCTUtilByFlowID(uint32_t fid, double price)
 {
-  double flow_size = flow_sizes[fid] /1000000.0;
+  //double flow_size = flow_sizes[fid] /1000000.0;
+  double flow_size = flow_sizes[fid]/10000000000.0;
   if(flow_size == 0) {
-    flow_size = 688/1000000.0; //size of the smallest pkt I have seen 
+    //flow_size = 688/1000000.0; //size of the smallest pkt I have seen 
+    flow_size = 688.0; 
   }
   if(price == 0) {
     price = 0.000000000000000001;
   }
   double utilinverse = 1.0 / (price * flow_size);
-//  NS_LOG_LOGIC("getFCTInverseByFlowid fid "<<fid<<" size "<<flow_size<<" price "<<price<<" utilinverse "<<utilinverse);
+  std::cout<<"getFCTUtilByFlowid fid "<<fid<<" size "<<flow_size<<" price "<<price<<" utilinverse "<<utilinverse<<std::endl;
   return utilinverse;
 }
+
+double
+FlowUtil::getFCTUtilDerivative(uint32_t fid, double price)
+{
+  double flow_size = flow_sizes[fid]/10000000000.0;
+  if(flow_size == 0) {
+    flow_size = 688.0/10000000000.0; //smallest flow size i have seen
+  }
+  if(price == 0) {
+    price = 0.0000000000000001;
+  }
+  double p = pow(price, 7.0/8.0);
+  double derivative = 1.0/(8.0 * flow_size * p);
+  return derivative;
+}
+
+double
+FlowUtil::getFCTUtilDerivativeInverse(uint32_t fid, double price)
+{
+  double flow_size = flow_sizes[fid]/10000000000.0;
+  if(flow_size == 0) {
+    flow_size = 688.0/10000000000.0; //smallest flow size i have seen
+  }
+  if(price == 0) {
+    price = 0.0000000000000001;
+  }
+  double denom = (8.0 * flow_size * price);
+  double inverse = 1.0/pow(denom, 8.0/7.0);
+  return inverse;
+}
+
+
 
 double
 FlowUtil::getAlpha1UtilByFlowID(uint32_t fid, double rate)
