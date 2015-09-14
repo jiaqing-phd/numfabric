@@ -803,6 +803,9 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   min_source = h1.GetSource();
   min_dest = h1.GetDestination();
+  PppHeader ppp;
+  p->PeekHeader(ppp);
+  
 
 
   Ptr<Packet> min_pp = p;
@@ -812,13 +815,13 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   bool control_packet = false;
 
-
-/*  if(p->GetSize() <= 94) {
+  
+  uint32_t header_size_total = tcph.GetSerializedSize() + pheader.GetSerializedSize() + h1.GetSerializedSize() + ppp.GetSerializedSize();
+  if((min_pp->GetSize() - header_size_total) == 0) {
     control_packet = true;
   }
-*/
+
   uint32_t pkt_uid = min_pp->GetUid();
-//  NS_LOG_LOGIC("ENQUEU PKT WITH UID "<<pkt_uid<<" AT QUEUE "<<linkid_string);
 
    if(p_residue < running_min_prio && !control_packet && update_minimum) {
      running_min_prio = p_residue;

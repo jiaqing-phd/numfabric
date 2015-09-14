@@ -44,10 +44,12 @@ extern bool delay_mark_value;
 extern bool xfabric;
 extern bool xfabric_price;
 extern bool dctcp;
+extern bool pfabric_util;
 extern uint32_t hostflows;
 
 
 extern double price_update_time ;
+extern double guard_time;
 extern double rate_update_time ;
 extern double dgd_gamma;
 extern double flow2_stoptime;

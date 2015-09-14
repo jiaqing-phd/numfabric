@@ -182,6 +182,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
   cmd.AddValue ("dgd_alpha", "dgd_alpha", dgd_alpha);
   cmd.AddValue ("dgd_gamma", "dgd_gamma", dgd_gamma);
+  cmd.AddValue ("guardtime", "guardtime", guard_time);
+  cmd.AddValue ("pfabric_util", "pfabric_util",pfabric_util);
 
   return cmd;
 }
@@ -219,6 +221,8 @@ void common_config(void)
   Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric_price));
   Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
   Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
+  Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
+  Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
 
 
   Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
@@ -236,7 +240,9 @@ void common_config(void)
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
+  Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(pfabric_util));
   Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
+  
   
   // rate_based 
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));

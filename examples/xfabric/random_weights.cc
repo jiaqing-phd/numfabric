@@ -487,9 +487,9 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         uint32_t source_node = sourcenodes[i];
         uint32_t sink_node = sinknodes[i];
 
-        if(source_node == 8) {
-          continue;
-        }
+        //if(source_node == 8) {
+        //  continue;
+        //}
 
         double flow_size = SOME_LARGE_VALUE;
         double flow_start = Simulator::Now().GetSeconds();
@@ -584,6 +584,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
+  cmd.AddValue ("guardtime", "guardtime to ignore mins", guard_time);
 
   cmd.Parse (argc, argv);
 
@@ -628,6 +629,7 @@ main (int argc, char *argv[])
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
+  Config::SetDefault("ns3::PrioQueue::guardTime", TimeValue(Seconds(guard_time)));
 
   Config::SetDefault("ns3::PrioQueue::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue",BooleanValue(m_pfabric));

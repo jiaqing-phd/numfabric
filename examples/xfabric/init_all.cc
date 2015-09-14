@@ -42,7 +42,8 @@ double target_queue = 30000.0;
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
-double gaurd_time = 0.000100; 
+double guard_time = 0.000100; 
+
 float sampling_interval = 0.001;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
@@ -82,6 +83,7 @@ std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
 double link_delay = 5.0; //in microseconds
 bool rate_based  = false;
+bool pfabric_util = false;
 
 
 /* Overall simulation parameters */

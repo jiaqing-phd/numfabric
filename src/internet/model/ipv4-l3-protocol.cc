@@ -53,7 +53,7 @@ namespace ns3 {
 
 const uint16_t Ipv4L3Protocol::PROT_NUMBER = 0x0800;
 //static const uint32_t MSEC_WINDOW = 10000;
-double MAX_DOUBLE = 0.0;
+double MAX_DOUBLE = 10.0;
 
 NS_OBJECT_ENSURE_REGISTERED (Ipv4L3Protocol);
 
@@ -1286,24 +1286,19 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     
 //    NS_LOG_LOGIC("getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId());
     // how long will it take to send this pkt out ?
-    std::cout<<"Node "<<m_node->GetId()<<" pkt size "<<packet->GetSize()<<" flowsize "<<std::endl;
+
 
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
-//    double current_deadline = std::max(current_pathprice*1.0, last_deadline + pkt_dur);
-    //double current_deadline = last_deadline + pkt_dur;
-
    	double current_deadline = pkt_dur; 
-
-    //NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate); 
-
+    uint32_t tcphsize = tcph.GetSerializedSize();
+    if((packet->GetSize() - tcphsize) == 0) {
+        // it's an ack
+        current_deadline = 0;
+    }
     if(m_pfabric) {
       current_deadline = getflowsize(flowkey);
     }
 
-//    NS_LOG_UNCOND("Node "<<m_node->GetId()<<" current_pathprice "<<current_pathprice<<" other "<<(last_deadline+pkt_dur));
-
-    //uint32_t arrival_time = Simulator::Now().GetMicroSeconds(); //just for records
-//    NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" next_deadline "<<last_deadline<<" cur_deadline "<<current_deadline<<" arrival_time "<<arrival_time<<" current_netw_price "<<current_netw_price<<" target_rate "<<target_rate<<" sending_rate "<<store_rate[flowkey]<<" virtual_queue_size "<<virtual_queue_size<<" current_pathprice "<<current_pathprice); 
     last_deadline = current_deadline;
     sample_deadline = current_deadline;
     flow_target_rate[flowkey] = target_rate;
