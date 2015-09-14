@@ -437,7 +437,7 @@ uint32_t
 PrioQueue::GetCurSize(void)
 {
 
-  
+  /*
    typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
    std::map<std::string,uint32_t> flow_count;
    uint32_t total_pkts = 0;
@@ -461,7 +461,7 @@ PrioQueue::GetCurSize(void)
      //NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string);
      std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString()<<std::endl;
      total_pkts += it->second;
-   }
+   } */
   
    //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" totalpktscounter "<<total_pkts<<" nodeid "<<nodeid);  
    
@@ -832,8 +832,6 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     std::string flowkey = GetFlowKey(min_pp);
     double deadline = get_stored_deadline(flowkey);
     if(deadline == -1 || control_packet) {
-//      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" linkid "<<linkid_string<<" pkt_flow "<<flowkey<<" not found deadline = "<<current_virtualtime<<" pktid "<<min_pp->GetUid());
-      //pkt_tag[pkt_uid] = current_virtualtime*1.0;
       tag.SetValue(current_virtualtime * 1.0, Simulator::Now().GetNanoSeconds());
     } else {
       double new_start_time= std::max(current_virtualtime*1.0, deadline);

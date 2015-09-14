@@ -114,10 +114,11 @@ uint32_t PacketSink::GetTotalRx ()
 
     std::cout<<"flow_stop "<<m_flowID<<" stop_time "<<Simulator::Now().GetNanoSeconds()<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" flow_started "<<flow_start_time.GetSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
 
-//    if(flowTracker) {
-//      FlowData fd(m_flowID);
-//      flowTracker->registerEvent(2, fd);
-//    }
+   /* if(flowTracker) {
+      FlowData fd(m_flowID);
+      flowTracker->registerEvent(2, fd);
+    } */
+
     flow_finished = true;
   }
   return m_totalRx;
@@ -207,7 +208,7 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
   NS_LOG_FUNCTION (this << socket);
   Ptr<Packet> packet;
   Address from;
-  while ((packet = socket->RecvFrom (from)))
+  while ((packet = socket->RecvFrom (from)) && !flow_finished)
     {
       if (packet->GetSize () == 0)
         { //EOF
@@ -226,17 +227,20 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
 
 
         // m_totalRx: update the received stuff
-          if(flowTracker) {
+/*          if(flowTracker) {
             //std::cout<<"HERE flow tracker"<<std::endl;
             FlowData fd(m_flowID);
             flowTracker->UpdateFlowRemainingSize(fd, double(m_totalRx), m_flowID);
           }
+*/
 
         
         if((m_numBytes > 0.0) && (m_totalRx >= m_numBytes)) {
           // Flow completed.. Must print that out and exit
-          GetTotalRx();
-          StopApplication();
+          if(!flow_finished) {
+            GetTotalRx();
+            //StopApplication();
+          }
         } 
       //} 
       if (InetSocketAddress::IsMatchingType (from))

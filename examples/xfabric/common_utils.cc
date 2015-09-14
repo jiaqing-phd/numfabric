@@ -218,7 +218,7 @@ void common_config(void)
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   Config::SetDefault ("ns3::PrioQueue::delay_mark", BooleanValue(delay_mark_value));
-  Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric_price));
+  Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric));
   Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
   Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));

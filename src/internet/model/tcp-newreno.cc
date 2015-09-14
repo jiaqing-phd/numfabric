@@ -304,7 +304,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     double ONENANO = 1000000000.0;
 
     if(lastRtt_copy.GetNanoSeconds() / ONENANO < d0) {
-      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+//      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
       d0 = lastRtt_copy.GetNanoSeconds() / ONENANO;
     }
 

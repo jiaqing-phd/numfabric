@@ -18,7 +18,7 @@ def get_fcts(fname):
   findex=1
   fstartindex=3
   fsizeindex=5
-  fknownindex=10
+  #fknownindex=10
 
   # open the file
   logs = open(fname, "r")
@@ -29,12 +29,12 @@ def get_fcts(fname):
       fid = int(elems[findex])
       fstart =  float(elems[fstartindex])
       fsize = float(elems[fsizeindex])
-      fknown = int(elems[fknownindex])
+      #fknown = int(elems[fknownindex])
   
       fstarts[fid] = fstart
       fsizes[fid] = fsize
-      fknowns[fid] = fknown
-      print("fid %d known %d" %(fid, fknowns[fid]))
+      #fknowns[fid] = fknown
+      #print("fid %d known %d" %(fid, fknowns[fid]))
 
     if(elems[0] == "flow_stop"):
       fid = int(elems[findex])
@@ -47,11 +47,13 @@ def get_fcts(fname):
   for key in fstarts:
     if(key in fstops):
       ftime = (fstops[key] - fstarts[key])/1000000.0
-      if(fknowns[key] == 1):
-        print("KnownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
-      else:
-        print("UnknownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
+      #if(fknowns[key] == 1):
+      #  print("KnownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
+      #else:
+      #  print("UnknownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
       fct[key] = ftime
+    else:
+      print("flow %d started at %f and did not stop" %(key, fstarts[key]))
   return fct 
 
 
@@ -59,7 +61,7 @@ fcts = get_fcts(sys.argv[1])
 #ideal = get_fcts(sys.argv[2])
 
 #for key in fcts:
-#  print("%f\n" %fcts[key])
-  #if(key in ideal):
-    #stretch = fcts[key]/ideal[key]
-    #print("key %d stretch %f" %(key, stretch))
+#  print("%f %f" %(fcts[key], ideal[key]))
+#  if(key in ideal):
+#    stretch = fcts[key]/ideal[key]
+#    print("key %d stretch %f" %(key, stretch))
