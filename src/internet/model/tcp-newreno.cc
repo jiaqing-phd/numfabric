@@ -286,7 +286,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   // get the ipv4 object 
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
 
-  if(m_strawmancc) {
+  if(!m_xfabric) { // we want to update rates in case of both strawman and dctcp
     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
   }
 
@@ -298,7 +298,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     double target_cwnd = 0;
     uint32_t burst_size = 4;
 
-    bool fixed_window = true;
+    bool fixed_window = false;
     bool scheme2 = false;
     bool scheme3 = false;
     double ONENANO = 1000000000.0;
@@ -456,6 +456,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
           ecn_highest = m_highTxMark;
           //bytes_with_ecn = 0.0;
           //total_bytes_acked = 0.0;
+          std::cout<<" m_dctcp -- processing ECN "<<std::endl;
         
       } else {
   //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());

@@ -273,8 +273,11 @@ CheckQueueSize (Ptr<Queue> queue)
   uint32_t qSize = StaticCast<PrioQueue> (queue)->GetCurSize ();
 //  uint32_t nid = StaticCast<PrioQueue> (queue)->linkid;
   double qPrice = StaticCast<PrioQueue> (queue)->getCurrentPrice ();
+  double qvirt1 = StaticCast<PrioQueue> (queue)->get_virtualtime ();
+  double qvirt2 = StaticCast<PrioQueue> (queue)->get_controlvirtualtime ();
+  
 
-  std::cout<<"QueueStats "<<StaticCast<PrioQueue> (queue)->GetLinkIDString()<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" 1.0 "<<qPrice<<std::endl;
+  std::cout<<"QueueStats "<<StaticCast<PrioQueue> (queue)->GetLinkIDString()<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" 1.0 "<<qPrice<<" "<<qvirt1<<" "<<qvirt2<<std::endl;
 
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);

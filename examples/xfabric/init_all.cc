@@ -44,7 +44,7 @@ double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.1;
+float sampling_interval = 0.01;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
@@ -56,7 +56,7 @@ uint32_t const max_flows = 5;
 uint32_t max_ecn_thresh = 50000;
 uint32_t max_queue_size = 450000000;
 std::string queue_type = "WFQ";
-bool delay_mark_value = true;
+bool delay_mark_value = false;
 uint32_t vpackets = 1;
 
 bool host_compensate;

@@ -113,7 +113,7 @@ TypeId PrioQueue::GetTypeId (void)
                   MakeBooleanChecker ())
     .AddAttribute("delay_mark",
                   "ECN mark based on delay experienced by packet",
-                  BooleanValue(true),
+                  BooleanValue(false),
                   MakeBooleanAccessor (&PrioQueue::delay_mark),
                   MakeBooleanChecker ())
     .AddAttribute ("Mode", 
@@ -217,6 +217,7 @@ PrioQueue::PrioQueue () :
   running_avg_prio = latest_avg_prio = 0.0;
   total_samples = 0;
   current_virtualtime = 0.0;
+  control_virtualtime = 0.0;
   updated_virtual_time = 0.0;
   current_price = 0.0;
 
@@ -257,7 +258,7 @@ PrioQueue::getRateDifference(Time time_interval)
 
     incoming_bytes = 0.0;
 
-    std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
+//    std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
     return rate_difference;
 }
 
@@ -306,7 +307,7 @@ PrioQueue::updateLinkPrice(void)
 //    if(m_is_switch) {
       //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<< " current price "<<current_price<<" node "<<nodeid<<" price_raise "<<price_hike<<" queue_term "<< (m_alpha *(current_queue - m_target_queue))<<" rate_term "<<price_hike<<" current_queue "<<current_queue<<" target_queue "<<m_target_queue);
  //   } 
-    std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
+//    std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
   } else {
     if(running_min_prio != MAX_DOUBLE) {
       latest_min_prio = running_min_prio;
@@ -600,6 +601,12 @@ PrioQueue::get_virtualtime()
   return current_virtualtime;
 }
 
+double
+PrioQueue::get_controlvirtualtime()
+{
+  return control_virtualtime;
+}
+
 inline void
 PrioQueue::set_stored_deadline(std::string fkey, double new_deadline)
 {
@@ -702,7 +709,8 @@ PrioQueue::get_lowest_deadline()
 Ptr<Packet>
 PrioQueue::get_lowest_tag_packet()
 {
-  double lowest_tag = 11111111111;
+  double lowest_tag_marker = 111111111111111.0;
+  double lowest_tag = lowest_tag_marker;
   Ptr<Packet> pkt_ptr;
 
   typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
@@ -713,14 +721,19 @@ PrioQueue::get_lowest_tag_packet()
       (*pp)->PeekPacketTag(t1);
       double tagval = t1.GetValue();
 
-      if(tagval < lowest_tag || lowest_tag == 11111111111) {
+//      if(GetLinkIDString() == "3_3_4") {
+//        std::cout<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" get_lowest_tag "<<tagval<<std::endl;
+ //     }  
+
+      //if(tagval < lowest_tag || (abs(lowest_tag - lowest_tag_marker) < 0.000000001)) {
+      if(tagval < lowest_tag || (lowest_tag == lowest_tag_marker)) {
         lowest_tag = tagval;
         pkt_ptr = (*pp);
       }
 
   }
 
-  NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" get_lowest_tagid RETURNING "<<" tagid "<<lowest_tag);
+//  std::cout<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" get_lowest_tag RETURNING "<<" tagid "<<lowest_tag<<std::endl;
   return pkt_ptr;
 }
 
@@ -832,7 +845,11 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     std::string flowkey = GetFlowKey(min_pp);
     double deadline = get_stored_deadline(flowkey);
     if(deadline == -1 || control_packet) {
-      tag.SetValue(current_virtualtime * 1.0, Simulator::Now().GetNanoSeconds());
+      if(control_packet) {
+        tag.SetValue(control_virtualtime * 1.0, Simulator::Now().GetNanoSeconds());
+      } else {
+        tag.SetValue(current_virtualtime * 1.0, Simulator::Now().GetNanoSeconds());
+      }
     } else {
       double new_start_time= std::max(current_virtualtime*1.0, deadline);
       tag.SetValue(new_start_time, Simulator::Now().GetNanoSeconds());
@@ -840,7 +857,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     }
     p->AddPacketTag(tag);
     // insert the new deadline now
-//      NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" nodeid "<<linkid_string<<" pkt_flow "<<flowkey<<" storing deadline = "<< tag.GetValue()+ min_wfq_weight<<" tagged packet with "<<tag.GetValue()<<" pktid "<<p->GetUid());
+//   std::cout<<Simulator::Now().GetSeconds()<<" nodeid "<<linkid_string<<" pkt_flow "<<flowkey<<" storing deadline = "<< tag.GetValue()+ min_wfq_weight<<" tagged packet with "<<tag.GetValue()<<" pktid "<<p->GetUid()<<std::endl;
     set_stored_deadline(flowkey, tag.GetValue()+ min_wfq_weight); //there is no need to divide 8/16
   }
 
@@ -902,7 +919,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
           // NS_LOG_UNCOND("Queue size greater than ECNThreshold. Marking packet");
           // Find the lowest priority packet and mark it with ECN marking 
           //
-          
+         /* 
           if(m_pfabricdequeue) { 
             typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
         
@@ -927,7 +944,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
               NS_LOG_UNCOND("could not get packet with id "<<highest_tag_id);
             }
             NS_LOG_LOGIC("marking pkt at enqueue");
-          } 
+          }*/ 
           
         // Now add ECN bit to the IP header of the min packet 
           
@@ -992,7 +1009,7 @@ PrioQueue::DoDequeue (void)
   double lowest_deadline = 0.0;
   double pkt_wait_duration = 0.0;
 
-  if(!m_pkt_tagged) { 
+  if(!m_pkt_tagged && m_pfabricdequeue) { 
 
     typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
 	  double highest_wfq_weight_;
@@ -1045,11 +1062,6 @@ PrioQueue::DoDequeue (void)
   } 
   else if (m_pkt_tagged)
   {
-    // determine the packet id with the highest tag 
-    //struct tag_elem elem = get_lowest_tagid(); //get the lowest deadline pkt and remove it
-    //uint64_t lowest_tag_id = elem.pktid;
-    //lowest_deadline = elem.deadline;
-    //p = get_packet_with_id(lowest_tag_id); 
     p = get_lowest_tag_packet();
     if(!p) {
       NS_LOG_LOGIC("could not get packet with "<<linkid_string);
@@ -1062,15 +1074,7 @@ PrioQueue::DoDequeue (void)
     pkt_wait_duration = pkt_depart - t1.GetArrival();
 
     //NS_LOG_LOGIC("packetdeadline "<<Simulator::Now().GetSeconds()<<" "<<lowest_deadline<<" removed at node "<<nodeid<<" "<<GetFlowKey(p));
-    // increment virtual time
-    current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
 
-    virtualtime_updated += 1;
-    if(virtualtime_updated >= vpackets) {
-     virtualtime_updated = 0;
-     current_slope = CalcSlope();
-//     NS_LOG_LOGIC("SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope);
-    }
     //NS_LOG_LOGIC("virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime);  
     
   } 
@@ -1085,6 +1089,7 @@ PrioQueue::DoDequeue (void)
 
    /* At Dequeue, update the network price field of the packet with the current link price */
 
+  uint32_t pktsize  = ret_packet->GetSize();
    PppHeader temp_ppp;
    PrioHeader temp_pheader;
    Ipv4Header  temp_ip_header;
@@ -1103,6 +1108,30 @@ PrioQueue::DoDequeue (void)
      // NS_LOG_LOGIC(" notsetting ecn ";
     }
    }
+
+  bool control_packet = false;
+
+  
+  uint32_t header_size_total = temp_tcpheader.GetSerializedSize() + temp_ip_header.GetSerializedSize() + temp_pheader.GetSerializedSize() + temp_ppp.GetSerializedSize();
+  if((pktsize - header_size_total) == 0) {
+    control_packet = true;
+  }
+
+    // increment virtual time
+    if(!control_packet) {
+      current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
+//      std::cout<<"noncontrol pkt size "<<pktsize<<" deadline "<<lowest_deadline<<" "<<Simulator::Now().GetSeconds()<<" "<<pkt_wait_duration<<" "<<GetLinkIDString()<<std::endl;
+    } else if (control_packet) {
+  //    std::cout<<"control pkt size "<<pktsize<<" deadline "<<lowest_deadline<<" "<<Simulator::Now().GetSeconds()<<" "<<pkt_wait_duration<<" "<<GetLinkIDString()<<std::endl;
+      control_virtualtime =  std::max(control_virtualtime*1.0, lowest_deadline);
+    }
+
+    virtualtime_updated += 1;
+    if(virtualtime_updated >= vpackets) {
+     virtualtime_updated = 0;
+     current_slope = CalcSlope();
+//     NS_LOG_LOGIC("SLOPEINFO "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<current_slope);
+    }
 
    PriHeader ph = temp_pheader.GetData();
    ph.netw_price += current_price;

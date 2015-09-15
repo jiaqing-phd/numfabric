@@ -274,6 +274,7 @@ main (int argc, char *argv[])
   std::string flow_util_file;
   bool pkt_tag = true, onlydctcp, wfq;
   bool strawmancc = false;
+  uint32_t util_method = 1;
   
   dctcp = true; 
 
@@ -294,6 +295,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("link_delay","link_delay",link_delay);
   cmd.AddValue ("ecn_thresh", "ecn_thresh", max_ecn_thresh);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
+  cmd.AddValue ("guardtime", "guardtime", guard_time);
   cmd.AddValue ("rate_update_time", "rate_update_time", rate_update_time);
   cmd.AddValue ("flow2_stoptime", "flow2_stoptime", flow2_stoptime);
   cmd.AddValue ("flow2_starttime", "flow2_starttime", flow2_starttime);
@@ -308,6 +310,7 @@ main (int argc, char *argv[])
   cmd.AddValue("dgd_alpha", "dgd_alpha", dgd_alpha);
   cmd.AddValue("margin_util_price", "margin_util_price", margin_util_price);
   cmd.AddValue("strawmancc", "strawmancc", strawmancc);
+  cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("load", "load",load);
   cmd.AddValue ("controller_estimated_unknown_load", "controller_estimated_unknown_load",controller_estimated_unknown_load);
   cmd.AddValue ("sampling_interval", "sampling_interval", sampling_interval);
@@ -362,6 +365,14 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
   Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
 
+  Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue", BooleanValue(pfabric_util));
+  Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(pfabric_util));
+
+  if(!dctcp) {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
+  } else {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
+  }
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
 
@@ -382,6 +393,8 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
+  
+  Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
   Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
 
   Config::SetDefault("ns3::PrioQueue::xfabric_price", BooleanValue(xfabric));

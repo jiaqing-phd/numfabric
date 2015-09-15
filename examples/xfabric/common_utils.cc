@@ -213,7 +213,12 @@ void common_config(void)
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
 
-  Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(pkt_tag));
+  if(!dctcp) {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
+  } else {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
+  }
+    
   Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
@@ -240,7 +245,10 @@ void common_config(void)
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
+// one-set
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(pfabric_util));
+  Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue", BooleanValue(pfabric_util));
+
   Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
   
   

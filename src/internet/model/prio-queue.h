@@ -145,6 +145,7 @@ public:
   double get_stored_deadline(std::string fkey);
   void set_stored_deadline(std::string fkey, double new_deadline);
   double get_virtualtime(void);
+  double get_controlvirtualtime(void);
   double current_slope;
   double CalcSlope(void);
   void SetVPkts(uint32_t vpkts);
@@ -187,6 +188,7 @@ private:
   DataRate m_bps;
   QueueMode m_mode;                   //!< queue mode (packets or bytes limited)
   uint64_t  current_virtualtime;
+  uint64_t  control_virtualtime;
 
 //  unsigned int sq_limit_;
 //  unordered_map<size_t, int> sq_counts_;

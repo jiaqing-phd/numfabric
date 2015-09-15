@@ -572,6 +572,7 @@ private:
   std::map<std::string, double> last_arrival;
   std::map<std::string, double> long_term_ewma_rate;
   std::map<std::string, double> short_term_ewma_rate;
+  std::map<std::string, double>instant_rate_store;
 
 
   double QUERY_TIME;

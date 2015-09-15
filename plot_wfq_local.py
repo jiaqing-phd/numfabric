@@ -396,37 +396,37 @@ plt.ylabel('Weights')
 plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"WFQ_Weights"))
 plt.draw()
-#cwndx = {}
-#cwndy = {}
-#for fid in range(1,17):
-#  cwnd1 = sys.argv[1]+".cwnd."+`fid`
-#  print("opening file %s" %cwnd1)
-#  if(os.path.exists(cwnd1)):
-#    f1 = open(cwnd1)
-#    for line in f1:
-#      L = line.rstrip();
-#      xy1 = L.split('\t');
-#      if(fid not in cwndx):
-#        cwndx[fid] = []
-#        cwndy[fid] = []
-#      cwndx[fid].append(xy1[0])
-#      cwndy[fid].append(xy1[2])
+cwndx = {}
+cwndy = {}
+for fid in range(1,5):
+  cwnd1 = sys.argv[1]+".cwnd."+`fid`
+  print("opening file %s" %cwnd1)
+  if(os.path.exists(cwnd1)):
+    f1 = open(cwnd1)
+    for line in f1:
+      L = line.rstrip();
+      xy1 = L.split('\t');
+      if(fid not in cwndx):
+        cwndx[fid] = []
+        cwndy[fid] = []
+      cwndx[fid].append(xy1[0])
+      cwndy[fid].append(xy1[2])
 
-#plt.figure(13)
-#plt.title("Congestion Windows")
-#
-#i=0
-#for key in cwndx:
-#  print("plotting flow id %d"%key)
-#  
-#  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
-#  i = (i+1)%len(colors)
-#plt.xlabel('Time in seconds')
-#plt.ylabel('Congestion windows')
-#plt.legend(loc='lower right')
-#plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
+plt.figure(13)
+plt.title("Congestion Windows")
 
-#plt.draw()
+i=0
+for key in cwndx:
+  print("plotting flow id %d"%key)
+  
+  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
+  i = (i+1)%len(colors)
+plt.xlabel('Time in seconds')
+plt.ylabel('Congestion windows')
+plt.legend(loc='lower right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"cwnd"))
+
+plt.draw()
 
 i=0
 plt.figure(5)

@@ -1,10 +1,10 @@
 dctcp=false
-xfabric=false
-strawmancc=true
+xfabric=true
+strawmancc=false
 kay=30000
 queuetype=WFQ
 vpackets=1
-prefix=fct_alter_util2_strawman
+prefix=fct_xfabric_log
 ecn_thresh=30000
 hostflows=1
 load=0.8
@@ -18,5 +18,5 @@ host_compensate=false
 fct_alpha=0.1
 #now fct related
 pfabric_util=false
-util_method=2
-nNodes=16
+util_method=1
+#nNodes=16

@@ -195,7 +195,7 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   alpha = 1.0/16.0;
     
   long_ewma_const = 50000;
-  short_ewma_const = 10000;
+  short_ewma_const = 10000; // KANTHI - TEST - REMOVE
   next_deadline = 0.0;
   last_deadline = 0.0;
 
@@ -1081,6 +1081,7 @@ double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
   }
   if(term == SHORTER) {
     return short_term_ewma_rate[fkey];
+    //return instant_rate_store[fkey];
   }
 
   return -1;
@@ -1352,8 +1353,13 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   if(inter_arrival > 0.000000000001) { // bug fix - verify later
     pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
   }
+  instant_rate_store[flowkey] = pkt_rate;
 
-//  NS_LOG_LOGIC("ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize);
+
+  /* if(m_node->GetId() == 2 || m_node->GetId() == 3) {
+    std::cout<<"instant_rate "<<Simulator::Now().GetSeconds()<<" "<<flowids[flowkey]<<" "<<pkt_rate<<std::endl;
+  } */
+  //  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
 
   double epower = exp((-1.0*inter_arrival)/long_ewma_const);
   double first_term = (1.0 - epower)*pkt_rate;
