@@ -58,10 +58,10 @@ def get_fcts(fname):
 
 
 fcts = get_fcts(sys.argv[1])
-#ideal = get_fcts(sys.argv[2])
+ideal = get_fcts(sys.argv[2])
 
-#for key in fcts:
-#  print("%f %f" %(fcts[key], ideal[key]))
-#  if(key in ideal):
-#    stretch = fcts[key]/ideal[key]
-#    print("key %d stretch %f" %(key, stretch))
+for key in fcts:
+  print("%f %f" %(fcts[key], ideal[key]))
+  if(key in ideal):
+    stretch = fcts[key]/ideal[key]
+    print("key %d stretch %f" %(key, stretch))
