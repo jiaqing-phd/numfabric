@@ -1,0 +1,17 @@
+dctcp=false
+xfabric=true
+strawmancc=false
+prefix=wload_xfabric
+kay=30000
+queuetype=WFQ
+vpackets=1
+ecn_thresh=30000
+hostflows=1
+load=0.1
+sim_time=1.05
+flows_tcp=1
+weight_change=1
+rate_based=0
+price_update_time=0.000180
+host_compensate=false
+nNodes=4
