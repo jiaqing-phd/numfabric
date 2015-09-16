@@ -5,7 +5,7 @@
 import os
 import sys
 import numpy as np
-
+import matplotlib.pyplot as plt;
 
 
 def get_fcts(fname):
@@ -49,7 +49,7 @@ def get_fcts(fname):
       ftime = (fstops[key] - fstarts[key])/1000000.0
       fct[key] = ftime
     else:
-      print("flow %d started at %f and did not stop" %(key, fstarts[key]))
+      print("flow %d started at %f and did not stop %s flow_size %f" %(key, fstarts[key], fname, fsizes[key]))
   return fct 
 
 
@@ -75,8 +75,8 @@ def get_fileprefix(method):
 def get_all_stretches(method):
   stretch = {}
   file_prefix = get_fileprefix(method)
-  #for load in (0.02, 0.04, 0.06, 0.08, 0.10):
-  for load in (0.02, 0.04):
+  for load in (0.2, 0.4, 0.6, 0.8):
+  #for load in (0.02, 0.04, 0.06):
     fname=file_prefix+"_"+str(load)+".out"
     base="fct_pfabric_"+str(load)+".out"
     print(len(get_stretch(fname, base)))
@@ -86,12 +86,32 @@ def get_all_stretches(method):
 
 stretch_str = {}
 stretch_str["dctcp"] = get_all_stretches("dctcp")
-#stretch_str["xfabric"] = get_all_stretches("xfabric")
-#stretch_str["strawman"] = get_all_stretches("strawman")
+stretch_str["xfabric"] = get_all_stretches("xfabric")
+stretch_str["strawman"] = get_all_stretches("strawman")
 print(stretch_str["dctcp"])
-#print(stretch_str["xfabric"])
-#print(stretch_str["strawman"])
-
+print(stretch_str["strawman"])
+print(stretch_str["xfabric"])
+i=0
+markers=["s","d","p","v","+","*"]
+for key in stretch_str:
+  series = stretch_str[key]
+  keys = []
+  values = []
+  for key2 in series:
+    keys.append(key2)
+    values.append(series[key2])
+  print keys
+  print values
+  plt.plot(keys, values, label=str(key), linewidth=2, marker=markers[i], markersize=10)
+  i = i+1
+  
+plt.legend(loc='upper right')
+plt.xlabel("Load")
+plt.ylabel("Average FCT (w.r.t. pFabric)")
+plt.savefig("average_fcts.png")
+plt.draw()
+plt.show()
+    
 
 
 

@@ -58,11 +58,14 @@ def get_fcts(fname):
 
 
 fcts = get_fcts(sys.argv[1])
-ideal = get_fcts(sys.argv[2])
+#ideal = get_fcts(sys.argv[2])
 
+fcts_array = []
 for key in fcts:
-#  print("%f "%fcts[key])
-  print("%f %f" %(fcts[key], ideal[key]))
-  if(key in ideal):
-    stretch = fcts[key]/ideal[key]
-    print("key %d stretch %f" %(key, stretch))
+  fcts_array.append(fcts[key])
+print("%f "%np.mean(fcts_array))
+
+#  print("%f %f" %(fcts[key], ideal[key]))
+#  if(key in ideal):
+#    stretch = fcts[key]/ideal[key]
+#    print("key %d stretch %f" %(key, stretch))

@@ -1004,8 +1004,6 @@ PrioQueue::DoDequeue (void)
   Ptr<Packet> p = m_packets.front ();
   incoming_bytes += p->GetSize(); 
 
-
-
   double lowest_deadline = 0.0;
   double pkt_wait_duration = 0.0;
 

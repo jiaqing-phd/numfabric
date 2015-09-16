@@ -213,7 +213,7 @@ void common_config(void)
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
 
-  if(!dctcp) {
+  if(!(dctcp && strawmancc)) {
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
   } else {
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
