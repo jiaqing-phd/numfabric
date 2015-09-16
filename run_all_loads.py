@@ -25,12 +25,10 @@ for line in f:
   arguments[arg_key] = arg_val
 
 orig_prefix=arguments["prefix"]
-for load_val in (0.02, 0.04, 0.06, 0.08, 0.10):
-    cest_val=0.08 
+for load_val in (0.2, 0.4, 0.6, 0.8):
     arguments["load"] = str(load_val)
-    arguments["controller_estimated_unknown_load"]=str(cest_val) 
     prefix_str=orig_prefix
-    prefix_str=prefix_str+"_"+arguments["load"]+"_"+arguments["controller_estimated_unknown_load"]
+    prefix_str=prefix_str+"_"+arguments["load"]
     arguments["prefix"] = prefix_str
 
     final_args=""

@@ -320,6 +320,14 @@ plt.legend(loc='lower right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"flow_prices"))
 plt.draw()
 
+plt.figure(7)
+plt.title("Totalrate")
+plt.plot(rtime, trate) 
+plt.xlabel('Time in seconds')
+plt.ylabel('Mbps')
+plt.legend(loc='lower right')
+plt.savefig('%s/%s.%s.png' %(pre,pre,"total_rate"))
+plt.draw()
 
 
 #plt.figure(7)

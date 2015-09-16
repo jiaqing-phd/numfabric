@@ -841,7 +841,7 @@ void startFlowsStatic(void)
         double flow_size = 12500000000; 
         flow_start_time = time_now + 0.0001;
         std::cout<<"flow between "<<(sourceNodes.Get(i))->GetId()<<" and "<<(sinkNodes.Get(j))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
-        uint32_t flow_weight = 1.0 * flow_num;
+        uint32_t flow_weight = 1.0;
         uint32_t known = 1;
           
         startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight, flows_tcp, known); 
@@ -1140,17 +1140,17 @@ main(int argc, char *argv[])
   std::cout<<"PARAMS load " << load << " deadline_mean " << deadline_mean << " scheduler_mode " << scheduler_mode_edf << std::endl; 
 
   
-  rocket_createTopology();
+//  rocket_createTopology();
   
-  //createTopology();
+  createTopology();
   //setUpTraffic();
   startFlowsStatic();
   setUpMonitoring();
 
 
-  if(weight_change) {
-    setUpWeightChange();
-  }
+//  if(weight_change) {
+//    setUpWeightChange();
+//  }
 
   NS_LOG_INFO ("Run Simulation.");
   Simulator::Run ();

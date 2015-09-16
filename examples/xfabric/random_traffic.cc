@@ -338,7 +338,8 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
 {
   double lambda = (link_rate * load ) / (meanflowsize*8.0);
   std::cout<<"lambda first "<<lambda<<" load "<<load<<std::endl;
-  lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
+  //lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
+  lambda = lambda / sourceNodes.GetN();
   double avg_interarrival = 1/lambda;
 
   Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();

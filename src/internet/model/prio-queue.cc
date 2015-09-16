@@ -840,7 +840,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
      running_min_prio = p_residue;
    }
 
-  if(m_pkt_tagged) {
+  if(m_pkt_tagged && !m_pfabricdequeue) {
     MyTag tag;
     std::string flowkey = GetFlowKey(min_pp);
     double deadline = get_stored_deadline(flowkey);
@@ -919,7 +919,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
           // NS_LOG_UNCOND("Queue size greater than ECNThreshold. Marking packet");
           // Find the lowest priority packet and mark it with ECN marking 
           //
-         /* 
+          
           if(m_pfabricdequeue) { 
             typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
         
@@ -934,7 +934,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
                 min_pp = *pp;
               }
             }
-          } else if(m_pkt_tagged && !m_pfabricdequeue && !delay_mark) { 
+          } /*else if(m_pkt_tagged && !m_pfabricdequeue && !delay_mark) { 
             // determine the packet id with the highest tag 
             struct tag_elem elem = get_highest_tagid(); //get the lowest deadline pkt and remove it
             uint64_t highest_tag_id = elem.pktid;
@@ -1009,7 +1009,7 @@ PrioQueue::DoDequeue (void)
   double lowest_deadline = 0.0;
   double pkt_wait_duration = 0.0;
 
-  if(!m_pkt_tagged && m_pfabricdequeue) { 
+  if(m_pfabricdequeue) { 
 
     typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
 	  double highest_wfq_weight_;

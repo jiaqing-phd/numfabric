@@ -298,7 +298,8 @@ void setUpMonitoring(void)
      //StaticCast<Ipv4L3Protocol> (ipv4)->setFlows(flowids);
      //StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(0.000004);
      //StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0/128.0);
-     StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(rate_update_time);
+     //StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(rate_update_time);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(sampling_interval);
      StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0);
 
      StaticCast<Ipv4L3Protocol> (ipv4)->setKay(kvalue);
@@ -325,7 +326,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
     {
     
-//      double rate = ipv4->GetStoreRate (it->first);
+      double rate = ipv4->GetStoreDestRate (it->first);
       double csfq_rate = ipv4->GetCSFQRate (it->first);
       double short_rate = ipv4->GetShortTermRate(it->first);
 
@@ -334,18 +335,18 @@ CheckIpv4Rates (NodeContainer &allNodes)
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << csfq_rate <<" "<<short_rate<<std::endl;
-         current_rate += short_rate;
+//         current_rate += rate;
       }
 //      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
-/*
+
       if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<< nid << " " << N << " " << short_rate << std::endl;
+/*         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<< nid << " " << N << " " << short_rate << std::endl; */
       
-        current_dest_rate += destRate;
+        current_rate += rate;
 
       }
-*/
+
     }
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;

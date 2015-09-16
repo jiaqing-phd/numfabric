@@ -456,7 +456,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
           ecn_highest = m_highTxMark;
           //bytes_with_ecn = 0.0;
           //total_bytes_acked = 0.0;
-          std::cout<<" m_dctcp -- processing ECN "<<std::endl;
+//          std::cout<<" m_dctcp -- processing ECN "<<std::endl;
         
       } else {
   //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());

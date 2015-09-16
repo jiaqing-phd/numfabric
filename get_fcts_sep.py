@@ -61,6 +61,7 @@ fcts = get_fcts(sys.argv[1])
 ideal = get_fcts(sys.argv[2])
 
 for key in fcts:
+#  print("%f "%fcts[key])
   print("%f %f" %(fcts[key], ideal[key]))
   if(key in ideal):
     stretch = fcts[key]/ideal[key]

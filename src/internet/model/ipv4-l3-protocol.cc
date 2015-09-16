@@ -150,7 +150,7 @@ void Ipv4L3Protocol::updateRate(std::string fkey)
 
 }
 
-/*
+
 void 
 Ipv4L3Protocol::updateAllRates(void)
 {
@@ -161,7 +161,7 @@ Ipv4L3Protocol::updateAllRates(void)
   }
   Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
-*/
+
 
 void
 Ipv4L3Protocol::printSumThr(void)
@@ -199,9 +199,9 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   next_deadline = 0.0;
   last_deadline = 0.0;
 
-  //Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
+//  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
   //Simulator::Schedule(Seconds (epoch_update_time), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
-//  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateAllRates, this);
+  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateAllRates, this);
 //  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
 //  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::CheckToSend, this);
   bytes_in_queue = 0;
@@ -1080,8 +1080,11 @@ double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
     return long_term_ewma_rate[fkey];
   }
   if(term == SHORTER) {
-    return short_term_ewma_rate[fkey];
-    //return instant_rate_store[fkey];
+    //return short_term_ewma_rate[fkey];
+    double ret_val = instant_rate_store[fkey];
+    instant_rate_store[fkey] = 0.0;
+    return ret_val;
+    
   }
 
   return -1;

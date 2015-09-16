@@ -37,7 +37,7 @@ void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fke
 
 void createTopology(void)
 {
-  bottleNeckNode.Create(2);
+  bottleNeckNode.Create(1);
   sourceNodes.Create(N/2);
   sinkNodes.Create(N/2);
 
@@ -90,11 +90,11 @@ void createTopology(void)
   }
 
   for(uint32_t nid = 0; nid < sinkNodes.GetN(); nid++) {
-    sink_links.push_back(p2pbottleneck.Install(bottleNeckNode.Get(1), sinkNodes.Get(nid)));
+    sink_links.push_back(p2pbottleneck.Install(bottleNeckNode.Get(0), sinkNodes.Get(nid)));
     printlink(bottleNeckNode.Get(0), sinkNodes.Get(nid));
   }
 
-  bnecklinks.push_back(p2pbottleneck.Install(bottleNeckNode.Get(0), bottleNeckNode.Get(1))); //bottleneck link
+//  bnecklinks.push_back(p2pbottleneck.Install(bottleNeckNode.Get(0), bottleNeckNode.Get(1))); //bottleneck link
 
   /* assign ip address */
   std::vector<Ipv4InterfaceContainer> sourceAdj(source_links.size());
@@ -108,9 +108,10 @@ void createTopology(void)
       dev_cont = source_links;
     } else if (index==1) {
       dev_cont = sink_links;
-    } else {
-      dev_cont = bnecklinks;
-    }
+    } 
+//else {
+//      dev_cont = bnecklinks;
+//    }
 
     for(uint32_t i=0; i < dev_cont.size(); ++i)
     {
