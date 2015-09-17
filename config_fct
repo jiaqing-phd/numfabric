@@ -7,7 +7,7 @@ vpackets=1
 prefix=xfabric_util2_test
 ecn_thresh=30000
 hostflows=1
-load=0.8
+load=0.6
 sim_time=2.5
 flows_tcp=1
 weight_change=1
@@ -19,4 +19,4 @@ fct_alpha=0.1
 #now fct related
 pfabric_util=false
 util_method=2
-nNodes=16
+nNodes=144
