@@ -523,7 +523,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 }
 
 //const uint32_t max_flows=5;
-const uint32_t max_flows=8;
+const uint32_t max_flows=10;
 uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
@@ -723,7 +723,7 @@ main (int argc, char *argv[])
   NodeContainer bottleneckNodes;
   NodeContainer clientNodes;
   bottleneckNodes.Create (13);
-  clientNodes.Create (18);
+  clientNodes.Create (19);
   
   NodeContainer allNodes = NodeContainer (bottleneckNodes, clientNodes);
   
@@ -779,10 +779,10 @@ main (int argc, char *argv[])
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(7), bottleneckNodes.Get(9)));
   printlink(bottleneckNodes.Get(7), bottleneckNodes.Get(9));
 
-  bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(10), bottleneckNodes.Get(11)));
-  printlink(bottleneckNodes.Get(10), bottleneckNodes.Get(11));
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(9), bottleneckNodes.Get(10)));
   printlink(bottleneckNodes.Get(9), bottleneckNodes.Get(10));
+  bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(10), bottleneckNodes.Get(11)));
+  printlink(bottleneckNodes.Get(10), bottleneckNodes.Get(11));
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(11), bottleneckNodes.Get(12)));
   printlink(bottleneckNodes.Get(11), bottleneckNodes.Get(12));
 
@@ -818,6 +818,9 @@ main (int argc, char *argv[])
 
   access.push_back(p2paccess.Install(bottleneckNodes.Get(7), clientNodes.Get(12)));
   printlink( bottleneckNodes.Get(7), clientNodes.Get(12));
+
+  access.push_back(p2paccess.Install(bottleneckNodes.Get(7), clientNodes.Get(18)));
+  printlink( bottleneckNodes.Get(7), clientNodes.Get(18));
 
   access.push_back(p2paccess.Install(bottleneckNodes.Get(8), clientNodes.Get(13)));
   printlink( bottleneckNodes.Get(8), clientNodes.Get(13));
@@ -963,7 +966,7 @@ main (int argc, char *argv[])
 
   //std::vector<uint32_t> sinknodes {4,5,6,9,10,11};
 //  std::vector<uint32_t> sinknodes(4,6,9,10,11); //this works
-  static const uint32_t arr[] = {6,8,11,5,13,14,16,17}; 
+  static const uint32_t arr[] = {6,6,8,11,5,5,13,14,17,17}; 
   //static const uint32_t arr[] = {3};
   
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
@@ -972,7 +975,7 @@ main (int argc, char *argv[])
   sinkApps.Stop (Seconds (sim_time));
 
   //static const uint32_t arr1[] = {0,1,8,2,3}; 
-  static const uint32_t arr1[] = {0,1,2,9,3,4,12,15};
+  static const uint32_t arr1[] = {0,1,2,9,3,4,12,18,15,16};
   
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   //std::vector<uint32_t> sourcenodes {0,3,1,8,2,3};

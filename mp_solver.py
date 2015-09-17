@@ -1,12 +1,16 @@
 import sys
 import cvxopt as cvx
 import random
+import matplotlib;
+matplotlib.use('Agg');
+del matplotlib;
 import matplotlib.pyplot as plt
 import numpy as np
 
 ###################### Global constants ########################
 num_instances = 10
-num_iterations = 10000
+#num_iterations = 10000
+num_iterations = 100
 max_capacity = 1.0
 delay = 0
 gamma = 0.1
@@ -245,17 +249,21 @@ def main_solver():
     #A = np.array([[1,1],
     #             [1,0],
     #             [0,1]])
-    w = np.array([[5.0, 7.0, 12.0, 11.0]]).T
-#    w = np.array([[5.0, 7.0, 8.0, 12.0, 11.0]]).T
+ #   w = np.array([[5.0, 7.0, 12.0, 11.0]]).T
+    # KN
+    # w = np.array([[5.0, 7.0, 8.0, 12.0, 11.0]]).T
     #w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0]]).T
-    c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
-
-    A = np.array ([[1,0,1,0,0,0],
-                  [1,1,0,1,0,0],
-                 # [0,0,0,0,1,1],
-                  [1,1,0,0,1,0],
-                  [0,1,0,0,1,0]])
     
+    # KN 
+    # c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
+
+    # KN
+    #A = np.array ([[1,0,1,0,0,0],
+    #              [1,1,0,1,0,0],
+    #              [0,0,0,0,1,1],
+    #              [1,1,0,0,1,0],
+    #              [0,1,0,0,1,0]])
+    #
     #A = np.array([[1,1,1,1,1],
     #              [1,0,0,0,0],
     #              [0,1,1,0,0],
@@ -272,9 +280,35 @@ def main_solver():
     
 #    if inst !=  5:#!= 15:# and inst != 8:
 #        continue
+
+    # SC: 10 flows
+    w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
+    
+    # SC: 13 links 
+    c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
+
+    num_flows = 10
+    num_links = 13
+    A = np.zeros((num_flows,num_links))
+   
+    A[0,0] = 1
+    A[1,0] = 1
+    A[2,0] = 1
+    A[2,1] = 1
+    A[3,5] = 1
+    A[3,6] = 1
+    A[4,4] = 1
+    A[5,4] = 1
+    A[6,8] = 1
+    A[7,9] = 1
+    A[8,11] = 1
+    A[9,12] = 1
+
+    print(A)
     
     umax_gradient = UtilMax(A, w, c, method='gradient')
     umax_mp = UtilMax(A, w, c, method='mp-minmax')
+
 
     for it in range(num_iterations):
        umax_gradient.step()
