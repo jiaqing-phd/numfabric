@@ -523,7 +523,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 }
 
 //const uint32_t max_flows=5;
-const uint32_t max_flows=2;
+const uint32_t max_flows=8;
 uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
@@ -759,9 +759,12 @@ main (int argc, char *argv[])
 
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(2), bottleneckNodes.Get(1)));
   printlink(bottleneckNodes.Get(2), bottleneckNodes.Get(1));
+  // LOOP
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(3), bottleneckNodes.Get(1)));
   printlink(bottleneckNodes.Get(3), bottleneckNodes.Get(1));
- 
+
+  bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(3), bottleneckNodes.Get(2)));
+  printlink(bottleneckNodes.Get(3), bottleneckNodes.Get(2));
  
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(4), bottleneckNodes.Get(5)));
   printlink(bottleneckNodes.Get(4), bottleneckNodes.Get(5));
@@ -799,6 +802,9 @@ main (int argc, char *argv[])
   printlink( bottleneckNodes.Get(2), clientNodes.Get(5));
 
   access.push_back(p2paccess.Install(bottleneckNodes.Get(3), clientNodes.Get(3)));
+  printlink( bottleneckNodes.Get(3), clientNodes.Get(3));
+
+  access.push_back(p2paccess.Install(bottleneckNodes.Get(3), clientNodes.Get(4)));
   printlink( bottleneckNodes.Get(3), clientNodes.Get(4));
 
   access.push_back(p2paccess.Install(bottleneckNodes.Get(4), clientNodes.Get(8)));
@@ -819,14 +825,12 @@ main (int argc, char *argv[])
   access.push_back(p2paccess.Install(bottleneckNodes.Get(9), clientNodes.Get(14)));
   printlink( bottleneckNodes.Get(9), clientNodes.Get(14));
 
-
   access.push_back(p2paccess.Install(bottleneckNodes.Get(10), clientNodes.Get(15)));
   printlink( bottleneckNodes.Get(10), clientNodes.Get(15));
 
 
   access.push_back(p2paccess.Install(bottleneckNodes.Get(11), clientNodes.Get(16)));
   printlink( bottleneckNodes.Get(11), clientNodes.Get(16));
-
 
   access.push_back(p2paccess.Install(bottleneckNodes.Get(12), clientNodes.Get(17)));
   printlink( bottleneckNodes.Get(12), clientNodes.Get(17));
