@@ -98,6 +98,7 @@ public:
   double incoming_rate;
   double outgoing_rate;
   double incoming_bytes;
+  double outgoing_bytes;
    
   uint32_t getFlowID(Ptr<Packet> p);
   int getflowid_temp(std::string);

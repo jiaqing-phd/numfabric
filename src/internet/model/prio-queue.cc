@@ -265,7 +265,7 @@ PrioQueue::getRateDifference(Time time_interval)
 double
 PrioQueue::getRateDifferenceNormalized(Time time_interval)
 {
-    double link_incoming_rate = (8.0 * incoming_bytes) /(1000000.0 * time_interval.GetSeconds());
+    double link_incoming_rate = (8.0 * outgoing_bytes) /(1000000.0 * time_interval.GetSeconds());
     double available_capacity = (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
 
     double ratio = 1.0 - link_incoming_rate / available_capacity;
@@ -273,7 +273,7 @@ PrioQueue::getRateDifferenceNormalized(Time time_interval)
  
     //current_incoming_rate = link_incoming_rate;
     //NS_LOG_LOGIC(" queuerate "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" current_incoming_rate "<<link_incoming_rate<<" bytes "<<incoming_bytes<<" available_capacity "<<available_capacity<<" ratio "<<ratio);
-    incoming_bytes = 0.0;
+    outgoing_bytes = 0.0;
     return ratio;
 }
 
@@ -307,7 +307,7 @@ PrioQueue::updateLinkPrice(void)
 //    if(m_is_switch) {
       //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<< " current price "<<current_price<<" node "<<nodeid<<" price_raise "<<price_hike<<" queue_term "<< (m_alpha *(current_queue - m_target_queue))<<" rate_term "<<price_hike<<" current_queue "<<current_queue<<" target_queue "<<m_target_queue);
  //   } 
-//    std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
+    //std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
   } else {
     if(running_min_prio != MAX_DOUBLE) {
       latest_min_prio = running_min_prio;
@@ -863,6 +863,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   /* Also store time of arrival for each packet */
   pkt_arrival[pkt_uid] = Simulator::Now().GetNanoSeconds();
+  incoming_bytes += min_pp->GetSize(); 
     
 
   // Now, enqueue    
@@ -1002,13 +1003,14 @@ PrioQueue::DoDequeue (void)
 //  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
 //  double rand_num = uv->GetValue(0.0, 1.0);
   Ptr<Packet> p = m_packets.front ();
-  incoming_bytes += p->GetSize(); 
+  outgoing_bytes += p->GetSize(); 
 
   double lowest_deadline = 0.0;
   double pkt_wait_duration = 0.0;
 
   if(m_pfabricdequeue) { 
 
+    //std::cout<<" pfabricdequeue "<<std::endl;
     typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
 	  double highest_wfq_weight_;
 	  PacketQueueI pItr = m_packets.begin();
@@ -1071,11 +1073,15 @@ PrioQueue::DoDequeue (void)
     double pkt_depart = Simulator::Now().GetNanoSeconds();
     pkt_wait_duration = pkt_depart - t1.GetArrival();
 
+    //std::cout<<"pkt_tagged_dequeue "<<std::endl;
+
     //NS_LOG_LOGIC("packetdeadline "<<Simulator::Now().GetSeconds()<<" "<<lowest_deadline<<" removed at node "<<nodeid<<" "<<GetFlowKey(p));
 
     //NS_LOG_LOGIC("virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime);  
     
-  } 
+  } else {
+    //std::cout<<" plain dequeue "<<std::endl;
+  }
  
 
    // debug 

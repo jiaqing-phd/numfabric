@@ -25,7 +25,8 @@ for line in f:
   arguments[arg_key] = arg_val
 
 orig_prefix=arguments["prefix"]
-for load_val in (0.2, 0.4, 0.6, 0.8):
+#for load_val in (0.6, 0.8):
+for load_val in (0.8, 0.7):
     arguments["load"] = str(load_val)
     prefix_str=orig_prefix
     prefix_str=prefix_str+"_"+arguments["load"]

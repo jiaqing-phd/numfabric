@@ -101,6 +101,7 @@ extern std::string link_twice_string ;
 extern NodeContainer allNodes;
 extern NodeContainer bottleNeckNode; // Only 1 switch
 extern NodeContainer sourceNodes;    
+extern NodeContainer clientNodes;    
 extern NodeContainer sinkNodes;
 
 extern double ONEG ;
