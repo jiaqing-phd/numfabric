@@ -189,10 +189,11 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
       m_cWnd += m_segmentSize;
       NS_LOG_INFO ("In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
-      NS_LOG_LOGIC("In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
+      //std::cout<<"In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<std::endl;
     }
   else
-    { 
+    {
+        //std::cout<<" adjusting window -- dctcp "<<std::endl; 
         // Congestion avoidance mode, increase by (segSize*segSize)/cwnd. (RFC2581, sec.3.1)
         // To increase cwnd for one segSize per RTT, it should be (ackBytes*segSize)/cwnd
         double adder = static_cast<double> (m_segmentSize * m_segmentSize) / m_cWnd.Get ();
@@ -286,11 +287,16 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   // get the ipv4 object 
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
 
-  if(!m_xfabric) { // we want to update rates in case of both strawman and dctcp
+  if(m_strawmancc || m_dctcp) { // we want to update rates in case of both strawman and dctcp
     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
+    return;
   }
 
+
   if(m_xfabric) {
+
+    //std::cout<<Simulator::Now().GetSeconds()<<" m_xfabric "<<m_xfabric<<" strawman "<<m_strawmancc<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
+
 
     double window_spread_factor = 10.0;
     double dmin=0.000004;
@@ -304,7 +310,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     double ONENANO = 1000000000.0;
 
     if(lastRtt_copy.GetNanoSeconds() / ONENANO < d0) {
-      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+      //std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
       d0 = lastRtt_copy.GetNanoSeconds() / ONENANO;
     }
 
@@ -456,7 +462,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
           ecn_highest = m_highTxMark;
           //bytes_with_ecn = 0.0;
           //total_bytes_acked = 0.0;
-//          std::cout<<" m_dctcp -- processing ECN "<<std::endl;
+          //std::cout<<" m_dctcp -- processing ECN "<<std::endl;
         
       } else {
   //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());
@@ -464,6 +470,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
       }
 
     } else if(!m_xfabric && !m_dctcp) { //m_dctcp and m_xfabric are false - so, this is regular tcp reacting to ECN
+      //std::cout<<" should not happen "<<std::endl;
       
       /*
       if(ack_num < ecn_highest) {

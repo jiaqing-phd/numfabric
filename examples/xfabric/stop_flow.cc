@@ -368,15 +368,13 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue", BooleanValue(pfabric_util));
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(pfabric_util));
 
-  if(!dctcp) {
-    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
-  } else {
+  if(!(dctcp && strawmancc)) {
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
+  } else {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
   }
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
-
-  Config::SetDefault("ns3::PrioQueue::m_pkt_tag", BooleanValue(pkt_tag));
 
 
   Config::SetDefault ("ns3::DropTailQueue::Mode" , StringValue("QUEUE_MODE_BYTES"));

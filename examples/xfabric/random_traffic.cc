@@ -358,7 +358,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
       double time_now = 1.0;
      
       uint32_t flow_counter = 0;
-      while(time_now < (sim_time-0.1))
+      while(time_now < (sim_time-1.0))
       {
         // flow size 
         double flow_size = empirical_rand->GetValue(); 
