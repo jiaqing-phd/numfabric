@@ -104,6 +104,7 @@ NodeContainer allNodes;
 NodeContainer bottleNeckNode; // Only 1 switch
 NodeContainer sourceNodes;    
 NodeContainer sinkNodes;
+NodeContainer clientNodes;
 
 double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;

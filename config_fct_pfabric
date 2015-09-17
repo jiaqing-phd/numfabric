@@ -1,4 +1,5 @@
 dctcp=true
+strawmancc=false
 xfabric=false
 kay=30000
 queuetype=WFQ

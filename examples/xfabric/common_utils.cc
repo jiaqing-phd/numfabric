@@ -139,7 +139,7 @@ CheckQueueSize (Ptr<Queue> queue)
 
   
     Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
-    if(Simulator::Now().GetSeconds() >= sim_time) {
+    if(Simulator::Now().GetSeconds() >= sim_time+1.0) {
       Simulator::Stop();
     }
  
@@ -195,6 +195,8 @@ void common_config(void)
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
 
+  pkt_tag = xfabric; 
+
   std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<std::endl;  
 
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
@@ -209,14 +211,17 @@ void common_config(void)
   // Disable delayed ack
   Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
   Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
+
   Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
+  Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
 
-  if(!(dctcp && strawmancc)) {
-    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
-  } else {
+  if(!xfabric) {
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
+  } else {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
+    Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   }
     
   Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
@@ -242,7 +247,6 @@ void common_config(void)
   Config::SetDefault ("ns3::hybridQ::MaxBytes", UintegerValue (max_queue_size));
   Config::SetDefault ("ns3::hybridQ::ECNThreshBytes", UintegerValue (max_ecn_thresh));
 
-  Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault ("ns3::PrioQueue::host_compensate", BooleanValue(host_compensate));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
 // one-set
@@ -254,7 +258,6 @@ void common_config(void)
   
   // rate_based 
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
-  Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
 
   flowTracker = new Tracker();
   //flowTracker->register_callback(scheduler_wrapper);

@@ -26,11 +26,11 @@ public:
   virtual void StartApplication (void);
   void ChangeRate (DataRate passed_in_rate);
   uint32_t getFlowId(void);
+  virtual void StopApplication (void);
 private:
 
   void ScheduleTx (void);
   void SendPacket (void);
-  virtual void StopApplication (void);
 
 
   Ptr<Socket>     m_socket;

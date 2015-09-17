@@ -11,7 +11,6 @@ load=0.6
 sim_time=2.5
 flows_tcp=1
 weight_change=1
-rate_based=0
 price_update_time=0.000090
 guardtime=0.000060
 host_compensate=false

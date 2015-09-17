@@ -68,15 +68,15 @@ def get_fileprefix(method):
   if(method=="dctcp"):
     return "fct_dctcp"
   if(method == "xfabric"):
-    return "xfabric_util2"
+    return "xfabric_util2_test"
   if(method == "strawman"):
-    return "fct_strawman"
+    return "fct_strawman1"
 
 def get_all_stretches(method):
   stretch = {}
   file_prefix = get_fileprefix(method)
-  for load in (0.2, 0.4, 0.6, 0.8):
-  #for load in (0.02, 0.04, 0.06):
+  #for load in (0.2, 0.4, 0.6, 0.8):
+  for load in (0.2, 0.4, 0.6):
     fname=file_prefix+"_"+str(load)+".out"
     base="fct_pfabric_"+str(load)+".out"
     print(len(get_stretch(fname, base)))
