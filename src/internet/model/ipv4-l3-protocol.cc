@@ -1162,6 +1162,12 @@ bool Ipv4L3Protocol::isDestination(std::string node)
   return false;
 }
 
+void Ipv4L3Protocol::removeFromDropList(uint32_t id)
+{
+  drop_list[id] = 0;
+}
+  
+
 void Ipv4L3Protocol::addToDropList(uint32_t id)
 {
   NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" nodeid "<<m_node->GetId()<<" added flow "<<id<<" to drop list");
@@ -1580,8 +1586,9 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
    uint32_t fid = flowids[flowkey];
 
    NS_LOG_LOGIC("SendRealOut" <<this << route << packet << &ipHeader);
-   if (route == 0 || (fid != 0 && (drop_list.find(fid) != drop_list.end())))
+   if (route == 0 || (fid != 0 && (drop_list.find(fid) != drop_list.end()) && drop_list[fid]==1))
     {
+      std::cout<<" DROPPING AT IP "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<std::endl;
       NS_LOG_WARN ("No route to host.  Drop.");
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), 0);
       return;
