@@ -9,8 +9,8 @@ import numpy as np
 
 ###################### Global constants ########################
 num_instances = 10
-#num_iterations = 10000
-num_iterations = 100
+num_iterations = 10000
+#num_iterations = 100
 max_capacity = 1.0
 delay = 0
 gamma = 0.1
@@ -241,141 +241,16 @@ def gen_bipartite_instance(nports, nflows):
     return A,w,c
 
 #def main_solver(numports, numflows):
-def main_solver():
-    #nports = numports;
-    #nflows = numflows
+def main_solver(num_flows, num_links, A, w, c):
     np.random.seed(9852352)  #241
-    #plt.close("all")
-    #A = np.array([[1,1],
-    #             [1,0],
-    #             [0,1]])
- #   w = np.array([[5.0, 7.0, 12.0, 11.0]]).T
-    # KN
-    # w = np.array([[5.0, 7.0, 8.0, 12.0, 11.0]]).T
-    #w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0]]).T
-    
-    # KN 
-    # c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
 
-    # KN
-    #A = np.array ([[1,0,1,0,0,0],
-    #              [1,1,0,1,0,0],
-    #              [0,0,0,0,1,1],
-    #              [1,1,0,0,1,0],
-    #              [0,1,0,0,1,0]])
-    #
-    #A = np.array([[1,1,1,1,1],
-    #              [1,0,0,0,0],
-    #              [0,1,1,0,0],
-    #              [0,0,1,1,0],
-    #              [0,0,0,0,1],
-    #              [0,1,0,1,0],
-    #              [1,0,1,0,1],
-    #              [0,0,1,0,0]])       
-    #w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
-    #c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0]]).T
-
-#    for inst in range(num_instances):
-#    (A, w, c) = gen_bipartite_instance(8, 13)
-    
-#    if inst !=  5:#!= 15:# and inst != 8:
-#        continue
-
-    # at starbux
-    ##################################################################
-    # SC: 10 flows
-    #w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
-    
-    # SC: 13 links 
-    #c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
-
-    num_flows = 10
-    num_links = 13
-
-    w = np.ones((num_flows,1))
-    c = np.ones((num_links,1))    
-    
-    A = np.zeros((num_flows,num_links))
-   
-    A[0,0] = 1
-    A[1,0] = 1
-    A[2,0] = 1
-    A[2,1] = 1
-    A[3,5] = 1
-    A[3,6] = 1
-    A[4,4] = 1
-    A[5,4] = 1
-    A[6,8] = 1
-    A[7,9] = 1
-    A[8,11] = 1
-    A[8,12] = 1
-    A[9,12] = 1
-    print(A)
-
-    # more complex with bottlenecks
-    ###################################################################
-    # SC: 11 flows
-    #w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
-    #
-    ## SC: 13 links 
-    #c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
-
-    #num_flows = 11
-    #num_links = 13
-    #A = np.zeros((num_flows,num_links))
-   
-    #A[0,0] = 1
-    ##
-    #A[1,0] = 1
-    #A[1,1] = 1
-    #A[1,6] = 1
-    #A[1,7] = 1
-    #A[1,9] = 1
-    #A[1,10] = 1
-    #A[1,11] = 1
-    #A[1,12] = 1
-    ##
-    #A[2,0] = 1
-    #A[2,1] = 1
-    #A[2,5] = 1
-    ##
-    #A[3,4] = 1
-    #A[3,2] = 1
-    ## 
-    #A[4,4] = 1
-    ##
-    #A[5,6] = 1
-    #A[5,7] = 1
-    ## 
-    #A[6,7] = 1
-    ## 
-    #A[7,9] = 1
-    #A[7,10] = 1
-    #A[7,11] = 1
-    #A[7,12] = 1
-    ##
-    #A[8,7] = 1
-    #A[8,8] = 1
-    ##
-    #A[9,10] = 1
-    #A[9,11] = 1
-    #A[9,12] = 1
-    ##
-    #A[10,11] = 1
-    
-    print(A)
-
-    
     umax_gradient = UtilMax(A, w, c, method='gradient')
     umax_mp = UtilMax(A, w, c, method='mp-minmax')
-
 
     for it in range(num_iterations):
        umax_gradient.step()
        umax_mp.step()
         
-    #rate_error = np.linalg.norm(umax_gradient.x - umax_gradient.x)/umax_gradient.num_flows
-    #rate_error = np.linalg.norm(umax_gradient.x - umax_gradient.x)/umax_gradient.num_flows
     if 1:#rate_error > tol:
 #        print '\n\n###################### instance %d #######################' % inst
         print 'nflows=', A.shape[0]
@@ -464,9 +339,66 @@ def main_solver():
 #plt.legend(range(state.num_links))
 #plt.show()
 #                              
-    
+
 if __name__ == '__main__':
 #    main()
-    main_solver()
+    start_stop_file = sys.argv[1]
+    NUM_LINKS = int(sys.argv[2])
 
+    flow_id_vector = []
+    weight_vector = []
 
+    # list of active flows, active links
+    with open(start_stop_file, 'r') as f:
+        for line in f:
+
+            # how each line looks:
+            # FLOW_ID, WEIGHT, LINKS (comma separated)
+            # FLOW_ID: has to be index in matrix [0 based]
+            # WEIGHT: numerical
+            # LINKS: comma separated (0,5,4) - links flow will use
+            # START = ['START', 'STOP']
+
+            a = line.split("\n")[0]
+            b = a.split()
+
+            flow_id = float(b[0])
+            weight = float(b[1])
+            link_string = b[2]
+
+            flow_id_vector.append(flow_id)
+            weight_vector.append(weight)
+
+        # now know dimensions of A vector, now have to get routing matrix
+
+    NUM_FLOWS = len(flow_id_vector)
+    w = np.ones((NUM_FLOWS, 1))
+    c = np.ones((NUM_LINKS, 1))
+    A = np.zeros((NUM_FLOWS, NUM_LINKS))
+
+    with open(start_stop_file, 'r') as f:
+        for line in f:
+
+            # how each line looks:
+            # FLOW_ID, WEIGHT, LINKS (comma separated)
+            # FLOW_ID: has to be index in matrix [0 based]
+            # WEIGHT: numerical
+            # LINKS: comma separated (0,5,4) - links flow will use
+            # START = ['START', 'STOP']
+
+            a = line.split("\n")[0]
+            b = a.split()
+            print(a,b)
+
+            flow_id = float(b[0])
+            weight = float(b[1])
+            link_string = b[2]
+
+            w[flow_id-1] = weight
+            link_vector = [float(x) for x in link_string.split(',')]
+
+            for link in link_vector:
+                A[flow_id - 1, link - 1] = 1
+
+        print(NUM_FLOWS, NUM_LINKS, A, w, c)
+        main_solver(NUM_FLOWS, NUM_LINKS, A, w, c)

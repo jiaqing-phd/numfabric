@@ -3,7 +3,6 @@ import sys
 import os
 import numpy as np
 import mp_solver_topology as solver
-import find_converged as converge
 
 flow_start = "flow_start"
 #log_file = sys.argv[1]
@@ -33,7 +32,7 @@ def close_enough(rate1, rate2):
   return False
 
 def find_converge_time(ret_rates, fname, start_time, stop_time, g):
-  #print("looking for an event between %f and %f in file %s" %(start_time, stop_time, fname))
+  print("looking for an event between %f and %f in file %s" %(start_time, stop_time, fname))
   f1 = open(fname, "r")
   converged_time = {}
   times= {}
@@ -43,7 +42,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
   for line in f1:
     l1 = line.rstrip()
     elems = l1.split(' ')
-    if(elems[0] == "DestRatePrio"):
+    if(elems[0] == "DestRate"):
       flowid = int(elems[2])
       time = float(elems[3])
       rate = float(elems[4])/capacity
@@ -60,8 +59,8 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
       else:
        averaged[flowid] = rate
       times[flowid] = time 
-    #  if(flowid in ret_rates and flowid in averaged): 
-        #print("rate %f averaged %f" %(rate, averaged[flowid])) 
+      if(flowid in ret_rates and flowid in averaged): 
+        print("rate %f averaged %f" %(rate, averaged[flowid])) 
 #        print("ret_rates %f" %ret_rates[flowid]) 
     
       if((flowid in ret_rates) and (close_enough(averaged[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
@@ -70,7 +69,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
         good[flowid] = 0
       #print(good[flowid])
       if(good[flowid] == enough_good):
-        #print("converged point %f optimal rate %f at %f"%(averaged[flowid], ret_rates[flowid], times[flowid]))
+        print("converged point %f optimal rate %f at %f"%(averaged[flowid], ret_rates[flowid], times[flowid]))
         converged_time[flowid] = time - (enough_good-1)*iter_value - start_time
         flow_converged[flowid] = True
   return(converged_time, flow_converged)

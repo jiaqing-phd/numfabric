@@ -258,7 +258,6 @@ MyApp::SendPacket (void)
  //   NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" Tcp buffer is overflowing.. trying later");
   }
 
-  std::cout<<Simulator::Now().GetSeconds()<<" flow_id "<<m_fid<<" sent "<<ret_val<<" bytes total bytes so far "<<m_totBytes<<std::endl;
 //  NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" bytes sent "<<m_totBytes<<" maxBytes "<<m_maxBytes);
 
   //if (++m_packetsSent < m_nPackets)
@@ -551,9 +550,8 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
 
   while(true) 
   {
-     //UniformVariable urand;
-     //uint32_t i = urand.GetInteger(0, max_flows-1);
-     uint32_t i = 1;
+     UniformVariable urand;
+     uint32_t i = urand.GetInteger(0, max_flows-1);
      if(flow_started[i] == 0) { 
       uint32_t source_node = sourcenodes[i];
       uint32_t sink_node = sinknodes[i];
@@ -579,9 +577,8 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
 void stop_a_flow(void)
 {
   while (true) {
-    //UniformVariable urand;
-    //uint32_t i = urand.GetInteger(0, max_flows-1);
-    uint32_t i = 1;
+    UniformVariable urand;
+    uint32_t i = urand.GetInteger(0, max_flows-1);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
     if(flow_started[i] == 1) {
       sending_apps[i]->StopApplication();
@@ -597,7 +594,6 @@ void stop_a_flow(void)
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes)
 {
 
-  max_flows_allowed = min_flows = 1; 
   std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<" nf "<<num_flows<<" maxf "<<max_flows_allowed<<" minf "<<min_flows<<std::endl;
   if(num_flows >= max_flows_allowed) {
     stop_a_flow();
@@ -622,7 +618,7 @@ int
 main (int argc, char *argv[])
 {
 
-  LogComponentEnable ("TcpSocketBase", LOG_LEVEL_ALL);
+  //LogComponentEnable ("TcpSocketBase", LOG_LEVEL_ALL);
 /*  LogComponentEnable ("TcpNewReno", LOG_LEVEL_ALL);*/
 /*  LogComponentEnable ("PrioQueue", LOG_LEVEL_ALL);
   LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_ALL);
