@@ -523,7 +523,9 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 }
 
 //const uint32_t max_flows=5;
-const uint32_t max_flows=10;
+//const uint32_t max_flows=10;
+// more complex
+const uint32_t max_flows=11;
 uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
@@ -964,18 +966,20 @@ main (int argc, char *argv[])
   //Turn on global static routing
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  //std::vector<uint32_t> sinknodes {4,5,6,9,10,11};
-//  std::vector<uint32_t> sinknodes(4,6,9,10,11); //this works
-  static const uint32_t arr[] = {6,6,8,11,5,5,13,14,17,17}; 
-  //static const uint32_t arr[] = {3};
+  // more complex
+  static const uint32_t arr[] = {6,17,9,6,5,12,12,17,13,17,16};
+  // orig
+  // static const uint32_t arr[] = {6,6,8,11,5,5,13,14,17,17}; 
   
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
   sinkApps.Start (Seconds (1.0));
   sinkApps.Stop (Seconds (sim_time));
 
-  //static const uint32_t arr1[] = {0,1,8,2,3}; 
-  static const uint32_t arr1[] = {0,1,2,9,3,4,12,18,15,16};
+  // more complex
+  static const uint32_t arr1[] = {0,1,2,3,4,8,11,18,11,14,15};
+  // orig
+  // static const uint32_t arr1[] = {0,1,2,9,3,4,12,18,15,16};
   
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   //std::vector<uint32_t> sourcenodes {0,3,1,8,2,3};
