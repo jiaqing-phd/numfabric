@@ -44,7 +44,7 @@ double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.01;
+float sampling_interval = 0.1;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
@@ -120,7 +120,7 @@ double meanflowsize = 1138*1460 ; // what TBD?
 //ApplicationContainer apps;
 std::vector< Ptr<Socket> > ns3TcpSockets;
 std::string prefix ="test";
-uint32_t util_method =1;
+uint32_t util_method =2;
 double fct_alpha=0.1;
 uint16_t *ports;
 
