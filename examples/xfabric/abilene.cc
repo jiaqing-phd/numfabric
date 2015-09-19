@@ -951,7 +951,7 @@ main (int argc, char *argv[])
   // more complex
   //static const uint32_t arr[] = {6,17,9,6,5,12,12,17,13,17,16};
   // orig
-  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,11,2,14};
+  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,11,2};
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   
   static const uint32_t arr[] = {10,12,14,18,16,8,17,17,9,19}; 
