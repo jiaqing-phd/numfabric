@@ -768,6 +768,8 @@ main (int argc, char *argv[])
  
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(4), bottleneckNodes.Get(7)));
   printlink(bottleneckNodes.Get(4), bottleneckNodes.Get(7));
+  bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(4), bottleneckNodes.Get(5)));
+  printlink(bottleneckNodes.Get(4), bottleneckNodes.Get(5));
   bdevice.push_back(p2pbottleneck.Install(bottleneckNodes.Get(5), bottleneckNodes.Get(6)));
   printlink(bottleneckNodes.Get(5), bottleneckNodes.Get(6));
 
@@ -951,10 +953,10 @@ main (int argc, char *argv[])
   // more complex
   //static const uint32_t arr[] = {6,17,9,6,5,12,12,17,13,17,16};
   // orig
-  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,11,2};
+  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,2,10};
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   
-  static const uint32_t arr[] = {10,12,14,18,16,8,17,17,9,19}; 
+  static const uint32_t arr[] = {10,12,14,18,16,8,17,17,19,20}; 
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
   sinkApps.Start (Seconds (1.0));
