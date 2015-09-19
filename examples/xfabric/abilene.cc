@@ -525,13 +525,11 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 //const uint32_t max_flows=5;
 //const uint32_t max_flows=10;
 // more complex
-const uint32_t max_flows=2;
+const uint32_t max_flows=10;
 uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
 
-int weights[6][5] = {{5,7,8,12,11},{5,12,10,4,11},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
-//int weights[6][5] = {{1,1,1,1,1},{1,1,1,1,1},{3,1,9,9,5},{6,5,12,1,6},{6,10,12,7,6},{6,10,5,10,12}};
 int run_num = 0;
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes, uint32_t flow_id)
@@ -953,8 +951,10 @@ main (int argc, char *argv[])
   // more complex
   //static const uint32_t arr[] = {6,17,9,6,5,12,12,17,13,17,16};
   // orig
-  static const uint32_t arr[] = {20,21}; 
+  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,11,2,14};
+  std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   
+  static const uint32_t arr[] = {10,12,14,18,16,8,17,17,9,19}; 
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
   sinkApps.Start (Seconds (1.0));
@@ -963,9 +963,6 @@ main (int argc, char *argv[])
   // more complex
   //static const uint32_t arr1[] = {0,1,2,3,4,8,11,18,11,14,15};
   // orig
-  static const uint32_t arr1[] = {0,1};
-  
-  std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   //std::vector<uint32_t> sourcenodes {0,3,1,8,2,3};
   //std::vector<uint32_t> sourcenodes (0,1,8,2,3); //this works
   //std::vector<uint32_t> sourcenodes {0,8,2};
