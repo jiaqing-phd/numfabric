@@ -9,6 +9,9 @@ def build(bld):
     obj = bld.create_ns3_program('AARNET', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['AARNET.cc', 'init_all.cc']
     
+    obj = bld.create_ns3_program('abilene', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['abilene.cc', 'init_all.cc']
+    
     #obj = bld.create_ns3_program('test_fct', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     #obj.source = ['test_fct.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
