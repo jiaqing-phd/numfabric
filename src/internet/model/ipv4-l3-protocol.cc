@@ -1780,10 +1780,11 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
     
     destination_bytes[flowkey] += pktsize;
     data_recvd[flowkey] += pktsize;
-
+/*
 	if(m_node->GetId() == 31) {
 		std::cout<<" flowkey "<<flowkey<<" "<<Simulator::Now().GetSeconds()<<" pkt delivered"<<std::endl;
 	}
+*/
 
     tcp_header.SetPrice(pre_set_netw_price);
    
