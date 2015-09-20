@@ -124,6 +124,7 @@ public:
   
   double stop_time;
   void addToDropList(uint32_t id);
+  void removeFromDropList(uint32_t id);
   std::map<uint32_t, uint32_t> drop_list;
 
   double long_ewma_const, short_ewma_const;

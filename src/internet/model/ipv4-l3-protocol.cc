@@ -159,7 +159,7 @@ Ipv4L3Protocol::updateAllRates(void)
   {
     updateRate(it->first);
   }
-  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
+  //Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
 
 
@@ -1162,6 +1162,12 @@ bool Ipv4L3Protocol::isDestination(std::string node)
   return false;
 }
 
+void Ipv4L3Protocol::removeFromDropList(uint32_t id)
+{
+  drop_list[id] = 0;
+}
+  
+
 void Ipv4L3Protocol::addToDropList(uint32_t id)
 {
   NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" nodeid "<<m_node->GetId()<<" added flow "<<id<<" to drop list");
@@ -1580,8 +1586,9 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
    uint32_t fid = flowids[flowkey];
 
    NS_LOG_LOGIC("SendRealOut" <<this << route << packet << &ipHeader);
-   if (route == 0 || (fid != 0 && (drop_list.find(fid) != drop_list.end())))
+   if (route == 0 || (fid != 0 && (drop_list.find(fid) != drop_list.end()) && drop_list[fid]==1))
     {
+      std::cout<<" DROPPING AT IP "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<std::endl;
       NS_LOG_WARN ("No route to host.  Drop.");
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), 0);
       return;
@@ -1746,8 +1753,6 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
   TcpHeader tcp_header;
   p->RemoveHeader(tcp_header);
   if(p->GetSize() > 0) {
-    //NS_LOG_UNCOND("LocalDeliver "<<Simulator::Now().GetSeconds()<<" node id "<<m_node->GetId()<<" Setting "<<pre_set_rate<<" in TCP Header"<<" destination "<<ipHeader.GetDestination());
-    
     TcpHeader tcph;
     uint16_t sourcePort, destPort;  
     Ipv4Address source = ipHeader.GetSource();

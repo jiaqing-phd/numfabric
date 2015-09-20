@@ -178,10 +178,12 @@ void PacketSink::StartApplication ()    // Called at time specified by Start
         }
     }
 
+  
   m_socket->SetRecvCallback (MakeCallback (&PacketSink::HandleRead, this));
   m_socket->SetAcceptCallback (
     MakeNullCallback<bool, Ptr<Socket>, const Address &> (),
     MakeCallback (&PacketSink::HandleAccept, this));
+
   m_socket->SetCloseCallbacks (
     MakeCallback (&PacketSink::HandlePeerClose, this),
     MakeCallback (&PacketSink::HandlePeerError, this));

@@ -2,8 +2,7 @@
 import sys
 import os
 import numpy as np
-import mp_solver_topology as solver
-import find_converged as converge
+import mpsolverdynamic as solver
 
 flow_start = "flow_start"
 #log_file = sys.argv[1]
@@ -20,7 +19,7 @@ numports = 0
 numflows = 0
 ONEMILLION = 1000000
 
-enough_good = 20
+enough_good = 50
 capacity=10000
 iter_value=0.0001
 
@@ -28,12 +27,14 @@ averaged = {}
 
 def close_enough(rate1, rate2):
   diff = rate1 - rate2
-  if(abs(diff) < (0.02)):
+  if(abs(diff) < (0.05)):
     return True
   return False
 
 def find_converge_time(ret_rates, fname, start_time, stop_time, g):
-  #print("looking for an event between %f and %f in file %s" %(start_time, stop_time, fname))
+  print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
+  print("ret_rates are ")
+  print(ret_rates)
   f1 = open(fname, "r")
   converged_time = {}
   times= {}
@@ -43,12 +44,14 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
   for line in f1:
     l1 = line.rstrip()
     elems = l1.split(' ')
-    if(elems[0] == "DestRatePrio"):
+    if(elems[0] == "DestRate"):
       flowid = int(elems[2])
       time = float(elems[3])
       rate = float(elems[4])/capacity
 
       if(time < start_time or time > stop_time):
+        continue
+      if(flowid in flow_converged and flow_converged[flowid] == True):
         continue
       if(flowid not in flow_converged):
         flow_converged[flowid] = False
@@ -60,19 +63,19 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
       else:
        averaged[flowid] = rate
       times[flowid] = time 
-    #  if(flowid in ret_rates and flowid in averaged): 
-        #print("rate %f averaged %f" %(rate, averaged[flowid])) 
-#        print("ret_rates %f" %ret_rates[flowid]) 
+      if(flowid in ret_rates and flowid in averaged): 
+        print("flowid %d ret_rates %f rate %f time %f" %(flowid, ret_rates[flowid],rate, time)) 
     
-      if((flowid in ret_rates) and (close_enough(averaged[flowid], ret_rates[flowid])) and (flow_converged[flowid] == False)):
+      if((flowid in ret_rates) and (close_enough(rate, ret_rates[flowid])) and (flow_converged[flowid] == False)):
+#        print("checking if %f is closeeniugh to %f for flow %d" %(rate,ret_rates[flowid],flowid))
         good[flowid] += 1
       else:
         good[flowid] = 0
       #print(good[flowid])
       if(good[flowid] == enough_good):
-        #print("converged point %f optimal rate %f at %f"%(averaged[flowid], ret_rates[flowid], times[flowid]))
         converged_time[flowid] = time - (enough_good-1)*iter_value - start_time
         flow_converged[flowid] = True
+        print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid]))
   return(converged_time, flow_converged)
 
 def getclass(self, srcid, dstid):
@@ -87,7 +90,7 @@ def getclass(self, srcid, dstid):
 def get_optimal_rates(log_file, method, alpha, g):
 
         fh = open(log_file, "r")
-        numports = 6
+        numports = 14
         sim = solver.Simulation()
         sim.init_custom(numports, method, alpha)
 
@@ -116,27 +119,30 @@ def get_optimal_rates(log_file, method, alpha, g):
               weight = float(elems[10])
 
               if(elems[0] == "flow_start"):
+                print("flow_start event ")
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, 1)
                 #print("ADDING FLOW %d "%flow_id)
               if(elems[0] == "flow_stop"):
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, 2)
 
               event_time = flow_arrival/1000000000.0;
-              next_event_time = event_time+ 0.05
+              next_event_time = event_time+ 0.1
               opt_rates = sim.startSim() #these are optimal rates
+              print("found optimal rates")
+              print(opt_rates) 
               (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
               con = 1
               max_conv=0.0
               print("##########################################")
               for key in opt_rates:
                 if(key not in converge_times):
-                  print("converge_times 0.05")
+                  print("converge_times 0.05 - not found flowid %d" %key)
                   max_conv=0.05
                   con = 0
 
 #              if(con == 1):
               for key in converge_times:
-                 print("converge_times: %f" %converge_times[key])
+                 print("converge_times: %f %d" %(converge_times[key], key))
                  if(converge_times[key] > max_conv):
                     max_conv=converge_times[key]
               print("converge_times_maximum %f" %max_conv)

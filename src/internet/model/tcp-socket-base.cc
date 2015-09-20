@@ -495,7 +495,7 @@ TcpSocketBase::Close (void)
       return 0;
     }
  
-  if (m_txBuffer.SizeFromSequence (m_nextTxSequence) > 0)
+/*  if (m_txBuffer.SizeFromSequence (m_nextTxSequence) > 0)
     { // App close with pending data must wait until all data transmitted
       if (m_closeOnEmpty == false)
         {
@@ -504,6 +504,8 @@ TcpSocketBase::Close (void)
         }
       return 0;
     }
+*/
+ 
   return DoClose ();
 }
 
