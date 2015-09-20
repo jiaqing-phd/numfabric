@@ -54,12 +54,13 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 std::map<uint32_t, uint16_t> flow_dest_port;
 uint16_t port = 5000;
-const uint32_t max_flows=8;
-uint32_t flow_started[max_flows] = {0};
-Ptr<MyApp> sending_apps[max_flows];
+const uint32_t max_flows=10;
+const uint32_t maxflowsp = 11;
+uint32_t flow_started[maxflowsp] = {0};
+Ptr<MyApp> sending_apps[maxflowsp];
 uint32_t global_flowid = 1;
 uint32_t num_flows = 0;
-uint32_t min_flows=3, max_flows_allowed=7;
+uint32_t min_flows=3, max_flows_allowed=11;
 
 static void
 CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
@@ -218,6 +219,9 @@ MyApp::StartApplication (void)
       m_socket->Bind6 ();
     }
     m_socket->Connect (m_peer);
+    Ptr<TcpNewReno> nrptr = StaticCast<TcpNewReno> (m_socket);
+    nrptr->setxfabric(xfabric);
+    nrptr->setdctcp(dctcp);
   }
 //  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> (srcNode->GetObject<Ipv4> ());
 //  ipv4->removeFromDropList(m_fid);
@@ -447,6 +451,7 @@ void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t f
   // Create a packet sink on the star "hub" to receive these packets
   Address anyAddress = InetSocketAddress (Ipv4Address::GetAny (), port);
   PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", anyAddress);
+//  PacketSinkHelper sinkHelper (TcpSocketFactory::GetTypeId(), anyAddress);
   ApplicationContainer sinkAppContainer = sinkHelper.Install (clientNodes.Get(sinkN));
   sinkAppContainer.Start(Seconds(0.0));
   sinkApps.Add(sinkAppContainer);
@@ -543,7 +548,6 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
   return SendingApp;
 }
 
-//const uint32_t max_flows=5;
 
 void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknodes, NodeContainer clientNodes)
 {
@@ -551,7 +555,10 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
   while(true) 
   {
      UniformVariable urand;
-     uint32_t i = urand.GetInteger(0, max_flows-1);
+     //uint32_t i = urand.GetInteger(0, max_flows-1);
+//     uint32_t i = urand.GetInteger(1, max_flows);
+    uint32_t i = num_flows+1;
+    std::cout<<Simulator::Now()<<"start_a_flow "<<i<<std::endl;
      if(flow_started[i] == 0) { 
       uint32_t source_node = sourcenodes[i];
       uint32_t sink_node = sinknodes[i];
@@ -569,6 +576,8 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
       std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
       num_flows++;
       break;
+     } else {
+      break;
      }
   }
 }
@@ -578,7 +587,7 @@ void stop_a_flow(void)
 {
   while (true) {
     UniformVariable urand;
-    uint32_t i = urand.GetInteger(0, max_flows-1);
+    uint32_t i = urand.GetInteger(1, max_flows);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
     if(flow_started[i] == 1) {
       sending_apps[i]->StopApplication();
@@ -593,13 +602,14 @@ void stop_a_flow(void)
   
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes)
 {
-
+  min_flows = 11;
   std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<" nf "<<num_flows<<" maxf "<<max_flows_allowed<<" minf "<<min_flows<<std::endl;
-  if(num_flows >= max_flows_allowed) {
-    stop_a_flow();
-  } else if(num_flows <= min_flows) {
+//  if(num_flows >= max_flows_allowed) {
+//    stop_a_flow();
+//  } else if(num_flows <= min_flows) {
+  if(num_flows < min_flows)
     start_a_flow(sourcenodes, sinknodes, clientNodes);
-  } else {
+/*  } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
      double rand_num = uv->GetValue(0.0, 1.0);
      if(rand_num < 0.5) {
@@ -607,8 +617,8 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       } else {
         stop_a_flow();
       }
-  }
-  Simulator::Schedule (Seconds (0.01), &startflowwrapper, sourcenodes, sinknodes, clientNodes);
+  } */
+  Simulator::Schedule (Seconds (0.001), &startflowwrapper, sourcenodes, sinknodes, clientNodes);
 
 
 }
@@ -702,7 +712,7 @@ main (int argc, char *argv[])
   uint32_t ssthresh = initcwnd * max_segment_size;
 
   if(strawmancc) {
-    initcwnd = initcwnd*4.0;
+    initcwnd = initcwnd*10.0;
   }
 
   NS_LOG_UNCOND("Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd);  
@@ -719,15 +729,16 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (send_buf_size));
   // Disable delayed ack
   Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
-  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(false));
-  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(true));
+  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
+  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
+  Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
   Config::SetDefault("ns3::PrioQueue::guardTime", TimeValue(Seconds(guard_time)));
 
-  Config::SetDefault("ns3::PrioQueue::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue",BooleanValue(m_pfabric));
+  Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(!strawmancc));
 
   Config::SetDefault("ns3::PrioQueue::dgd_alpha", DoubleValue(dgd_alpha));
   Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
@@ -746,7 +757,6 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   NS_LOG_UNCOND("Set max_ecn_thresh at "<<max_ecn_thresh);
 
-  Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::m_wfq", BooleanValue(wfq));
   Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(m_pfabric));
@@ -755,6 +765,12 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
 
 
+  if(!xfabric) {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
+  } else {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
+    Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
+  }
 
 
   // Here, we will create N nodes in a star.
@@ -779,7 +795,8 @@ main (int argc, char *argv[])
   // Queue, Channel and link characteristics
   NS_LOG_INFO ("Create channels.");
   PointToPointHelper p2paccess;
-  p2paccess.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
+  //p2paccess.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
+  p2paccess.SetDeviceAttribute ("DataRate", StringValue ("20Gbps"));
   p2paccess.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(link_delay)));
   p2paccess.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"), "DataRate", StringValue(link_rate_string));
 
@@ -1002,9 +1019,9 @@ main (int argc, char *argv[])
   //Turn on global static routing
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
-  //std::vector<uint32_t> sinknodes {4,5,6,9,10,11};
-//  std::vector<uint32_t> sinknodes(4,6,9,10,11); //this works
-  static const uint32_t arr[] = {6,8,11,5,13,14,16,17}; 
+  static const uint32_t arr[] = {0, 6,17,8,11,5,5,13,14,17,17}; //first one is dummy
+
+//  static const uint32_t arr[] = {6,8,11,5,13,14,16,17}; 
   //static const uint32_t arr[] = {3};
   
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
@@ -1012,8 +1029,8 @@ main (int argc, char *argv[])
   sinkApps.Start (Seconds (1.0));
   sinkApps.Stop (Seconds (sim_time));
 
-  //static const uint32_t arr1[] = {0,1,8,2,3}; 
-  static const uint32_t arr1[] = {0,1,2,9,3,4,12,15};
+//  static const uint32_t arr1[] = {0, 0,1,2,3,4,8,11,18,11,14,15};
+  static const uint32_t arr1[] = {0, 0,1,2,9,3,4,12,18,15,16};
   
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   uint32_t flow_id = 1; 

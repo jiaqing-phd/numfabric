@@ -159,7 +159,7 @@ Ipv4L3Protocol::updateAllRates(void)
   {
     updateRate(it->first);
   }
-  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
+  //Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
 
 
@@ -1753,8 +1753,6 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
   TcpHeader tcp_header;
   p->RemoveHeader(tcp_header);
   if(p->GetSize() > 0) {
-    //NS_LOG_UNCOND("LocalDeliver "<<Simulator::Now().GetSeconds()<<" node id "<<m_node->GetId()<<" Setting "<<pre_set_rate<<" in TCP Header"<<" destination "<<ipHeader.GetDestination());
-    
     TcpHeader tcph;
     uint16_t sourcePort, destPort;  
     Ipv4Address source = ipHeader.GetSource();

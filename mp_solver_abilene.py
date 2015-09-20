@@ -315,12 +315,12 @@ def main_solver():
     # more complex with bottlenecks
     ###################################################################
     # SC: 10 flows
-    w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
+    w = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
     #
     ## SC: 14 links 
     c = np.array([[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]).T
 
-    num_flows = 10
+    num_flows = 11
     num_links = 14
     A = np.zeros((num_flows,num_links))
    
@@ -365,6 +365,9 @@ def main_solver():
     A[9,8] = 1
     A[9,9] = 1
     A[9,10] = 1
+
+    A[10,5] = 1
+    A[10,6] = 1
    
     print(A)
 

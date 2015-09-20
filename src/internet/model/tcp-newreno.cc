@@ -86,9 +86,9 @@ TcpNewReno::TcpNewReno (void)
 void
 TcpNewReno::init_values(void)
 {
-  d0 = 0.000200; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
+  d0 = 0.00100; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
   //dt = 0.000048;
-  dt = 0.000024;
+  dt = 0.000048;
   highest_ack_recvd = 0;
   beta = 1.0/32.0;
   bytes_with_ecn = total_bytes_acked = 0.0;
@@ -189,11 +189,11 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
       m_cWnd += m_segmentSize;
       NS_LOG_INFO ("In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh);
-      //std::cout<<"In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<std::endl;
+//      std::cout<<"In SlowStart, updated to cwnd " << m_cWnd << " ssthresh " << m_ssThresh<<std::endl;
     }
   else
     {
-        //std::cout<<" adjusting window -- dctcp "<<std::endl; 
+//        std::cout<<" adjusting window -- dctcp xfabric "<<m_xfabric<<" strawman "<<m_strawmancc<<std::endl; 
         // Congestion avoidance mode, increase by (segSize*segSize)/cwnd. (RFC2581, sec.3.1)
         // To increase cwnd for one segSize per RTT, it should be (ackBytes*segSize)/cwnd
         double adder = static_cast<double> (m_segmentSize * m_segmentSize) / m_cWnd.Get ();
@@ -237,14 +237,15 @@ TcpNewReno::getFlowIdealRate(std::string flowkey)
 void
 TcpNewReno::setdctcp(bool dctcp_value)
 {
-  NS_LOG_LOGIC("unknown flow setting m_dctcp "<<dctcp_value);
+//  std::cout<<"unknown flow setting m_dctcp "<<dctcp_value<<" node "<<m_node->GetId()<<std::endl;
   m_dctcp = dctcp_value;
 }
 void
 TcpNewReno::setxfabric(bool xfabric_value)
 {
-  NS_LOG_LOGIC("unknown flow setting m_xfabric "<<xfabric_value);
-  m_xfabric = xfabric_value;
+// std::cout<<"unknown flow setting m_xfabric "<<xfabric_value<<" node "<<m_node->GetId()<<std::endl;
+ m_xfabric = xfabric_value;
+
 }
 
 uint32_t
@@ -286,8 +287,10 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   uint32_t bytes_acked = getBytesAcked(tcpHeader);
   // get the ipv4 object 
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+  //uint32_t fid = ipv4->flowids[flowkey];
 
   if(m_strawmancc || m_dctcp) { // we want to update rates in case of both strawman and dctcp
+//    std::cout<<"either true.. strawman"<<m_strawmancc<<" dctcp "<<m_dctcp<<" xfabric "<<m_xfabric<<" node "<<m_node->GetId()<<std::endl;
     ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
     return;
   }
@@ -295,7 +298,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
   if(m_xfabric) {
 
-    //std::cout<<Simulator::Now().GetSeconds()<<" m_xfabric "<<m_xfabric<<" strawman "<<m_strawmancc<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
+//    std::cout<<Simulator::Now().GetSeconds()<<" m_xfabric "<<m_xfabric<<" strawman "<<m_strawmancc<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
 
 
     double window_spread_factor = 10.0;
@@ -309,8 +312,11 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     bool scheme3 = false;
     double ONENANO = 1000000000.0;
 
+/*    double rtt_rate = m_cWnd * 8.0 * ONENANO /lastRtt_copy.GetNanoSeconds();
+    std::cout<<"rtt_rate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rtt_rate<<" "<<" "<<lastRtt_copy.GetNanoSeconds()<<" "<<m_cWnd*8.0<<std::endl;*/
+
     if(lastRtt_copy.GetNanoSeconds() / ONENANO < d0) {
-      //std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
       d0 = lastRtt_copy.GetNanoSeconds() / ONENANO;
     }
 
@@ -405,6 +411,8 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 {
 
   if(m_xfabric || m_strawmancc) {
+//    std::cout<<" not processing ecn.. m_xfabric "<<m_xfabric<<" strawman "<<m_strawmancc<<" node "<<m_node->GetId()<<std::endl;
+
     return;
   }
   
@@ -462,7 +470,7 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
           ecn_highest = m_highTxMark;
           //bytes_with_ecn = 0.0;
           //total_bytes_acked = 0.0;
-          //std::cout<<" m_dctcp -- processing ECN "<<std::endl;
+//          std::cout<<" m_dctcp -- processing ECN "<<std::endl;
         
       } else {
   //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());

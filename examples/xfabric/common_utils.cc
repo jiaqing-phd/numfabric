@@ -138,7 +138,7 @@ CheckQueueSize (Ptr<Queue> queue)
   }
 
   
-    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+//    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
     if(Simulator::Now().GetSeconds() >= sim_time+1.0) {
       Simulator::Stop();
     }

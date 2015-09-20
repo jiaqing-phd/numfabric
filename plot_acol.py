@@ -12,24 +12,24 @@ y = {}
 for line in f:
   l1 = line.rstrip();
   xy = l1.split(' ');
-  if(xy[0]=="control"):
-    qid = xy[8]
+  if(xy[0]=="rtt_rate"):
+    qid = xy[2]
     if(qid not in x):
       x[qid] = []
       y[qid] = []
 
-    x[qid].append(float(xy[6]))
-    y[qid].append(xy[7]);
+    x[qid].append(float(xy[1]))
+    y[qid].append(float(xy[3]));
 
 plt.figure(1)
-plt.title("Waiting times of control packets")
+plt.title("RTT BASED RATES")
 
 for key in x:
   plt.plot(x[key], y[key], label=key) 
 plt.legend(loc='upper right')
 #plt.plot(xaxis, x, 'r') 
 plt.xlabel('Time in seconds')
-plt.ylabel('nanoseconds')
-plt.savefig('%s.jpg' %"control_packets_waits")
+plt.ylabel('Bits per second')
+plt.savefig('%s.jpg' %"rtt_based_rates")
 
 plt.show()

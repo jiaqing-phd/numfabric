@@ -63,7 +63,7 @@ uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t global_flowid = 1;
 uint32_t num_flows = 0;
-uint32_t min_flows=3, max_flows_allowed=11;
+uint32_t min_flows=3, max_flows_allowed=9;
 
 static void
 CwndChange (Ptr<OutputStreamWrapper> stream, uint32_t oldCwnd, uint32_t newCwnd)
@@ -236,8 +236,8 @@ MyApp::StopApplication (void)
       m_socket->Close ();
     }
   std::cout<<"flow_stop "<<m_fid<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" at "<<(Simulator::Now()).GetNanoSeconds()<<" "<<m_maxBytes<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" weight "<<m_weight<<std::endl;
-  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> (srcNode->GetObject<Ipv4> ());
-  ipv4->addToDropList(m_fid);
+ // Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> (srcNode->GetObject<Ipv4> ());
+//  ipv4->addToDropList(m_fid);
 }
 
 void
@@ -281,6 +281,9 @@ MyApp::ScheduleTx (void)
     } else {
       StopApplication();
     }
+  if(Simulator::Now().GetSeconds() >= sim_time) {
+    Simulator::Stop();
+  }
 }
 
 
@@ -295,10 +298,7 @@ CheckQueueSize (Ptr<Queue> queue)
   std::cout<<"QueueStats "<<StaticCast<PrioQueue> (queue)->GetLinkIDString()<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" 1.0 "<<qPrice<<std::endl;
 
   // check queue size every 1/1000 of a second
-  Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
-  if(Simulator::Now().GetSeconds() >= sim_time) {
-    Simulator::Stop();
-  }
+//  Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
 }
 
 uint32_t getLinkid(uint32_t n1, uint32_t n2)
@@ -506,7 +506,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 {
 
   Ptr<MyApp> SendingApp = sApp;
-  if(sApp == NULL) {
+  //if(sApp == NULL) {
     port++;
     Ptr<Ipv4L3Protocol> sink_node_ipv4 = StaticCast<Ipv4L3Protocol> ((clientNodes.Get(sinkN))->GetObject<Ipv4> ());
     Ipv4Address remoteIp = sink_node_ipv4->GetAddress (1,0).GetLocal();
@@ -537,9 +537,9 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 
     ipv4->setFlow(s, flow_id, flow_size, rand_weight);
     sink_node_ipv4->setFlow(s, flow_id, flow_size, rand_weight);
-  } else {
-    sApp->Setup();
-  }
+//  } else {
+ //   sApp->Setup();
+ // }
       
   //std::cout<<"FLOW_INFO source_node "<<(clientNodes.Get(sourceN))->GetId()<<" sink_node "<<(clientNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<port<<" flow_size "<<flow_size<<" "<<rand_weight<<std::endl;
   //flow_id++;
@@ -590,35 +590,32 @@ int run_num = 0;
 
 void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknodes, NodeContainer clientNodes)
 {
-
-  while(true) 
-  {
+  
+//  for (uint32_t i=1; i<max_flows; i++)
+    while(true) 
+    {
      UniformVariable urand;
-     //uint32_t i = urand.GetInteger(0, max_flows-1);
-//     uint32_t i = urand.GetInteger(1, max_flows);
-    uint32_t i = num_flows+1;
-    std::cout<<Simulator::Now()<<"start_a_flow "<<i<<std::endl;
+     uint32_t i = urand.GetInteger(1, max_flows-1);
+     std::cout<<Simulator::Now()<<"start_a_flow "<<i<<std::endl;
      if(flow_started[i] == 0) { 
-      uint32_t source_node = sourcenodes[i];
-      uint32_t sink_node = sinknodes[i];
+       uint32_t source_node = sourcenodes[i];
+       uint32_t sink_node = sinknodes[i];
 
-      double flow_size = SOME_LARGE_VALUE;
-      double flow_start = Simulator::Now().GetSeconds();
-      double rand_weight = 1.0;
-      Ptr<MyApp> sendingApp = startFlow(source_node, sink_node, flow_start, flow_size, i, clientNodes, rand_weight, sending_apps[i]);
+       double flow_size = SOME_LARGE_VALUE;
+       double flow_start = Simulator::Now().GetSeconds();
+       double rand_weight = 1.0;
+       Ptr<MyApp> sendingApp = startFlow(source_node, sink_node, flow_start, flow_size, i, clientNodes, rand_weight, sending_apps[i]);
 
-      if(sending_apps[i] == NULL) {
-        sending_apps[i] = sendingApp;
-      }
+       if(sending_apps[i] == NULL) {
+         sending_apps[i] = sendingApp;
+       }
         
-      flow_started[i] = 1;
-      std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
-      num_flows++;
-      break;
-     } else {
-      break;
+       flow_started[i] = 1;
+       std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
+       num_flows++;
+       break;
      }
-  }
+   }
 }
 
 
@@ -626,7 +623,7 @@ void stop_a_flow(void)
 {
   while (true) {
     UniformVariable urand;
-    uint32_t i = urand.GetInteger(1, max_flows);
+    uint32_t i = urand.GetInteger(1, max_flows-1);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
     if(flow_started[i] == 1) {
       sending_apps[i]->StopApplication();
@@ -641,12 +638,10 @@ void stop_a_flow(void)
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes, NodeContainer clientNodes)
 {
-  min_flows = 10;
   std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<" nf "<<num_flows<<" maxf "<<max_flows_allowed<<" minf "<<min_flows<<std::endl;
   if(num_flows >= max_flows_allowed) {
     stop_a_flow();
   } else if(num_flows <= min_flows) {
-  if(num_flows < min_flows)
     start_a_flow(sourcenodes, sinknodes, clientNodes);
   } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
@@ -657,7 +652,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_a_flow();
       }
   } 
-  Simulator::Schedule (Seconds (0.01), &startflowwrapper, sourcenodes, sinknodes, clientNodes);
+  Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes);
 
 }
 /*
@@ -876,7 +871,7 @@ main (int argc, char *argv[])
   // Queue, Channel and link characteristics
   NS_LOG_INFO ("Create channels.");
   PointToPointHelper p2paccess;
-  p2paccess.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
+  p2paccess.SetDeviceAttribute ("DataRate", StringValue ("60Gbps"));
   p2paccess.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(link_delay)));
   p2paccess.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"), "DataRate", StringValue(link_rate_string));
 
@@ -1091,10 +1086,10 @@ main (int argc, char *argv[])
   // more complex
   //static const uint32_t arr[] = {6,17,9,6,5,12,12,17,13,17,16};
   // orig
-  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,2,10, 11};
+  static const uint32_t arr1[] = {0, 0,4,1,10,19,2,6,9,2,10, 11};
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   
-  static const uint32_t arr[] = {10,12,14,18,16,8,17,17,19,20,14}; 
+  static const uint32_t arr[] = {0, 10,12,14,18,16,8,17,17,19,20,14}; 
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
   sinkApps.Start (Seconds (1.0));

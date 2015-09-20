@@ -34,8 +34,16 @@ double gamma1_value = 10.0;  //the weight to the rate term
 
 
 // All 3 variables for DGD price calculation
-double dgd_gamma = 0.000000001; 
+//
+// 
+/*double dgd_gamma = 0.000000001;
 double dgd_alpha = 3*1e-10;
+*/
+
+double multiplier = 0.0000000001;
+double dgd_gamma = 1.0 * multiplier; 
+double dgd_alpha = 0.3 * multiplier;
+
 double target_queue = 30000.0;
 
 
@@ -44,7 +52,7 @@ double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.01;
+float sampling_interval = 0.0001;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;

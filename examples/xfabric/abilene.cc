@@ -525,7 +525,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 //const uint32_t max_flows=5;
 //const uint32_t max_flows=10;
 // more complex
-const uint32_t max_flows=10;
+const uint32_t max_flows=11;
 uint32_t flow_started[max_flows] = {0};
 Ptr<MyApp> sending_apps[max_flows];
 uint32_t global_flowid = 1;
@@ -537,7 +537,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
     std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<std::endl;
 
     for(uint32_t i=0; i<max_flows; i++) {
-//    for(uint32_t i=0; i<2; i++) {
+//    for(uint32_t i=0; i<2; i++) 
         uint32_t source_node = sourcenodes[i];
         uint32_t sink_node = sinknodes[i];
 
@@ -661,7 +661,7 @@ main (int argc, char *argv[])
   uint32_t ssthresh = initcwnd * max_segment_size;
 
   if(strawmancc) {
-    initcwnd = initcwnd*4.0;
+    initcwnd = initcwnd*10.0;
   }
 
   NS_LOG_UNCOND("Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd);  
@@ -678,14 +678,13 @@ main (int argc, char *argv[])
   Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (send_buf_size));
   // Disable delayed ack
   Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
-  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(false));
-  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(true));
+  Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
+  Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
 
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime", TimeValue(Seconds(price_update_time)));
   Config::SetDefault("ns3::PrioQueue::guardTime", TimeValue(Seconds(guard_time)));
 
-  Config::SetDefault("ns3::PrioQueue::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue",BooleanValue(m_pfabric));
 
   Config::SetDefault("ns3::PrioQueue::dgd_alpha", DoubleValue(dgd_alpha));
@@ -704,11 +703,19 @@ main (int argc, char *argv[])
 
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   NS_LOG_UNCOND("Set max_ecn_thresh at "<<max_ecn_thresh);
+  if(!xfabric) {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
+  } else {
+    Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
+    Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
+  }
 
-  Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   Config::SetDefault("ns3::Ipv4L3Protocol::m_wfq", BooleanValue(wfq));
   Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(m_pfabric));
+  
+  Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
+  Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(!strawmancc));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
@@ -743,7 +750,7 @@ main (int argc, char *argv[])
   p2paccess.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"), "DataRate", StringValue(link_rate_string));
 
   PointToPointHelper p2pbottleneck;
-  p2pbottleneck.SetDeviceAttribute ("DataRate", StringValue (link_rate_string));
+  p2pbottleneck.SetDeviceAttribute ("DataRate", StringValue ("60Gbps"));
   p2pbottleneck.SetChannelAttribute ("Delay", TimeValue(MicroSeconds(link_delay)));
   p2pbottleneck.SetQueue("ns3::PrioQueue", "pFabric", StringValue("1"),"DataRate", StringValue(link_rate_string));
 
@@ -953,10 +960,10 @@ main (int argc, char *argv[])
   // more complex
   //static const uint32_t arr[] = {6,17,9,6,5,12,12,17,13,17,16};
   // orig
-  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,2,10};
+  static const uint32_t arr1[] = {0,4,1,10,19,2,6,9,2,10, 11};
   std::vector<uint32_t> sourcenodes (arr1, arr1 + sizeof(arr1) / sizeof(arr1[0]) );
   
-  static const uint32_t arr[] = {10,12,14,18,16,8,17,17,19,20}; 
+  static const uint32_t arr[] = {10,12,14,18,16,8,17,17,19,20,14}; 
   std::vector<uint32_t> sinknodes (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
   sinkApps.Start (Seconds (1.0));
