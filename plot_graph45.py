@@ -5,56 +5,61 @@ matplotlib.use('Agg');
 del matplotlib;
 import matplotlib.pyplot as plt;
 
-f_1 = sys.argv[1];
-out_file = sys.argv[2];
+min_file = sys.argv[1];
+max_file = sys.argv[2];
+min_plot_name = sys.argv[3];
+max_plot_name = sys.argv[4];
 
 alphas = []
 min_rate = []
+max_rate = []
 
-f = open(f_1, 'r')
+# how data looks:
+# max_throughput  0.1 42979.5 54329.1 50098.2266667   2263.34489211
 
-MIN_FLAG= False
-AVG_FLAG= False
+with open(min_file, 'r') as f:
+    for line in f:
+      l1 = line.strip();
+      xy = l1.split();
 
-for line in f:
-  l1 = line.strip();
-  xy = l1.split();
-  if(xy[0] == "alpha"):
-    alpha_val = float(xy[1])  
-    alphas.append(alpha_val)
-    print(xy,alpha_val)
+      avg_col = 4
 
-  if(xy[0] == "min"):
-    rate = float(xy[1])/1000.0  
-    min_rate.append(rate)
-    print(xy, rate)
-    
-    MIN_FLAG = True
+      rate = float(xy[avg_col])/1000.0  
+      min_rate.append(rate)
+      print(xy, rate)
 
-  if(xy[0] == "average"):
-    rate = float(xy[1])/1000.0  
-    min_rate.append(rate)
-    print(xy, rate)
+    f.close()
 
-    AVG_FLAG = True
+with open(max_file, 'r') as f:
+    for line in f:
+      l1 = line.strip();
+      xy = l1.split();
 
-f.close()
+      alpha_val = float(xy[1])  
+      alphas.append(alpha_val)
+      print(xy,alpha_val)
 
-if(MIN_FLAG == True):
-    plt.figure(1)
-#    plt.title("Minimum Rate")
-    plt.plot(alphas, min_rate, '-bo')
-    plt.xlabel('Alpha')
-    plt.ylabel('Minimum Rate (Gbps)')
-    plt.legend(loc='lower right')
-    plt.savefig(out_file)
+      avg_col = 4
+
+      rate = float(xy[avg_col])/1000.0  
+      max_rate.append(rate)
+      print(xy, rate)
+
+    f.close()
 
 
-if(AVG_FLAG == True):
-    plt.figure(2)
-#    plt.title("Maximum Rate")
-    plt.plot(alphas, min_rate, '-bo')
-    plt.xlabel('Alpha')
-    plt.ylabel('Total rate (Gbps)')
-    plt.legend(loc='lower right')
-    plt.savefig(out_file)
+print(alphas, max_rate, min_rate)
+
+plt.figure(1)
+plt.plot(alphas, max_rate, '-bo')
+plt.xlabel('Alpha')
+plt.ylabel('Total rate (Gbps)')
+plt.legend(loc='lower right')
+plt.savefig(max_plot_name)
+
+plt.figure(2)
+plt.plot(alphas, min_rate, '-bo')
+plt.xlabel('Alpha')
+plt.ylabel('Minimum rate (Gbps)')
+plt.legend(loc='lower right')
+plt.savefig(min_plot_name)
