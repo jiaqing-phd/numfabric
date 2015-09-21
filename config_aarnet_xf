@@ -17,5 +17,5 @@ host_compensate=false
 fct_alpha=0.1
 #now fct related
 #pfabric_util=false
-util_method=1
+util_method=3
 #nNodes=16

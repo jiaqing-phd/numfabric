@@ -591,11 +591,11 @@ int run_num = 0;
 void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknodes, NodeContainer clientNodes)
 {
   
-//  for (uint32_t i=1; i<max_flows; i++) uncomment this
-    while(true) 
+    for (uint32_t i=1; i<max_flows; i++)
+    // while(true) 
     {
      UniformVariable urand;
-     uint32_t i = urand.GetInteger(1, max_flows-1);
+     // uint32_t i = urand.GetInteger(1, max_flows-1);
      std::cout<<Simulator::Now()<<"start_a_flow "<<i<<std::endl;
      if(flow_started[i] == 0) { 
        uint32_t source_node = sourcenodes[i];
@@ -613,7 +613,7 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
        flow_started[i] = 1;
        std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
        num_flows++;
-       break; //comment this
+       // break; //comment this
      }
    }
 }
@@ -647,8 +647,10 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
   std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<" nf "<<num_flows<<" maxf "<<max_flows_allowed<<" minf "<<min_flows<<std::endl;
   if(num_flows >= max_flows_allowed) {
     stop_a_flow(sourcenodes, sinknodes, clientNodes);
+    std::cout<<" STOP "<<Simulator::Now().GetSeconds()<<std::endl;
   } else if(num_flows <= min_flows) {
     start_a_flow(sourcenodes, sinknodes, clientNodes);
+    std::cout<<" START "<<Simulator::Now().GetSeconds()<<std::endl;
   } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
      double rand_num = uv->GetValue(0.0, 1.0);
@@ -657,8 +659,11 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       } else {
         stop_a_flow(sourcenodes, sinknodes, clientNodes);
       }
+
+    std::cout<<" ENTERED UV "<<Simulator::Now().GetSeconds()<<std::endl;
+
   } 
-  Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes); //comment this
+  // Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes); //comment this
 
 }
 /*
