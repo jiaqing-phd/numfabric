@@ -1,15 +1,18 @@
 base_dir=/cluster/u/csandeep/scratch/knagaraj/FINAL_DATA/20150909
 base_dir=$PWD/xfabric_util2_test
-base_dir=ABILENE_xfabric_util3_test
+base_dir=ss_xf2
 
 results_file=$base_dir.results.txt
 min_results=$base_dir.min.results.txt
 collated_results_min=$base_dir.min.collated.txt
 collated_results_max=$base_dir.max.collated.txt
-
 rm $results_file
 rm $min_results
-rm $collated_results
+rm $collated_results_min
+rm $collated_results_max
+
+min_plot=min.plot.jpg
+max_plot=max.plot.jpg
 
 for alpha in 0.1 0.125 0.25 0.5 1.0 2.0 4.0 8.0; do
 	base_file=$base_dir'_'$alpha.out
@@ -27,5 +30,6 @@ for alpha in 0.1 0.125 0.25 0.5 1.0 2.0 4.0 8.0; do
     cat $base_file | grep "DestRate" | awk '{OFS="\t"; if($4 > 1.15) print $1, $2, $3, $4, $5}' | cut -f5 | ave stdin | grep "min" >> $min_results
 
     python get_data_graph45.py $base_file $alpha $collated_results_min $collated_results_max 
-
 done
+
+python plot_graph45.py $collated_results_min $collated_results_max $min_plot $max_plot
