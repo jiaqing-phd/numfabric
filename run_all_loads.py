@@ -26,7 +26,7 @@ for line in f:
 
 orig_prefix=arguments["prefix"]
 #for load_val in (0.6, 0.8):
-for load_val in (0.8, 0.7):
+for load_val in (0.2, 0.4, 0.6, 0.8):
     arguments["load"] = str(load_val)
     prefix_str=orig_prefix
     prefix_str=prefix_str+"_"+arguments["load"]
@@ -36,7 +36,7 @@ for load_val in (0.8, 0.7):
     for arg_key in arguments:
      final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
 
-    cmd_line="./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err"
+    cmd_line="./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
     print(cmd_line)
     subprocess.call(cmd_line, shell="False")
 
