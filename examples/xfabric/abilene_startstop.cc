@@ -268,7 +268,7 @@ MyApp::SendPacket (void)
 void
 MyApp::ScheduleTx (void)
 {
-  //if (m_running)
+  if (m_running) {
 //  if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
 //    {
 //      std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" sent bytes "<<m_totBytes<<" m_maxBytes "<<m_maxBytes<<std::endl;
@@ -278,6 +278,7 @@ MyApp::ScheduleTx (void)
 //      Time tNext (Seconds (next_time));
       Time tNext (Seconds (m_packetSize * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
+	}
  //   } else {
 //      StopApplication();
  //   }
@@ -456,7 +457,7 @@ void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t f
 
   NS_LOG_UNCOND("sink apps installed on node "<<(clientNodes.Get(sinkN))->GetId());
   Ptr<PacketSink> pSink = StaticCast <PacketSink> (sinkAppContainer.Get(0));
-  pSink->SetAttribute("numBytes", UintegerValue(numBytes));
+  pSink->SetAttribute("numBytes", UintegerValue(0));
   pSink->SetAttribute("flowid", UintegerValue(flow_id));
   pSink->SetAttribute("nodeid", UintegerValue(clientNodes.Get(sinkN)->GetId()));
   pSink->SetAttribute("peernodeid", UintegerValue(clientNodes.Get(sourceN)->GetId()));
@@ -606,9 +607,7 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
        double rand_weight = 1.0;
        Ptr<MyApp> sendingApp = startFlow(source_node, sink_node, flow_start, flow_size, i, clientNodes, rand_weight, sending_apps[i]);
 
-       if(sending_apps[i] == NULL) {
-         sending_apps[i] = sendingApp;
-       }
+       sending_apps[i] = sendingApp;
         
        flow_started[i] = 1;
        std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
