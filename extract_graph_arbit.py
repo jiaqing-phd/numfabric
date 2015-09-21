@@ -8,10 +8,10 @@ flow_start = "flow_start"
 log_file = sys.argv[1]
 method = sys.argv[2]
 fid_index = 1
-src_index = 2
-dst_index = 3
-fstart_index = 5
-fsize_index = 6
+src_index = 6
+dst_index = 7
+fstart_index = 3
+fsize_index = 5
 
 num_flow_index = 1
 num_port_index = 1
@@ -37,7 +37,7 @@ for line in fh:
     if(elems[0] == "num_ports"):
       numports = int(elems[num_port_index])
       sim.init_custom(numports, method)
-    if(elems[0] == "flow_start"): #or (elems[0] == "flow_stop")):
+    if(elems[0] == "flow_start" and len(elems) > 10): #or (elems[0] == "flow_stop")):
       # new flow, we need to insert into our matrix 
       flow_id = int(elems[fid_index])
       src_id = int(elems[src_index]) -1

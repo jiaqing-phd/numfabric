@@ -44,7 +44,7 @@ double multiplier = 0.0000000001;
 double dgd_gamma = 1.0 * multiplier; 
 double dgd_alpha = 0.3 * multiplier;
 
-double target_queue = 60000.0;
+double target_queue = 30000.0;
 
 
 double measurement_starttime = 1.2;
@@ -98,6 +98,9 @@ bool pfabric_util = false;
 uint32_t N = 4; //number of nodes in the star
 uint32_t flows_per_host = 1;
 std::string application_datarate = "10Gbps";
+std::string link_rate_string = "10Gbps";
+double ONEG = 1000000000.0;
+double link_rate = ONEG * 10.0;
 
 bool pkt_tag = true;
 
@@ -114,10 +117,7 @@ NodeContainer sourceNodes;
 NodeContainer sinkNodes;
 NodeContainer clientNodes;
 
-double ONEG = 1000000000.0;
-double link_rate = ONEG * 10.0;
 //std::string link_rate_string = "10Gbps";
-std::string link_rate_string = "10Gbps";
 
 double load = 0.05;
 double controller_estimated_unknown_load = 0.05;

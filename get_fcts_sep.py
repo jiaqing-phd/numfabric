@@ -53,7 +53,7 @@ def get_fcts(fname):
       #  print("UnknownFlow %d Size %d bytes finished in %f normalized %f" %(key, fsizes[key], ftime, ftime/fsizes[key]))
       fct[key] = ftime
     else:
-      print("flow %d started at %f and did not stop" %(key, fstarts[key]))
+      print("flow %d started at %f size %f did not stop" %(key, fstarts[key], fsizes[fid]))
   return fct 
 
 
@@ -63,6 +63,7 @@ fcts = get_fcts(sys.argv[1])
 fcts_array = []
 for key in fcts:
   fcts_array.append(fcts[key])
+  print("%d %f" %(key,fcts[key]))
 print("%f "%np.mean(fcts_array))
 
 #  print("%f %f" %(fcts[key], ideal[key]))

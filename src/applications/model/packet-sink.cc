@@ -241,7 +241,7 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
           // Flow completed.. Must print that out and exit
           if(!flow_finished) {
             GetTotalRx();
-            //StopApplication();
+            StopApplication();
           }
         } 
       //} 

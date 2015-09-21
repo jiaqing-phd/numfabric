@@ -13,8 +13,8 @@ smoothing = 0.0
 tol = 1e-3
 epsilon = sys.float_info.epsilon
 ONEMILLION=1000000
-capacity = 1000000000
-UMAX_INT = 9999999999
+capacity = 10000000000
+UMAX_INT = 9999999999999
 ################################################################
   
 class Flow:
@@ -212,6 +212,7 @@ class UtilMax:
         self.x = np.zeros((self.num_flows,1))
         rem_flows = np.array(range(self.num_flows))
         rem_cap = np.array(self.c, copy=True)   
+        print("number of flows %d" %self.num_flows)
         while rem_flows.size != 0:
             link_weights = np.dot(self.routes.T, weights)
             with np.errstate(divide='ignore', invalid='ignore'):
@@ -230,7 +231,7 @@ class UtilMax:
         max_iterations = 1000
         good = 0
         conseq_good = 50 
-        if(self.method == "mp"):
+        if(self.method == "mp" and len(self.x)>0):
             while(self.converged == False and converg_it < max_iterations):
               self.update_rates(np.dot(self.routes, self.pr), beta=0.0)
               self.update_prices2(self.x, beta=0.5)
@@ -382,7 +383,7 @@ class Simulation:
 
     for f in self.Flows:
       if(f.flowid == flowid):
-        print("removing flow with index %d realid %d at time %f: time_taken %f flow_size %d flow_start %d " %(fidx, f.flowid, self.it/ONEMILLION, (self.it-f.starttime)/ONEMILLION, f.flowsize, f.starttime/ONEMILLION))
+        print("removing flow with index %d realid %d at time %f: time_taken %f flow_size %d flow_start %f " %(fidx, f.flowid, self.it/ONEMILLION, (self.it-f.starttime)*1000.0/ONEMILLION, f.flowsize, f.starttime/ONEMILLION))
         self.Flows.remove(f)
 
     (routes, ratios, data_sent, time, maxdata,w, num_flows) = self.umax_mp.get_snapshot()

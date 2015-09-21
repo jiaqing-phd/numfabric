@@ -37,12 +37,13 @@ for i in range(0, (len(sys.argv)-2)):
   for line in f[i]:
     l1 = line.rstrip();
     xy = l1.split(' ');
-    x.append(float(xy[0]));
+    if(float(xy[0]) > 10.0):
+      x.append(float(xy[0]));
   listoflists.append(x)
 
 
 plt.figure(1)
-plt.title("CDF of convergence times")
+plt.title("CDF of error margins (min 10)")
 
 for i in range(0, (len(sys.argv)-2)):
    y = cyret1(listoflists[i])
