@@ -19,4 +19,4 @@ fct_alpha=0.1
 #now fct related
 pfabric_util=true
 util_method=2
-nNodes=16
+nNodes=144

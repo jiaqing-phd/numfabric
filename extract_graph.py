@@ -63,11 +63,11 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
       else:
        averaged[flowid] = rate
       times[flowid] = time 
-      if(flowid in ret_rates and flowid in averaged): 
-        print("flowid %d ret_rates %f rate %f time %f" %(flowid, ret_rates[flowid],rate, time)) 
+      #if(flowid in ret_rates and flowid in averaged): 
+        #print("flowid %d ret_rates %f rate %f time %f" %(flowid, ret_rates[flowid],rate, time)) 
     
       if((flowid in ret_rates) and (close_enough(rate, ret_rates[flowid])) and (flow_converged[flowid] == False)):
-#        print("checking if %f is closeeniugh to %f for flow %d" %(rate,ret_rates[flowid],flowid))
+        print("%f checking if %f is closeeniugh to %f for flow %d" %(time, rate,ret_rates[flowid],flowid))
         good[flowid] += 1
       else:
         good[flowid] = 0
@@ -75,7 +75,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
       if(good[flowid] == enough_good):
         converged_time[flowid] = time - (enough_good-1)*iter_value - start_time
         flow_converged[flowid] = True
-        print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid]))
+        print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
 def getclass(self, srcid, dstid):
@@ -111,6 +111,8 @@ def get_optimal_rates(log_file, method, alpha, g):
             #  sim.init_custom(numports, method)
             if((elems[0] == "flow_start") or (elems[0] == "flow_stop")):
               # new flow, we need to insert into our matrix 
+              print("parsing line")
+              print(elems)
               flow_id = int(elems[fid_index])
               src_id = int(elems[src_index]) 
               dst_id = int(elems[dst_index])
@@ -137,15 +139,15 @@ def get_optimal_rates(log_file, method, alpha, g):
               for key in opt_rates:
                 if(key not in converge_times):
                   print("converge_times 0.05 - not found flowid %d" %key)
-                  max_conv=0.05
+                  max_conv=0.0
                   con = 0
 
-#              if(con == 1):
               for key in converge_times:
                  print("converge_times: %f %d" %(converge_times[key], key))
-                 if(converge_times[key] > max_conv):
+                 if(converge_times[key] > max_conv and converge_times[key] != 0.05):
                     max_conv=converge_times[key]
-              print("converge_times_maximum %f" %max_conv)
+              if(con == 1):
+                  print("converge_times_maximum %f" %max_conv)
               print("##########################################")
                 #f_matrix[flow_id, src_id] = 1
                 #f_matrix[flow_id, dst_id] = 1
