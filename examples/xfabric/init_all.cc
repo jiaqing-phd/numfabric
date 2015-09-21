@@ -52,7 +52,7 @@ double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.0001;
+float sampling_interval = 0.01;
 uint32_t pkt_size = 1454;
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;

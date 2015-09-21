@@ -509,6 +509,7 @@ class Simulation:
 
   def addFlow(self, f):
     #print("flow being inserted.. flow id %d classid %d "%(f.flowid, f.classid))
+    print("trying to add flow %d" %f.flowid)
     new_row = np.zeros((1, self.numports))
     print("addFlow src %d dst %d" %(f.srcid, f.dstid))
     new_row = np.asmatrix(paths[(f.srcid, f.dstid)])
@@ -519,6 +520,7 @@ class Simulation:
 
   def removeFlow(self, f):
    # flow_index = self.reverse_map[f.flowid]
+    print("trying to remove flow %d" %f.flowid)
     flow_index = -1
     index = 0
     for fid in self.real_id:

@@ -269,8 +269,8 @@ void
 MyApp::ScheduleTx (void)
 {
   //if (m_running)
-  if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
-    {
+//  if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
+//    {
 //      std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" sent bytes "<<m_totBytes<<" m_maxBytes "<<m_maxBytes<<std::endl;
       //Time tNext (Seconds (m_packetSize * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       // We will schedule the next packet when the random number generator says we can
@@ -278,9 +278,9 @@ MyApp::ScheduleTx (void)
 //      Time tNext (Seconds (next_time));
       Time tNext (Seconds (m_packetSize * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
-    } else {
-      StopApplication();
-    }
+ //   } else {
+//      StopApplication();
+ //   }
   if(Simulator::Now().GetSeconds() >= sim_time) {
     Simulator::Stop();
   }
@@ -402,7 +402,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate << " "<<prio<<" N "<< N << std::endl;
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << rate << " "<<prio<<" N "<< N << "NID "<<nid<< std::endl;
          current_rate += rate;
       }
 
@@ -505,7 +505,7 @@ void change_weight(uint32_t sourceN, uint32_t sinkN, NodeContainer clientNodes, 
 Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32_t flow_size, uint32_t flow_id, NodeContainer clientNodes, uint32_t rand_weight, Ptr<MyApp> sApp)
 {
 
-  Ptr<MyApp> SendingApp = sApp;
+    Ptr<MyApp> SendingApp = sApp;
   //if(sApp == NULL) {
     port++;
     Ptr<Ipv4L3Protocol> sink_node_ipv4 = StaticCast<Ipv4L3Protocol> ((clientNodes.Get(sinkN))->GetObject<Ipv4> ());
@@ -591,11 +591,11 @@ int run_num = 0;
 void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknodes, NodeContainer clientNodes)
 {
   
-//  for (uint32_t i=1; i<max_flows; i++)
-    while(true) 
+    for (uint32_t i=1; i<max_flows; i++)
+    // while(true) 
     {
      UniformVariable urand;
-     uint32_t i = urand.GetInteger(1, max_flows-1);
+     // uint32_t i = urand.GetInteger(1, max_flows-1);
      std::cout<<Simulator::Now()<<"start_a_flow "<<i<<std::endl;
      if(flow_started[i] == 0) { 
        uint32_t source_node = sourcenodes[i];
@@ -613,13 +613,13 @@ void start_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknod
        flow_started[i] = 1;
        std::cout<<Simulator::Now().GetSeconds()<<" starting flow "<<i<<" source "<<source_node<<" sink_node "<<sink_node<<std::endl;
        num_flows++;
-       break;
+       // break; //comment this
      }
    }
 }
 
 
-void stop_a_flow(void)
+void stop_a_flow(std::vector<uint32_t>sourcenodes, std::vector<uint32_t>sinknodes, NodeContainer clientNodes)
 {
   while (true) {
     UniformVariable urand;
@@ -631,6 +631,12 @@ void stop_a_flow(void)
       std::cout<<Simulator::Now().GetSeconds()<<" stopping flow "<<i<<std::endl;
       num_flows--;
       flow_started[i] = 0;
+      uint32_t source_node = sourcenodes[i];
+      uint32_t sink_node = sinknodes[i];
+      Ptr<Ipv4L3Protocol> sink_node_ipv4 = StaticCast<Ipv4L3Protocol> ((clientNodes.Get(sink_node))->GetObject<Ipv4> ());
+      Ptr<Ipv4L3Protocol> src_node_ipv4 = StaticCast<Ipv4L3Protocol> ((clientNodes.Get(source_node))->GetObject<Ipv4> ());
+      sink_node_ipv4->removeFlow(i);
+      src_node_ipv4->removeFlow(i);
       break;
     }
   }
@@ -640,19 +646,24 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
 {
   std::cout<<"Entered startflowwrapper at "<<Simulator::Now().GetSeconds()<<" nf "<<num_flows<<" maxf "<<max_flows_allowed<<" minf "<<min_flows<<std::endl;
   if(num_flows >= max_flows_allowed) {
-    stop_a_flow();
+    stop_a_flow(sourcenodes, sinknodes, clientNodes);
+    std::cout<<" STOP "<<Simulator::Now().GetSeconds()<<std::endl;
   } else if(num_flows <= min_flows) {
     start_a_flow(sourcenodes, sinknodes, clientNodes);
+    std::cout<<" START "<<Simulator::Now().GetSeconds()<<std::endl;
   } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
      double rand_num = uv->GetValue(0.0, 1.0);
      if(rand_num < 0.5) {
         start_a_flow(sourcenodes, sinknodes, clientNodes);
       } else {
-        stop_a_flow();
+        stop_a_flow(sourcenodes, sinknodes, clientNodes);
       }
+
+    std::cout<<" ENTERED UV "<<Simulator::Now().GetSeconds()<<std::endl;
+
   } 
-  Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes);
+  // Simulator::Schedule (Seconds (0.1), &startflowwrapper, sourcenodes, sinknodes, clientNodes); //comment this
 
 }
 /*

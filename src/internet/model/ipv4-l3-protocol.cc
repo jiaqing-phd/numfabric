@@ -1510,12 +1510,24 @@ Ipv4L3Protocol::setFlowSizes(std::map<uint32_t, double> fsizes)
   flowutil.setSizes(fsizes); 
 }
 
+void Ipv4L3Protocol::removeFlow(uint32_t fid)
+{
+  std::map<std::string, uint32_t>::iterator it;
+  for (it=flowids.begin(); it!=flowids.end(); ++it) {
+	if(it->second == fid) {
+		std::cout<<"removing flowid "<<fid<<" with key "<<it->first<<" from node "<<m_node->GetId()<<std::endl;
+	        flowids.erase(it);
+		return;
+	}
+  }
+}	
+  
 void Ipv4L3Protocol::setFlow(std::string flow, uint32_t flowid, double fsize, uint32_t weight)
 {
 
     std::cout<<" Ipv4L3Protocol::SetFlow "<<m_node->GetId()<<" flowid "<<flowid<<" flow "<<flow<<" size "<<fsize<<" weight "<<weight<<std::endl;
 
-	  flowids[flow] = flowid;
+    flowids[flow] = flowid;
     fsizes_copy[flowid] = fsize;
     fweights_copy[flowid] = weight;
 
@@ -1768,7 +1780,11 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
     
     destination_bytes[flowkey] += pktsize;
     data_recvd[flowkey] += pktsize;
-
+/*
+	if(m_node->GetId() == 31) {
+		std::cout<<" flowkey "<<flowkey<<" "<<Simulator::Now().GetSeconds()<<" pkt delivered"<<std::endl;
+	}
+*/
 
     tcp_header.SetPrice(pre_set_netw_price);
    
