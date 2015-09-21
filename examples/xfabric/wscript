@@ -14,10 +14,9 @@ def build(bld):
     
     obj = bld.create_ns3_program('abilene_startstop', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['abilene_startstop.cc', 'init_all.cc']
-    obj = bld.create_ns3_program('abilene_test', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['abilene_test.cc', 'init_all.cc']
-    #obj = bld.create_ns3_program('test_fct', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    #obj.source = ['test_fct.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+
+    obj = bld.create_ns3_program('abilene_complex', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['abilene_complex.cc', 'init_all.cc']
 
     obj = bld.create_ns3_program('stop_flow', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['stop_flow.cc', 'init_all.cc']
