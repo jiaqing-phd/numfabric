@@ -841,6 +841,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   uint32_t pkt_uid = min_pp->GetUid();
 
+   //std::cout<<Simulator::Now().GetSeconds()<<" link "<<GetLinkIDString()<<" residue "<<p_residue<<" weight "<<min_wfq_weight<<" from flow "<<GetFlowKey(min_pp)<<std::endl;
+
    if(p_residue < running_min_prio && !control_packet && update_minimum) {
      running_min_prio = p_residue;
    }

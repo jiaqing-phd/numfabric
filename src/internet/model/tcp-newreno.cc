@@ -283,10 +283,13 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   std::stringstream ss;
   ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
   std::string flowkey = ss.str();
+  //std::cout<<" ack recvd for flow "<<flowkey<<" seq number "<<tcpHeader.GetAckNumber()<<" ack number "<<tcpHeader.GetSequenceNumber()<<std::endl;
+  // if we are here, we have got an ACK - so we can say that the price is valid 
   double inter_arrival = tcpHeader.GetRate();
   uint32_t bytes_acked = getBytesAcked(tcpHeader);
   // get the ipv4 object 
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+  ipv4->setPriceValid(flowkey);
   //uint32_t fid = ipv4->flowids[flowkey];
 
   if(m_strawmancc || m_dctcp) { // we want to update rates in case of both strawman and dctcp

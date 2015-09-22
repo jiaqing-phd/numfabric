@@ -1135,10 +1135,10 @@ void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate)
     }
 
 
- if(pri > 1.0) {
+/* if(pri > 1.0) {
     pri = 1.0;
  } // we don't care about rates lower than 1Mbps - kn - is this right?
-
+*/
 //  NS_LOG_LOGIC("UpdateMarginalUtility node "<<m_node->GetId()<<" flow "<<fkey<<" flow "<<fid<<" priority "<<pri<<" rate "<<cur_rate);
   store_prio[fkey] = pri;
 }		
@@ -1478,10 +1478,13 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
   */
    }
 
-
-    priheader.residue = priheader.residue / num_hops;
+    if(price_valid[flowkey]) {
+      priheader.residue = priheader.residue / num_hops;
+    } else {
+      priheader.residue = 50000.0; // basically invalid value
+    }
 	  priheader.netw_price = 0.0;  // start the network price at zero
-//    std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<std::endl; 
+//  std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<" "<<flowkey<<std::endl; 
 
  
   } else {
@@ -1534,13 +1537,20 @@ void Ipv4L3Protocol::removeFlow(uint32_t fid)
 	}
   }
 }	
+
+void Ipv4L3Protocol::setPriceValid(std::string flow)
+{
+  price_valid[flow] = true;
+}
+
   
 void Ipv4L3Protocol::setFlow(std::string flow, uint32_t flowid, double fsize, uint32_t weight)
 {
 
-    std::cout<<" Ipv4L3Protocol::SetFlow "<<m_node->GetId()<<" flowid "<<flowid<<" flow "<<flow<<" size "<<fsize<<" weight "<<weight<<std::endl;
+    //std::cout<<" Ipv4L3Protocol::SetFlow "<<m_node->GetId()<<" flowid "<<flowid<<" flow "<<flow<<" size "<<fsize<<" weight "<<weight<<std::endl;
 
     flowids[flow] = flowid;
+    price_valid[flow] = false;
     fsizes_copy[flowid] = fsize;
     fweights_copy[flowid] = weight;
 

@@ -149,6 +149,7 @@ public:
   double GetCSFQRate(std::string fkey);
   double GetShortRate(std::string fkey);
   void setFlow(std::string flow, uint32_t fid, double size=0.0, uint32_t weight = 1.0);
+  void setPriceValid(std::string);
   void removeFlow(uint32_t fid);
   void setFlows(FlowId_ flowid_set);
   void setFlowUtils(std::vector<double> futils);
@@ -197,6 +198,7 @@ public:
   bool epoch_changed;
   bool rate_based;
   bool host_compensate;
+  std::map<std::string, bool> price_valid;
   uint32_t bytes_in_queue;
   double deq_bytes;
   std::map<std::string, double> cnp;
