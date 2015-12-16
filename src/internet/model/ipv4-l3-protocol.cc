@@ -295,7 +295,7 @@ void Ipv4L3Protocol::setQueryTime(double qtime)
 
 void Ipv4L3Protocol::setKay(double kvalue)
 {
-  // set default values
+  // set default values - hardcoded
   //
   setlong_ewma_const(50000);
   setshort_ewma_const(10000);

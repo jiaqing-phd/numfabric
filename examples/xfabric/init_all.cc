@@ -58,7 +58,8 @@ uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
 uint32_t weight_normalized = 0;
 
-uint32_t const max_flows = 5;
+const uint32_t max_flows=5;
+uint32_t arg_max_flows = 5;
 
 /* Queue variables */
 uint32_t max_ecn_thresh = 50000;
@@ -102,6 +103,15 @@ std::string link_rate_string = "10Gbps";
 double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;
 
+// data rates and delays for leaf-spine
+std::string fabric_datarate = "40Gbps";
+std::string edge_datarate = "10Gbps";
+double fabricdelay=2.5, edgedelay=2.5;
+
+// number of nodes for leaf-spine
+//uint32_t num_spines = 4, num_leafs = 9, num_hosts_per_leaf = 16;
+uint32_t num_spines = 1, num_leafs = 2, num_hosts_per_leaf = 2;
+
 bool pkt_tag = true;
 
 std::string empirical_dist_file_DCTCP_heavy="DCTCP_CDF_HEAVY";
@@ -111,13 +121,12 @@ Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 
 std::string link_twice_string = "20Gbps";
 
+NodeContainer bottleNeckNode;
 NodeContainer allNodes;
-NodeContainer bottleNeckNode; // Only 1 switch
+NodeContainer spines, leafnodes, hosts; // for leaf-spine
 NodeContainer sourceNodes;    
 NodeContainer sinkNodes;
 NodeContainer clientNodes;
-
-//std::string link_rate_string = "10Gbps";
 
 double load = 0.05;
 double controller_estimated_unknown_load = 0.05;

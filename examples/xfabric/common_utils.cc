@@ -184,6 +184,11 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("dgd_gamma", "dgd_gamma", dgd_gamma);
   cmd.AddValue ("guardtime", "guardtime", guard_time);
   cmd.AddValue ("pfabric_util", "pfabric_util",pfabric_util);
+  cmd.AddValue ("num_spines", "num_spines", num_spines);
+  cmd.AddValue ("num_leafs", "num_leafs", num_leafs);
+  cmd.AddValue ("num_hosts_per_leaf", "num_hosts_per_leaf", num_hosts_per_leaf);
+  cmd.AddValue ("fabric_datarate", "fabric_datarate", fabric_datarate);
+  cmd.AddValue ("edge_datarate", "edge_datarate", edge_datarate);
 
   return cmd;
 }
@@ -363,7 +368,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
 void printlink(Ptr<Node> n1, Ptr<Node> n2)
 {
-  NS_LOG_UNCOND("printlink: link setup between node "<<n1->GetId()<<" and node "<<n2->GetId());
+  std::cout<<"printlink: link setup between node "<<n1->GetId()<<" and node "<<n2->GetId()<<std::endl;
 } 
 
 Ipv4InterfaceContainer assignAddress(NetDeviceContainer dev, uint32_t subnet_index)

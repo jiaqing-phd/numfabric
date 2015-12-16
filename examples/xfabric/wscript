@@ -2,6 +2,9 @@
 def build(bld):
     obj = bld.create_ns3_program('static_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['static_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+
+    obj = bld.create_ns3_program('leaf_spine', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['leaf_spine.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
   
     obj = bld.create_ns3_program('random_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['random_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']

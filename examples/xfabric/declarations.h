@@ -144,6 +144,16 @@ void run_scheduler_edf(FlowData fdata, uint32_t eventtype);
 extern bool host_compensate;
 extern double fct_alpha;
 
-//extern uint32_t const max_flows;
+extern std::string fabric_datarate;
+extern std::string edge_datarate;
+extern double fabricdelay, edgedelay;
+
+// number of nodes for leaf-spine
+//uint32_t num_spines = 4, num_leafs = 9, num_hosts_per_leaf = 16;
+extern uint32_t num_spines, num_leafs, num_hosts_per_leaf;
+extern NodeContainer spines, leafnodes, hosts;
+
+extern const uint32_t max_flows;
+extern uint32_t arg_max_flows;
 
 #endif 
