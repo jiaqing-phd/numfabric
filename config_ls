@@ -20,4 +20,5 @@ num_hosts_per_leaf=2
 fabric_datarate=40Gbps
 edge_datarate=10Gbps
 packet_spraying=false
+flow_ecmp=true
 

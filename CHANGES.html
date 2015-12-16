@@ -667,7 +667,12 @@ to the underlying pseudo-random stream of numbers.</li>
 
 <h2>Changes to build system:</h2>
 <ul>
-<li></li>
+<li>A new attribute Ipv4GlobalRouting "FlowEcmpRouting" has been added.
+Setting this attribute to true will result in equal-cost multipath load
+balancing across paths, with each flow resolving to the same path based
+on its five-tuple.  This mode is in contrast to the existing 
+"RandomEcmpRouting" mode which will randomly balance packets across paths 
+(irrespective of their flows).  By default, FlowEcmpRouting is false.</li>
 </ul>
 
 <h2>Changed behavior:</h2>

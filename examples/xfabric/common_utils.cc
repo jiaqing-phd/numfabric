@@ -189,6 +189,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("num_hosts_per_leaf", "num_hosts_per_leaf", num_hosts_per_leaf);
   cmd.AddValue ("fabric_datarate", "fabric_datarate", fabric_datarate);
   cmd.AddValue ("edge_datarate", "edge_datarate", edge_datarate);
+  cmd.AddValue ("flow_ecmp", "flow_ecmp", flow_ecmp);
+  cmd.AddValue ("packet_spraying", "packet_spraying", packet_spraying);
 
   return cmd;
 }
@@ -263,6 +265,11 @@ void common_config(void)
   
   // rate_based 
   Config::SetDefault("ns3::Ipv4L3Protocol::rate_based", BooleanValue(strawmancc));
+
+  Config::SetDefault("ns3::Ipv4GlobalRouting::RandomEcmpRouting", BooleanValue(packet_spraying));
+  Config::SetDefault("ns3::Ipv4GlobalRouting::FlowEcmpRouting", BooleanValue(flow_ecmp));
+
+
 
   flowTracker = new Tracker();
   //flowTracker->register_callback(scheduler_wrapper);

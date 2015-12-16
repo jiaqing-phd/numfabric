@@ -93,6 +93,8 @@ std::vector<Ptr<Queue > > AllQueues;
 double link_delay = 5.0; //in microseconds
 bool rate_based  = false;
 bool pfabric_util = false;
+bool flow_ecmp = false;
+bool packet_spraying = true;
 
 
 /* Overall simulation parameters */

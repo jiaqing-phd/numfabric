@@ -232,6 +232,8 @@ protected:
 private:
   /// Set to true if packets are randomly routed among ECMP; set to false for using only one route consistently
   bool m_randomEcmpRouting;
+  /// Set to true if flows are randomly routed among ECMP; set to false for using only one route consistently
+  bool m_flowEcmpRouting;
   /// Set to true if this interface should respond to interface events by globallly recomputing routes 
   bool m_respondToInterfaceEvents;
   /// A uniform random number generator for randomly routing packets among ECMP 
@@ -258,7 +260,10 @@ private:
   /// iterator of container of Ipv4RoutingTableEntry (routes to external AS)
   typedef std::list<Ipv4RoutingTableEntry *>::iterator ASExternalRoutesI;
 
-  Ptr<Ipv4Route> LookupGlobal (Ipv4Address dest, Ptr<NetDevice> oif = 0);
+//  Ptr<Ipv4Route> LookupGlobal (Ipv4Address dest, Ptr<NetDevice> oif = 0);
+  uint32_t GetTupleValue (const Ipv4Header &header, Ptr<const Packet> ipPayload);
+
+  Ptr<Ipv4Route> LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipPayload, Ptr<NetDevice> oif = 0);
 
   HostRoutes m_hostRoutes;             //!< Routes to hosts
   NetworkRoutes m_networkRoutes;       //!< Routes to networks

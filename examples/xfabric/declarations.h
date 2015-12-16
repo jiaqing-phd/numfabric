@@ -147,6 +147,7 @@ extern double fct_alpha;
 extern std::string fabric_datarate;
 extern std::string edge_datarate;
 extern double fabricdelay, edgedelay;
+extern bool packet_spraying, flow_ecmp;
 
 // number of nodes for leaf-spine
 //uint32_t num_spines = 4, num_leafs = 9, num_hosts_per_leaf = 16;
