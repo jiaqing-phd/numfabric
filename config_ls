@@ -14,11 +14,10 @@ price_update_time=0.00006
 guardtime=0.000040
 host_compensate=true
 util_method=1
-num_spines=1
+num_spines=2
 num_leafs=2
 num_hosts_per_leaf=2
-fabric_datarate=40Gbps
+fabric_datarate=80Gbps
 edge_datarate=10Gbps
 packet_spraying=false
 flow_ecmp=true
-

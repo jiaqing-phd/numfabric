@@ -32,10 +32,14 @@
 #include "tcp-header.h"
 #include "ipv4-global-routing.h"
 #include "global-route-manager.h"
+#include "ns3/ipv4-l3-protocol.h"
+#include "ns3/node.h"
 
 NS_LOG_COMPONENT_DEFINE ("Ipv4GlobalRouting");
 
 namespace ns3 {
+
+class Node;
 
 NS_OBJECT_ENSURE_REGISTERED (Ipv4GlobalRouting);
 const uint8_t TCP_PROT_NUMBER = 6;
@@ -74,6 +78,23 @@ Ipv4GlobalRouting::Ipv4GlobalRouting ()
 
   m_rand = CreateObject<UniformRandomVariable> ();
 }
+
+uint32_t
+Ipv4GlobalRouting::ecmp_hash(uint32_t key)
+{
+  char *bytes = (char *)&key;
+  int length = sizeof(key);
+  register unsigned int result;
+	register int i;
+
+	result = 0;
+	for (i = 0;  i < length;  i++) {
+		result += (result<<3) + *bytes++;
+	}
+	return result;
+}
+
+  
 
 // This function is used to spread the routing of flows across equal
 // cost paths, by calculating an integer based on the five-tuple in the headers
@@ -118,7 +139,8 @@ Ipv4GlobalRouting::GetTupleValue (const Ipv4Header &header, Ptr<const Packet> ip
         break;
       }
     }
-  return tupleValue;
+  return ecmp_hash(tupleValue);
+//  return tupleValue;
 }
 
 Ipv4GlobalRouting::~Ipv4GlobalRouting ()
@@ -287,6 +309,15 @@ Ipv4GlobalRouting::LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipP
       else  if (m_flowEcmpRouting && (allRoutes.size () > 1))
         {
           selectIndex = GetTupleValue (header, ipPayload) % allRoutes.size ();
+
+          // debug information from here - not required for functioning
+          // remove after debugging to avoid confusion
+          TcpHeader tcpHeader;
+          ipPayload->PeekHeader (tcpHeader);
+          uint16_t dest_port = tcpHeader.GetDestinationPort();
+          uint16_t src_port = tcpHeader.GetSourcePort();
+          std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" interface "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<" srcport "<<src_port<<" dstport "<<dest_port<<std::endl;
+          // debug information end 
         }
       else 
         {

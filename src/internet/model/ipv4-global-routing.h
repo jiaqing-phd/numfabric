@@ -262,6 +262,7 @@ private:
 
 //  Ptr<Ipv4Route> LookupGlobal (Ipv4Address dest, Ptr<NetDevice> oif = 0);
   uint32_t GetTupleValue (const Ipv4Header &header, Ptr<const Packet> ipPayload);
+  uint32_t ecmp_hash(uint32_t key);
 
   Ptr<Ipv4Route> LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipPayload, Ptr<NetDevice> oif = 0);
 

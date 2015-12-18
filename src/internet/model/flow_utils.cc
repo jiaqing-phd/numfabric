@@ -72,6 +72,7 @@ FlowUtil::getAlpha1InverseByFlowId(uint32_t fid, double price)
 double 
 FlowUtil::getUtilInverseByFlowId(uint32_t fid, double priority)
 {
+//  std::cout<<" fid "<<fid<<" weight "<<flow_weights[fid]<<std::endl;
   /* here */
   double ret_val = 1.0/priority;
   if (flow_weights.find( fid ) != flow_weights.end()){

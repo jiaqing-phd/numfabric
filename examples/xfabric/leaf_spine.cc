@@ -780,11 +780,19 @@ void setUpWeightChange(void)
 void splitHosts(void)
 {
 
-    sourceNodes = hosts;
+ /*   sourceNodes = hosts;
     sinkNodes = hosts;
     uint32_t num_sources = sourceNodes.GetN(), num_sinks = sinkNodes.GetN();
+*/
 
-/*    uint32_t num_sources = 0, num_sinks = 0;
+    sourceNodes.Add(hosts.Get(0));
+    sourceNodes.Add(hosts.Get(1));
+
+    sinkNodes.Add(hosts.Get(2));
+    sinkNodes.Add(hosts.Get(3));
+
+  /*
+    uint32_t num_sources = 0, num_sinks = 0;
     Ptr<UniformRandomVariable> unifRandom = CreateObject<UniformRandomVariable> ();
 
     for ( unsigned int i = 0; i < hosts.GetN (); i++ )
@@ -798,9 +806,9 @@ void splitHosts(void)
         sinkNodes.Add(hosts.Get(i));
         num_sinks++;
       }
-    } */
+    }  
     std::cout<<"num_sources is "<< num_sources << std::endl;
-    std::cout<<"num_sinks is "<< num_sinks << std::endl;
+    std::cout<<"num_sinks is "<< num_sinks << std::endl; */
 }
   
 
@@ -819,12 +827,21 @@ void startFlowsStatic(void)
   Ptr<UniformRandomVariable> unifRandom = CreateObject<UniformRandomVariable> ();
   while(flow_num < arg_max_flows) 
   {
+
     uint32_t src_index = unifRandom->GetInteger (0, sourceNodes.GetN()-1);
     uint32_t dst_index = src_index;
 
-    while(dst_index == src_index) {
+    uint32_t src_nid = sourceNodes.Get(src_index)->GetId(); 
+    uint32_t dst_nid = src_nid; 
+    
+    
+
+    while(dst_nid == src_nid) {
+      std::cout<<" picked destination "<<dst_index<<std::endl;
       dst_index = unifRandom->GetInteger (0, sinkNodes.GetN()-1);
+      dst_nid = sinkNodes.Get(dst_index)->GetId(); 
     }
+    
 
     std::cout<<" randomly picked source "<<src_index<<" randomly picked destination "<<dst_index<<std::endl;  
     double flow_start_time = 0.0;
@@ -836,7 +853,7 @@ void startFlowsStatic(void)
     std::cout<<"flow between hosts"<<(sourceNodes.Get(src_index))->GetId()<<" and "<<(sinkNodes.Get(dst_index))->GetId()<<" starting at time "<<flow_start_time<<" of size "<<flow_size<<" flow_num "<<flow_num<<std::endl;
     uint32_t flow_weight = 1.0;
     uint32_t known = 1;
-       
+      
     startFlow(src_index, dst_index, flow_start_time, flow_size, flow_num, flow_weight, flows_tcp, known); 
     flow_num++;
    }
