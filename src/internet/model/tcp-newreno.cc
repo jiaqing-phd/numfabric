@@ -68,6 +68,11 @@ TcpNewReno::GetTypeId (void)
                    BooleanValue (false),
                    MakeBooleanAccessor (&TcpNewReno::m_strawmancc),
                    MakeBooleanChecker ())
+	  .AddAttribute("dt_value",
+                  "Target delay for this flow in us",
+                  DoubleValue(0.000024),
+                  MakeDoubleAccessor (&TcpNewReno::m_dt),
+                  MakeDoubleChecker <double> ())
  ;
   return tid;
 }
@@ -88,7 +93,7 @@ TcpNewReno::init_values(void)
 {
   d0 = 0.00100; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
 //  dt = 0.000048;
-  dt = 0.000012;
+  m_dt = 0.000048;
   highest_ack_recvd = 0;
   beta = 1.0/32.0;
   bytes_with_ecn = total_bytes_acked = 0.0;
@@ -326,7 +331,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     if(fixed_window) 
     {
       //unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
-      unquantized_window = 10*1000000000.0/8.0 * (dt+0.000045);
+      unquantized_window = 10*1000000000.0/8.0 * (m_dt+0.000045);
       ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
     } 
     //else if(scheme2 || scheme3) 
@@ -337,7 +342,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
       if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
 
         if(scheme2) {
-          unquantized_window = 10*1000000000.0/8.0 * (dt+d0);
+          unquantized_window = 10*1000000000.0/8.0 * (m_dt+d0);
           NS_LOG_LOGIC("scheme2 is true ");
 /*          NS_LOG_LOGIC("processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey
           <<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" unquantized_window "<<unquantized_window
@@ -364,7 +369,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
           double Rsmall = ipv4->GetShortTermRate(flowkey);
           // Now get the short term average for setting window 
-          target_cwnd = Rsmall * (1000000.0/8.0) * (d0+dt); //TBD - dt from commandline 
+          target_cwnd = Rsmall * (1000000.0/8.0) * (d0+m_dt); 
 
           double ste_size = (int((target_cwnd - unquantized_window)*bytes_acked) / int(window_spread_factor * unquantized_window));
           double temp_cwnd = unquantized_window + ste_size;
@@ -384,11 +389,8 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
           /* Now get the short term average for setting window */
           double target_rate = ipv4->GetShortTermRate(flowkey);
-          unquantized_window = target_rate * (1000000.0/8.0) * (d0+dt);
-/*          std::cout<<"processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey<<" node "
-          <<m_node->GetId()<<" d0+dt "<<d0+dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<
-          " "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<
-          lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<std::endl; */
+          unquantized_window = target_rate * (1000000.0/8.0) * (d0+m_dt);
+//          std::cout<<"processRate flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+m_dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<" using dt "<<m_dt<<std::endl; 
       
           // our old xfabric scheme
         }

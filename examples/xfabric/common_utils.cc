@@ -191,6 +191,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("edge_datarate", "edge_datarate", edge_datarate);
   cmd.AddValue ("flow_ecmp", "flow_ecmp", flow_ecmp);
   cmd.AddValue ("packet_spraying", "packet_spraying", packet_spraying);
+  cmd.AddValue ("dt_val", "dt_value", dt_val);
 
   return cmd;
 }
@@ -218,11 +219,10 @@ void common_config(void)
   // Disable delayed ack
   Config::SetDefault("ns3::TcpSocket::DelAckCount", UintegerValue (1));
   Config::SetDefault("ns3::TcpNewReno::dctcp", BooleanValue(dctcp));
-
   Config::SetDefault("ns3::TcpNewReno::xfabric", BooleanValue(xfabric));
-
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
+  Config::SetDefault("ns3::TcpNewReno::dt_value", DoubleValue(dt_val));
 
   if(!xfabric) {
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
@@ -268,6 +268,8 @@ void common_config(void)
 
   Config::SetDefault("ns3::Ipv4GlobalRouting::RandomEcmpRouting", BooleanValue(packet_spraying));
   Config::SetDefault("ns3::Ipv4GlobalRouting::FlowEcmpRouting", BooleanValue(flow_ecmp));
+
+  // tcp newreno
 
 
 
