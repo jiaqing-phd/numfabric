@@ -21,3 +21,4 @@ fabric_datarate=40Gbps
 edge_datarate=10Gbps
 packet_spraying=false
 flow_ecmp=true
+dt_val=0.0001

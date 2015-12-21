@@ -157,4 +157,6 @@ extern NodeContainer spines, leafnodes, hosts;
 extern const uint32_t max_flows;
 extern uint32_t arg_max_flows;
 
+extern double dt_val;
+
 #endif 

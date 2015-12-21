@@ -78,7 +78,7 @@ protected:
   double getFlowIdealRate(std::string fkey);
   SequenceNumber32 ecn_highest;
   SequenceNumber32 last_outstanding_num;
-  double d0, dt;
+  double d0, m_dt;
   uint32_t getBytesAcked(const TcpHeader &tcpheader);
   void init_values(void);
 

@@ -109,6 +109,7 @@ Ipv4GlobalRouting::GetTupleValue (const Ipv4Header &header, Ptr<const Packet> ip
   uint32_t tupleValue = header.GetSource ().Get () + 
                         header.GetDestination ().Get () + 
                         header.GetProtocol ();
+  NS_LOG_DEBUG("Found src ip "<< header.GetSource().Get()<<" dst ip "<<header.GetDestination().Get());
   switch (header.GetProtocol ())
     {
     case UDP_PROT_NUMBER:
@@ -312,10 +313,10 @@ Ipv4GlobalRouting::LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipP
 
           // debug information from here - not required for functioning
           // remove after debugging to avoid confusion
-          TcpHeader tcpHeader;
-          ipPayload->PeekHeader (tcpHeader);
-          uint16_t dest_port = tcpHeader.GetDestinationPort();
-          uint16_t src_port = tcpHeader.GetSourcePort();
+          //TcpHeader tcpHeader;
+          //ipPayload->PeekHeader (tcpHeader);
+          //uint16_t dest_port = tcpHeader.GetDestinationPort();
+          //uint16_t src_port = tcpHeader.GetSourcePort();
          // std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" interface "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<" srcport "<<src_port<<" dstport "<<dest_port<<std::endl;
           // debug information end 
         }

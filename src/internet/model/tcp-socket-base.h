@@ -66,6 +66,7 @@ class TcpSocketBase : public TcpSocket
 public:
   bool need_echo;
   void setFlows(void);
+  Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint made public 12/21 Kanthi:
   /**
    * Get the type ID.
    * \brief Get the type ID.
@@ -646,7 +647,7 @@ protected:
   double            last_data_recvd, recvr_measured_rate;
 
   // Connections to other layers of TCP/IP
-  Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint
+//  Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint made public 12/21 Kanthi:
   Ipv6EndPoint*       m_endPoint6;  //!< the IPv6 endpoint
   Ptr<Node>           m_node;       //!< the associated node
   Ptr<TcpL4Protocol>  m_tcp;        //!< the associated TCP L4 protocol

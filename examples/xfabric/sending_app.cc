@@ -61,7 +61,7 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   }
   flow_known = fknown;
   
-  Time tNext = Time(Seconds(m_startTime));
+ Time tNext = Time(Seconds(m_startTime));
   myAddress = ownaddress;
   srcNode = sNode;
   destNode = dNode;
@@ -101,16 +101,6 @@ MyApp::StartApplication (void)
   } else {
     ns3TcpSocket = Socket::CreateSocket (srcNode, TcpSocketFactory::GetTypeId ());
     Ptr<TcpNewReno> nReno = StaticCast<TcpNewReno> (ns3TcpSocket);
-    if(flow_known == 0) {
-      nReno->setdctcp(true); // unknown flows always run dctcp
-      nReno->setxfabric(false);
-      /* Set initial cwnd to 10 pkts = 1500 * 10 Bytes */
-      uint32_t unknown_initcwnd = ((1500 * 10)/max_segment_size) + 1;
-      uint32_t ssthresh = unknown_initcwnd * max_segment_size;
-
-      nReno->resetInitCwnd(unknown_initcwnd);
-      nReno->resetSSThresh(ssthresh);
-    }
   }
   //setuptracing(m_fid, ns3TcpSocket);
   m_socket = ns3TcpSocket;
@@ -126,8 +116,22 @@ MyApp::StartApplication (void)
   }
   m_socket->Connect (m_peer);
     
+
+  uint16_t local_port = StaticCast<TcpSocketBase>(ns3TcpSocket)->m_endPoint->GetLocalPort();
+
+  uint32_t tcp_protocol_number = 6;
+
+  std::cout<<InetSocketAddress::ConvertFrom(myAddress).GetIpv4().Get() <<" "<< InetSocketAddress::ConvertFrom(m_peer).GetIpv4().Get() <<" "<< InetSocketAddress::ConvertFrom(m_peer).GetPort() <<" "<<  InetSocketAddress::ConvertFrom(myAddress).GetPort() <<" "<< tcp_protocol_number <<" ecmp_arguments"<<std::endl;
+ 
+  uint32_t tuplevalue = InetSocketAddress::ConvertFrom(myAddress).GetIpv4().Get() + InetSocketAddress::ConvertFrom(m_peer).GetIpv4().Get() + InetSocketAddress::ConvertFrom(m_peer).GetPort() + local_port + tcp_protocol_number;
+
+
+  uint32_t ecmp_hash_value = Ipv4GlobalRouting::ecmp_hash(tuplevalue);
+//  std::cout<<" fid "<<m_fid<<" ecmp_hash "<<ecmp_hash_value<<std::endl;
+
+  std::cout<<"flow_start "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" "<<m_weight<<" "<<ecmp_hash_value<<" "<<std::endl;
+  
   SendPacket ();
-  std::cout<<"flow_start "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" "<<flow_known<<std::endl;
   //FlowData dt(m_fid, m_maxBytes, flow_known, srcNode->GetId(), destNode->GetId(), fweight);
   //flowTracker->registerEvent(1);
 }
