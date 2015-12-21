@@ -22,11 +22,13 @@ public:
   virtual ~MyApp ();
 
   //void Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxbytes, double flow_start, Address address1);
-  void Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxbytes, double flow_start, Address address1, Ptr<Node> pnode, uint32_t fid, Ptr<Node> dnode, uint32_t tcp, uint32_t fknown, double stop_time=-1);
+  void Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxbytes, double flow_start, Address address1, Ptr<Node> pnode, uint32_t fid, Ptr<Node> dnode, uint32_t tcp, uint32_t fknown, double stop_time=-1, uint32_t w=1);
+  void Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxbytes, double flow_start, Address address1, Ptr<Node> pnode, uint32_t fid, Ptr<Node> dnode, uint32_t w=1);
   virtual void StartApplication (void);
   void ChangeRate (DataRate passed_in_rate);
   uint32_t getFlowId(void);
   virtual void StopApplication (void);
+  bool keepSending(void);
 private:
 
   void ScheduleTx (void);
@@ -51,6 +53,7 @@ private:
   uint32_t        m_fid;
   uint32_t        m_udp;
   uint32_t        flow_known;
+  uint32_t        m_weight;
   
   Ptr<Tracker>         flowTracker;
 };

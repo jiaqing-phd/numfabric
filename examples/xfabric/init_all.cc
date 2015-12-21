@@ -44,7 +44,7 @@ double multiplier = 0.0000000001;
 double dgd_gamma = 1.0 * multiplier; 
 double dgd_alpha = 0.3 * multiplier;
 
-double target_queue = 30000.0;
+double target_queue = 15000.0;
 
 
 double measurement_starttime = 1.2;

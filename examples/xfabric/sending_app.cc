@@ -33,10 +33,17 @@ MyApp::ChangeRate (DataRate passed_in_rate)
   m_dataRate = passed_in_rate; 
 }
 
-void
 //MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, uint32_t nPackets, DataRate dataRate, Ptr<RandomVariableStream> interArrival)
 //MyApp::Setup (Ptr<Socket> socket, Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode)
-MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode, uint32_t fid, Ptr<Node> dNode, uint32_t tcp, uint32_t fknown, double stop_time)
+  
+void 
+MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxbytes, double flow_start, Address address1, Ptr<Node> pnode, uint32_t fid, Ptr<Node> dnode, uint32_t w)
+{
+  Setup(address, packetSize, dataRate, maxbytes, flow_start, address1, pnode, fid, dnode, 1,1,-1,w);
+}
+
+void
+MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t maxBytes, double start_time, Address ownaddress, Ptr<Node> sNode, uint32_t fid, Ptr<Node> dNode, uint32_t tcp, uint32_t fknown, double stop_time, uint32_t weight)
 {
   //m_socket = socket;
   m_peer = address;
@@ -60,6 +67,7 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   destNode = dNode;
 
   m_stoptime = stop_time;
+  m_weight = weight;
 
   //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
   m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
@@ -138,8 +146,32 @@ MyApp::StopApplication (void)
     {
       m_socket->Close ();
     }
-  std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" stopped sending after seding "<<m_totBytes<<std::endl;
+
+  // Note: this statement is here and works for the case when we are starting and stopping 
+  // same flows 
+  // When we have dynamic traffic, the stop has to be declared from the destination
+  // So, remove it when using dynamic traffic
+  std::cout<<"flow_stop "<<m_fid<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" at "<<(Simulator::Now()).GetNanoSeconds()<<" "<<m_maxBytes<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" weight "<<m_weight<<std::endl;
+//  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> (srcNode->GetObject<Ipv4> ());
+//  ipv4->addToDropList(m_fid);
+
+  //std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" stopped sending after sending "<<m_totBytes<<std::endl;
 }
+
+bool
+MyApp::keepSending(void)
+{
+  if(m_stoptime != -1 && (Simulator::Now().GetSeconds() >= m_stoptime)) {
+    std::cout<<" stoptime reached "<<m_stoptime<<std::endl;
+    return false;
+  }
+  if(m_maxBytes != 0 && (m_totBytes >= m_maxBytes)) {
+    return false;
+  } 
+
+  return true;
+}
+  
 
 void
 MyApp::SendPacket (void)
@@ -152,15 +184,12 @@ MyApp::SendPacket (void)
   if(ret_val != -1) {
     m_totBytes += packet->GetSize();
   } else {
- //   NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" Tcp buffer is overflowing.. trying later");
+    // couldn't send - socket buffer full
   }
-
-//    std::cout<<" flow_id "<<m_fid<<" sent "<<ret_val<<" bytes total bytes so far "<<m_totBytes<<std::endl;
-//  NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" bytes sent "<<m_totBytes<<" maxBytes "<<m_maxBytes);
 
   //if (m_totBytes < m_maxBytes)
   //  {
-    if((m_stoptime == -1) || ((m_stoptime != -1) && (Simulator::Now().GetSeconds() < m_stoptime))) {
+    if(keepSending()) {
       ScheduleTx ();
     } else {
       StopApplication();

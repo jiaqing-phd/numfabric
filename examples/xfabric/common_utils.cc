@@ -341,26 +341,26 @@ CheckIpv4Rates (NodeContainer &allNodes)
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
     {
     
-      double rate = ipv4->GetStoreDestRate (it->first);
-      double csfq_rate = ipv4->GetCSFQRate (it->first);
+//      double rate = ipv4->GetStoreDestRate (it->first);
+      double long_rate = ipv4->GetCSFQRate (it->first);
       double short_rate = ipv4->GetShortTermRate(it->first);
 
       uint32_t s = it->second;
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << csfq_rate <<" "<<short_rate<<std::endl;
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << long_rate <<" "<<short_rate<<std::endl;
 //         current_rate += rate;
       }
 //      std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
 
-      if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
+//      if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
          //
 /*         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<< nid << " " << N << " " << short_rate << std::endl; */
       
-        current_rate += rate;
+ //       current_rate += rate;
 
-      }
+  //    }
 
     }
   }

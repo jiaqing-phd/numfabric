@@ -102,7 +102,7 @@ public:
    
   uint32_t getFlowID(Ptr<Packet> p);
   int getflowid_temp(std::string);
-  void setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t a);
+  void setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t a=1);
   std::map<std::string, uint32_t>flow_ids;
   std::map<uint32_t, double>flow_weights;
   bool init_reset;

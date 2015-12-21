@@ -302,13 +302,13 @@ void Ipv4L3Protocol::setKay(double kvalue)
 }
 void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
 {
-  NS_LOG_LOGIC("Setting long_ewma_const to "<<kvalue);
+  std::cout<<"Setting long_ewma_const to "<<kvalue<<std::endl;
   long_ewma_const = kvalue;
 }
 
 void Ipv4L3Protocol::setshort_ewma_const(double kvalue)
 {
-  NS_LOG_LOGIC("Setting short_ewma_const to "<<kvalue);
+  std::cout<<"Setting short_ewma_const to "<<kvalue<<std::endl;
   short_ewma_const = kvalue;
 }
 
@@ -1086,11 +1086,7 @@ double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
     return long_term_ewma_rate[fkey];
   }
   if(term == SHORTER) {
-    //return short_term_ewma_rate[fkey];
-    double ret_val = instant_rate_store[fkey];
-    instant_rate_store[fkey] = 0.0;
-    return ret_val;
-    
+    return short_term_ewma_rate[fkey];
   }
 
   return -1;

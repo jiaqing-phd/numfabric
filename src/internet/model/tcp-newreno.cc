@@ -88,7 +88,7 @@ TcpNewReno::init_values(void)
 {
   d0 = 0.00100; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
 //  dt = 0.000048;
-  dt = 0.000024;
+  dt = 0.000012;
   highest_ack_recvd = 0;
   beta = 1.0/32.0;
   bytes_with_ecn = total_bytes_acked = 0.0;
