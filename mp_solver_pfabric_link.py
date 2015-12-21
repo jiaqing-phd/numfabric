@@ -18,13 +18,16 @@ UMAX_INT = 9999999999999
 ################################################################
 
 class Flow:
-  def __init__(self, srcid, dstid, starttime, flowid, flowsize):
+  def __init__(self, srcid, dstid, starttime, flowid, flowsize,weight,ecmp_hash):
     self.srcid = srcid
     self.dstid = dstid
     self.starttime = starttime
     self.flowid = flowid
     self.flowsize = flowsize
     self.added = False
+    self.weight=weight
+    self.ecmp_hash=ecmp_hash
+
 
   def printFlow(self):
     print("flow_id %d  flow_starttime %f" %(self.flowid, self.starttime))
@@ -311,9 +314,12 @@ def gen_A_from_B(B):
 
 class Simulation:
 
-  def init_custom(self, nports, meth):
+  def init_custom(self, nports, meth, numleaf, numPortsPerLeaf, numspines):
     self.Flows = []
     self.numports = nports
+    self.numleaf = numleaf
+    self.numPortsPerLeaf = numPortsPerLeaf
+    self.numspines = numspines
     if(meth == "mp"):
         self.umax_mp = UtilMax(self.numports, method=meth, alpha=1.0)
     elif(meth ==  "alpha_dif"):
@@ -353,14 +359,17 @@ class Simulation:
   def add_flow_list(self,src_id, dst_id, flow_id, flow_size, flow_arrival,weight, ecmp_hash):
     # a list of flows sorted according to their arrivals
     print("adding flow with src_id %d dst_id %d flow_id %d flow_size %d flow_arrival %f" %(src_id, dst_id, flow_id, flow_size, flow_arrival))
-    f = Flow(src_id, dst_id, flow_arrival/1000.0, flow_id, flow_size)
+    f = Flow(src_id, dst_id, flow_arrival/1000.0, flow_id, flow_size,weight,ecmp_hash)
     self.Flows.append(f)
 
   def addFlow(self, f):
     print("flow being inserted.. flow id %d "%(f.flowid))
-    new_row = np.zeros((1, self.numports))
+    new_row = np.zeros((1, self.numports + self.numleaf + self.numspines))
     new_row[0, f.srcid] = 1
     new_row[0, f.dstid] = 1
+    new_row[0, self.numports + floor(f.srcid/self.numPortsPerLeaf)]= 1
+    new_row[0, self.numports + floor(f.dstid/self.numPortsPerLeaf)]= 1
+    new_row[0, self.numports + self.numleaf + mod(f.ecmp_hash, self.numspines]= 1
     self.add_row(new_row, f.flowsize, f.flowid)
     f.added = True
     print("addFlow new row ")
