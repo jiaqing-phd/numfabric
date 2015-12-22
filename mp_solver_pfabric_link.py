@@ -35,7 +35,7 @@ class Flow:
 
 class UtilMax:
     #def __init__(self, routes, w, c, alpha=1, method='gradient'):
-    def __init__(self, numports, alpha=1, method='gradient'):
+    def __init__(self, numports , c , alpha=1, method='gradient'):
 
         ########################## Inputs ##############################
         #(self.num_flows, self.num_links) = routes.shape
@@ -47,7 +47,7 @@ class UtilMax:
         self.num_flows = 0
         self.routes = np.zeros((self.num_flows, self.num_links))
         self.w = np.ones((self.num_flows, 1))
-        self.c = np.ones((self.num_links, 1))
+        self.c = c
         self.maxdata = np.zeros(self.num_flows)
         ################################################################
         # time
@@ -314,19 +314,20 @@ def gen_A_from_B(B):
 
 class Simulation:
 
-  def init_custom(self, nports, meth, numleaf, numPortsPerLeaf, numspines):
+  def init_custom(self, nports, meth, numleaf, numPortsPerLeaf, numspines,edgeCapacity,fabricCapacity):
     self.Flows = []
     self.numports = nports
     self.numleaf = numleaf
     self.numPortsPerLeaf = numPortsPerLeaf
     self.numspines = numspines
     self.num_links= nports + numleaf * numspines
+    self.c = np.concatenate(( edgeCapacity*np.ones((nports,1)), fabricCapacity* np.ones((numleaf*numspines,1))),axis=0)
     if(meth == "mp"):
-        self.umax_mp = UtilMax(self.num_links, method=meth, alpha=1.0)
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=1.0)
     elif(meth ==  "alpha_dif"):
-        self.umax_mp = UtilMax(self.num_links, method=meth, alpha=0.25)
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=0.25)
     else:
-        self.umax_mp = UtilMax(self.num_links, method=meth, alpha=1.0)
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=1.0)
 
 
     self.realids = {}
