@@ -310,20 +310,23 @@ Ipv4GlobalRouting::LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipP
       else  if (m_flowEcmpRouting && (allRoutes.size () > 1))
         {
           selectIndex = GetTupleValue (header, ipPayload) % allRoutes.size ();
-
           // debug information from here - not required for functioning
-          // remove after debugging to avoid confusion
-          //TcpHeader tcpHeader;
-          //ipPayload->PeekHeader (tcpHeader);
-          //uint16_t dest_port = tcpHeader.GetDestinationPort();
-          //uint16_t src_port = tcpHeader.GetSourcePort();
-         // std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" interface "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<" srcport "<<src_port<<" dstport "<<dest_port<<std::endl;
+         // remove after debugging to avoid confusion
+         TcpHeader tcpHeader;
+         ipPayload->PeekHeader (tcpHeader);
+         uint16_t dest_port = tcpHeader.GetDestinationPort();
+         uint16_t src_port = tcpHeader.GetSourcePort();
+ //        std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" interface "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<" srcport "<<src_port<<" dstport "<<dest_port<<std::endl;
           // debug information end 
+
         }
       else 
         {
           selectIndex = 0;
+//          std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" interface "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<std::endl;
+          
         }
+          //
       Ipv4RoutingTableEntry* route = allRoutes.at (selectIndex); 
       // create a Ipv4Route object from the selected routing table entry
       rtentry = Create<Ipv4Route> ();

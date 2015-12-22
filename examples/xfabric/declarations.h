@@ -158,5 +158,8 @@ extern const uint32_t max_flows;
 extern uint32_t arg_max_flows;
 
 extern double dt_val;
+extern double kvalue_price;
+extern double kvalue_rate;
+
 
 #endif 

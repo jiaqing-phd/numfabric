@@ -23,6 +23,8 @@ Ptr<Tracker> flowTracker;
 std::map<uint32_t, double> flow_sizes;
 int checkTimes = 0;
 double kvalue = 50000;
+double kvalue_price = 50000;
+double kvalue_rate = 10000;
 
 std::map<uint32_t, std::vector<uint32_t> > source_flow;
 std::map<uint32_t, std::vector<uint32_t> > dest_flow;
