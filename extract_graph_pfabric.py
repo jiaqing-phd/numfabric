@@ -48,6 +48,7 @@ for line in fh:
 
       if(elems[0] == "flow_start"):
         print("adding flow ...");
+        print(" src %d, %d, %d, %d, %d, %d, %d " %(src_id, dst_id, flow_id, flow_size, flow_arrival, weight, ecmp_hash))
         sim.add_flow_list(src_id, dst_id, flow_id, flow_size, flow_arrival, weight, ecmp_hash)
         #f_matrix[flow_id, src_id] = 1
         #f_matrix[flow_id, dst_id] = 1

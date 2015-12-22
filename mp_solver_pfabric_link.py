@@ -215,7 +215,7 @@ class UtilMax:
         self.x = np.zeros((self.num_flows,1))
         rem_flows = np.array(range(self.num_flows))
         rem_cap = np.array(self.c, copy=True)
-        print("number of flows %d" %self.num_flows)
+        #print("number of flows %d" %self.num_flows)
         while rem_flows.size != 0:
             link_weights = np.dot(self.routes.T, weights)
             with np.errstate(divide='ignore', invalid='ignore'):
@@ -333,7 +333,7 @@ class Simulation:
     self.method = meth
 
 
-  def add_row(self, new_row, flow_size, fid):
+  def add_row(self, new_row, flow_size, fid, weight):
     # get a snapshot of the existing prices, ratios and data_sent and re-init the object
     (routes, ratios, data_sent, time, maxdata,w, num_flows) = self.umax_mp.get_snapshot()
     #print("adding row ")
@@ -344,14 +344,14 @@ class Simulation:
       new_ratios = [[0.0]]
       new_datasent = [[0.0]]
       new_maxdata = [[flow_size]]
-      weight = [[1.0]]
+      weight = [[weight]]
       self.real_id = np.array([fid])
     else:
       new_matrix =  np.vstack([routes, new_row])
       new_ratios = np.vstack([ratios, [0.0]])
       new_datasent = np.vstack([data_sent, [0.0]])
       new_maxdata = np.vstack([maxdata, [flow_size]])
-      weight = np.vstack([w, [1.0]])
+      weight = np.vstack([w, [weight]])
       self.real_id = np.vstack([self.real_id, [fid]])
     num_flows += 1
 
@@ -372,7 +372,7 @@ class Simulation:
     new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     leafDstid= np.floor(f.dstid/self.numPortsPerLeaf);
     new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
-    self.add_row(new_row, f.flowsize, f.flowid)
+    self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
     print("addFlow new row ")
     print(new_row)

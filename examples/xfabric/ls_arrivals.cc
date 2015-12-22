@@ -54,7 +54,7 @@ void createTopology(void)
   for (uint32_t i=0; i <hosts.GetN(); i++) {
     ports[i] = 1;
   }
-  allNodes = NodeContainer (spines, leafnodes, hosts);
+  allNodes = NodeContainer (hosts,  leafnodes, spines);
   InternetStackHelper internet;
   internet.Install (allNodes);
 
