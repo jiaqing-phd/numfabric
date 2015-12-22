@@ -45,10 +45,10 @@ void createTopology(void)
 {
 
   std::cout<<"Creating "<<num_spines<<" spines "<<num_leafs<<" leaves "<<num_hosts_per_leaf<<" hosts  per leaf "<<std::endl;
-  spines.Create(num_spines);
-  leafnodes.Create(num_leafs);
   hosts.Create(num_hosts_per_leaf*num_leafs);
-
+  leafnodes.Create(num_leafs);
+  spines.Create(num_spines);
+  
   ports = new uint16_t [hosts.GetN()];
    
   for (uint32_t i=0; i <hosts.GetN(); i++) {

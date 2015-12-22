@@ -320,12 +320,13 @@ class Simulation:
     self.numleaf = numleaf
     self.numPortsPerLeaf = numPortsPerLeaf
     self.numspines = numspines
+    self.num_links= nports + numleaf * numspines
     if(meth == "mp"):
-        self.umax_mp = UtilMax(self.numports, method=meth, alpha=1.0)
+        self.umax_mp = UtilMax(self.num_links, method=meth, alpha=1.0)
     elif(meth ==  "alpha_dif"):
-        self.umax_mp = UtilMax(self.numports, method=meth, alpha=0.25)
+        self.umax_mp = UtilMax(self.num_links, method=meth, alpha=0.25)
     else:
-        self.umax_mp = UtilMax(self.numports, method=meth, alpha=1.0)
+        self.umax_mp = UtilMax(self.num_links, method=meth, alpha=1.0)
 
 
     self.realids = {}
@@ -364,12 +365,13 @@ class Simulation:
 
   def addFlow(self, f):
     print("flow being inserted.. flow id %d "%(f.flowid))
-    new_row = np.zeros((1, self.numports + self.numleaf + self.numspines))
+    new_row = np.zeros((1, self.numports + self.numleaf * self.numspines))
     new_row[0, f.srcid] = 1
     new_row[0, f.dstid] = 1
-    new_row[0, self.numports + floor(f.srcid/self.numPortsPerLeaf)]= 1
-    new_row[0, self.numports + floor(f.dstid/self.numPortsPerLeaf)]= 1
-    new_row[0, self.numports + self.numleaf + mod(f.ecmp_hash, self.numspines]= 1
+    leafSrcid= np.floor(f.srcid/self.numPortsPerLeaf);
+    new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
+    leafDstid= np.floor(f.dstid/self.numPortsPerLeaf);
+    new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid)
     f.added = True
     print("addFlow new row ")
