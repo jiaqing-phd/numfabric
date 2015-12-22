@@ -29,12 +29,11 @@ for line in fh:
   l1 = line.rstrip();
   elems = l1.split(' ')
   if(len(elems) > 1):
-    if(elems[0] == "num_ports"):
-      numports = int(elems[num_port_index])
-      numleaf=4
-      numspines=2
-      numPortsPerLeaf=2
-      assert(numleaf*numPortsPerLeaf==numports)
+    if(elems[0] == "topo_info"):
+      numleaf = int(elems[1])
+      numspines = int(elems[2])
+      numPortsPerLeaf = int(elems[3])
+      numports=numleaf*numPortsPerLeaf
       sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines)
     if(elems[0] == "flow_start"):
       # new flow, we need to insert into our matrix
