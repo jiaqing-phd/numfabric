@@ -412,11 +412,13 @@ main(int argc, char *argv[])
   cmd.Parse (argc, argv);
   common_config(); 
 
+  dump_config();
+
   std::cout<<"print me "<<std::endl;
   std::cout<<*argv<<std::endl;
   std::cout<<"set prefix to "<<prefix<<std::endl;
   
-  LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_DEBUG);
+ // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_DEBUG);
  // initAll();
 
   if(deadline_mode){

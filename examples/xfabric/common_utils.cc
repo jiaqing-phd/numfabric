@@ -197,6 +197,13 @@ CommandLine addCmdOptions(void)
   return cmd;
 }
 
+void dump_config(void)
+{
+  std::cout<<"num_spines "<<num_spines<<std::endl;
+  std::cout<<"num_leafs "<<num_leafs<<std::endl;
+  std::cout<<"num_hosts_per_leaf "<<num_hosts_per_leaf<<std::endl;
+}
+
 void common_config(void)
 {
   double total_rtt = link_delay * 6.0;

@@ -48,7 +48,7 @@ for line in f:
   if(xy[0] == "DestRate"):
     flow_id=int(xy[2])
     t1 = float(xy[3])
-    rate=float(xy[5])
+    rate=float(xy[4])
 
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
