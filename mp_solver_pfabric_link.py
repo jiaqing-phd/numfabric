@@ -6,8 +6,8 @@ import numpy as np
 
 ###################### Global constants ########################
 num_instances = 1
-max_iterations = 10000
-max_capacity = 1.0
+max_iterations = 20000
+max_capacity = 10.0
 gamma = 0.01
 smoothing = 0.0
 tol = 1e-3
@@ -388,7 +388,7 @@ class Simulation:
   def dropFlow(self, fidx):
     # remove from the matrix and remove from the flow list
     #self.umax_mp.routes = np.delete(self.umax_mp.routes, fidx, axis=0)
-    # find the flow corresponding to this row in Flows
+    # find the f2ow corresponding to this row in Flows
     #print("dropFlow : fidx %d "%fidx)
     flowid = self.real_id[fidx]
     self.real_id = np.delete(self.real_id, fidx, axis=0)
@@ -573,7 +573,7 @@ class Simulation:
        #self.umax_mp.step()
        self.execute_next_event()
        self.update_rates_wrapper()
-
+       #print(self.umax_mp.c )
        # check for new flows
        #for f in self.Flows:
        #  if(f.starttime <= it and f.added == False):
