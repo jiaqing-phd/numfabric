@@ -34,8 +34,8 @@ for line in fh:
       numspines = int(elems[2])
       numPortsPerLeaf = int(elems[3])
       numports=numleaf*numPortsPerLeaf
-      edgeCapacity=1 #int(elems[4])
-      fabricCapacity=4#int(elems[5])
+      edgeCapacity=int(elems[4])
+      fabricCapacity=int(elems[5])
       sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
     if(elems[0] == "flow_start"):
       # new flow, we need to insert into our matrix
