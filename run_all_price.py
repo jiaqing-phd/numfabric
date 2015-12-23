@@ -25,7 +25,7 @@ for line in f:
   arguments[arg_key] = arg_val
 
 orig_prefix=arguments["prefix"]
-for pupdate_time in (0.000016 0.000032 0.000048 0.000064):
+for pupdate_time in (0.000016, 0.000032, 0.000048, 0.000064):
     arguments["price_update_time"] = str(pupdate_time)
     prefix_str=orig_prefix
     prefix_str=prefix_str+"_"+arguments["price_update_time"]

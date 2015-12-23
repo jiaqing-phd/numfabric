@@ -1,4 +1,5 @@
 #include "declarations.h"
+#include <string>
 using namespace ns3;
 
 void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
@@ -190,6 +191,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("num_hosts_per_leaf", "num_hosts_per_leaf", num_hosts_per_leaf);
   cmd.AddValue ("fabric_datarate", "fabric_datarate", fabric_datarate);
   cmd.AddValue ("edge_datarate", "edge_datarate", edge_datarate);
+  cmd.AddValue ("application_datarate", "application_datarate", application_datarate);
   cmd.AddValue ("flow_ecmp", "flow_ecmp", flow_ecmp);
   cmd.AddValue ("packet_spraying", "packet_spraying", packet_spraying);
   cmd.AddValue ("dt_val", "dt_value", dt_val);
@@ -197,13 +199,37 @@ CommandLine addCmdOptions(void)
   return cmd;
 }
 
+
+std::string get_datarate(std::string s)
+{
+  std::string::size_type pos = s.find('G');
+    if (pos != std::string::npos)
+    {
+        return s.substr(0, pos);
+    }
+    else
+    {
+        return s;
+    }
+}
+
 void dump_config(void)
 {
   std::cout<<"num_spines "<<num_spines<<std::endl;
   std::cout<<"num_leafs "<<num_leafs<<std::endl;
   std::cout<<"num_hosts_per_leaf "<<num_hosts_per_leaf<<std::endl;
+  std::cout<<"price_update_time "<<price_update_time<<std::endl;
+  std::cout<<"guard_time "<<guard_time<<std::endl;
+  std::cout<<"dt "<<dt_val<<std::endl;
+  std::cout<<"kvalue_rate "<<kvalue_rate<<std::endl;
+  std::cout<<"kvalue_price "<<kvalue_price<<std::endl;
+  std::cout<<"application_datarate "<<application_datarate<<std::endl;
 
-  std::cout<<"topo_info "<<num_leafs<<" "<<num_spines<<" "<<num_hosts_per_leaf<<std::endl;
+  std::string::size_type sz;
+  double edge_data = atof(get_datarate(edge_datarate).c_str());
+  double fabric_data = atof(get_datarate(fabric_datarate).c_str())/edge_data; 
+
+  std::cout<<"topo_info "<<num_leafs<<" "<<num_spines<<" "<<num_hosts_per_leaf<<" 1 "<<fabric_data<<std::endl;
 }
 
 void common_config(void)
