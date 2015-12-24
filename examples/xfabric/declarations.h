@@ -163,4 +163,5 @@ extern double kvalue_price;
 extern double kvalue_rate;
 
 extern void dump_config(void);
+extern bool price_multiply;
 #endif 

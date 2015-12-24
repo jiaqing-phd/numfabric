@@ -197,6 +197,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("flow_ecmp", "flow_ecmp", flow_ecmp);
   cmd.AddValue ("packet_spraying", "packet_spraying", packet_spraying);
   cmd.AddValue ("dt_val", "dt_value", dt_val);
+  cmd.AddValue ("price_multiply", "price_multiply", price_multiply);
 
   return cmd;
 }
@@ -281,6 +282,7 @@ void common_config(void)
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
   Config::SetDefault("ns3::PrioQueue::gamma1",DoubleValue(xfabric_eta));
+  Config::SetDefault("ns3::PrioQueue::price_multiply",BooleanValue(price_multiply));
 
 
   Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));

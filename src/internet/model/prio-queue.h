@@ -184,6 +184,7 @@ private:
   bool m_pkt_tagged;
   bool m_onlydctcp;
   bool m_pfabricdequeue;
+  bool m_price_multiply;
   bool m_strawmancc;
   bool m_dctcp_mark;
   DataRate m_bps;

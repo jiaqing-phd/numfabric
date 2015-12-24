@@ -157,6 +157,7 @@ void CheckIpv4Rates (NodeContainer &allNodes);
 void printlink(Ptr<Node> n1, Ptr<Node> n2);
 Ipv4InterfaceContainer assignAddress(NetDeviceContainer dev, uint32_t subnet_index);
 void CheckQueueSize (Ptr<Queue> queue);
+bool price_multiply = false;
 
 
 #endif 

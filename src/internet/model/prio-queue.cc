@@ -101,6 +101,12 @@ TypeId PrioQueue::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::PrioQueue")
     .SetParent<Queue> ()
     .AddConstructor<PrioQueue> ()
+
+    .AddAttribute("price_multiply",
+                  "Enable or disable old multiply",
+                  BooleanValue(false),
+                  MakeBooleanAccessor (&PrioQueue::m_price_multiply),
+                  MakeBooleanChecker ())
     .AddAttribute("m_pfabricdequeue",
                   "Enable or disable only pfabric like behavior",
                   BooleanValue(false),
@@ -162,7 +168,7 @@ TypeId PrioQueue::GetTypeId (void)
                    BooleanValue (true),
                    MakeBooleanAccessor (&PrioQueue::xfabric_price),
                    MakeBooleanChecker ())
-    .AddAttribute ("host_compensate", 
+       .AddAttribute ("host_compensate", 
                    "host compensates for the price",
                    BooleanValue (false),
                    MakeBooleanAccessor (&PrioQueue::host_compensate),
@@ -200,6 +206,7 @@ TypeId PrioQueue::GetTypeId (void)
                    TimeValue(Seconds(0.005)),
                    MakeTimeAccessor (&PrioQueue::m_guardTime),
                    MakeTimeChecker())
+	
 ;
   return tid;
 }
@@ -346,8 +353,12 @@ PrioQueue::updateLinkPrice(void)
 
     double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
   
-    double new_price = min_price_inc - m_gamma1*incr*current_price;
-    //double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
+    double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
+    
+    if(m_price_multiply) {
+       new_price = min_price_inc - m_gamma1*incr*current_price;
+    }
+
 //    std::cout<<" eta value "<<m_gamma1<<std::endl;
     
    if(new_price < 0.0) {

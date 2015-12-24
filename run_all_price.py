@@ -25,6 +25,8 @@ for line in f:
   arguments[arg_key] = arg_val
 
 orig_prefix=arguments["prefix"]
+
+print(orig_prefix)
 for pupdate_time in (0.000016, 0.000032, 0.000048, 0.000064):
     arguments["price_update_time"] = str(pupdate_time)
     prefix_str=orig_prefix
@@ -38,9 +40,8 @@ for pupdate_time in (0.000016, 0.000032, 0.000048, 0.000064):
     cmd_line="./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
     print(cmd_line)
     subprocess.call(cmd_line, shell="False")
-
-#cmd_line="python "+plot_script+" "+prefix_str
-#print(cmd_line)
-#subprocess.call(cmd_line, shell="False")
+    #cmd_line="python "+plot_script+" "+prefix_str
+    #print(cmd_line)
+    #subprocess.call(cmd_line, shell="False")
 f.close()
 
