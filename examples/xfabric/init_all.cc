@@ -53,6 +53,7 @@ double target_queue = 15000.0; // DGD parameter
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
 double price_update_time = 0.000200; 
+double xfabric_eta=10.0;
 double guard_time = 0.000100; 
 
 float sampling_interval = 0.0001;
@@ -145,6 +146,8 @@ std::string prefix ="test";
 uint32_t util_method =2;
 double fct_alpha=0.1;
 uint16_t *ports;
+
+bool wfq;
 
 void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes);
 CommandLine addCmdOptions(CommandLine cmd);

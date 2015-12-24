@@ -49,6 +49,7 @@ extern uint32_t hostflows;
 
 
 extern double price_update_time ;
+extern double xfabric_eta;
 extern double guard_time;
 extern double rate_update_time ;
 extern double dgd_gamma;

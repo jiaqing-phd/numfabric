@@ -73,7 +73,7 @@ Ipv4L3Protocol::GetTypeId (void)
                   BooleanValue(false),
                   MakeBooleanAccessor (&Ipv4L3Protocol::host_compensate),
                   MakeBooleanChecker ())
-    .AddAttribute("m_wfq",
+    .AddAttribute("wfq_testing",
                   "Enable or disable wfq like behavior",
                   BooleanValue(false),
                   MakeBooleanAccessor (&Ipv4L3Protocol::m_wfq),
@@ -881,7 +881,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
    std::string flowkey = ss.str(); 
 
   if(rate_based && issource(source)) {
-    NS_LOG_LOGIC(" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid());
+    std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
   } else {
     NS_LOG_LOGIC(" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid());
@@ -1317,14 +1317,14 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     flow_target_rate[flowkey] = target_rate;
 
 
-/*
+
     if(m_wfq) {
       uint32_t fid = 0;
       fid = flowids[flowkey];
       double fweight = 1.0; //futils_copy[fid];
       return ((packet->GetSize()+46)*8.0) / fweight;
     } 
-*/
+
 /*    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; */
     return current_deadline * 1.0;
 }

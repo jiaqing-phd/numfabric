@@ -373,8 +373,15 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       } else {
         stop_a_flow(sourcenodes, sinknodes);
       }
-  } 
-  Simulator::Schedule (Seconds (0.01), &startflowwrapper, sourcenodes, sinknodes);
+  }
+
+  double delay = 0.01;
+/*
+  if(num_flows > 3) {
+    delay = 0.01;
+  }*/ 
+  
+  Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }
 void setUpTraffic()

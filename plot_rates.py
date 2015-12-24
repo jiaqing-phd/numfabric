@@ -56,6 +56,24 @@ for line in f:
 
     dtimes[flow_id].append(t1)
     drates[flow_id].append(rate)
+
+  if(xy[0] == "QueueStats"):
+    queue_id = xy[1]
+    qtime = float(xy[2])
+    qsize = float(xy[3])
+    qfifosize = float(xy[4])
+    qprice = float(xy[5])
+    
+    
+    if(queue_id not in qtimes):
+      qtimes[queue_id] = []
+      qsizes[queue_id] = []
+      qprices[queue_id] = []
+      
+    
+    qtimes[queue_id].append(qtime)
+    qsizes[queue_id].append(qsize)
+    qprices[queue_id].append(qprice)
     
     
 colors = ['r','b','g', 'm', 'c', 'y','k']
@@ -74,6 +92,20 @@ plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
 
 plt.draw()
 
+plt.figure(2)
+plt.title("QueuePrices")
+i=0
+for key in qprices:
+#  if(key == "0_0_1" or key == "2_2_0" or key == "3_3_0" or key == "1_1_4" or key == "1_1_5"):
+#  if(key == "7_7_0" or key == "0_0_1" or key == "1_1_3" or key == "1_1_2" or key == "2_2_10" or key=="3_3_4" or key=="4_4_12" or key=="6_6_0"):
+      plt.plot(qtimes[key], qprices[key], colors[i], label=str(key)) 
+      i = (i+1)%len(colors)
+#plt.plot(qx1, qy1, 'k', label="switch1") 
+plt.xlabel('Time in seconds')
+plt.ylabel('Queue Price')
+plt.legend(loc='lower right', prop={'size':6})
+plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_prices"))
+plt.draw()
 
 
 plt.show()
