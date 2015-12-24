@@ -23,3 +23,5 @@ flow_ecmp=true
 dt_val=0.000048
 kvalue_price=50000
 kvalue_rate=10000
+wfq_testing=false
+xfabric_eta=10.0

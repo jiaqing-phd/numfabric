@@ -386,7 +386,6 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
      delay = 0.03;
   }
   */
-
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }

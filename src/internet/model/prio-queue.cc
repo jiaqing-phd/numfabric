@@ -259,6 +259,7 @@ PrioQueue::getRateDifference(Time time_interval)
     incoming_bytes = 0.0;
 
 //    std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
+    std::cout<<" DGD link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<std::endl;
     return rate_difference;
 }
 
@@ -269,10 +270,13 @@ PrioQueue::getRateDifferenceNormalized(Time time_interval)
     double available_capacity = (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
 
     double ratio = 1.0 - link_incoming_rate / available_capacity;
+
+  
     //double ratio1 = std::max(0.0, ratio);
  
     //current_incoming_rate = link_incoming_rate;
     //NS_LOG_LOGIC(" queuerate "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" current_incoming_rate "<<link_incoming_rate<<" bytes "<<incoming_bytes<<" available_capacity "<<available_capacity<<" ratio "<<ratio);
+//    std::cout<<" xFabric link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<std::endl;
     outgoing_bytes = 0.0;
     return ratio;
 }
@@ -343,7 +347,8 @@ PrioQueue::updateLinkPrice(void)
     double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
   
     //double new_price = min_price_inc - m_gamma1*incr*current_price;
-    double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma
+    double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
+//    std::cout<<" eta value "<<m_gamma1<<std::endl;
     
    if(new_price < 0.0) {
     new_price = 0.0;
@@ -1087,7 +1092,7 @@ PrioQueue::DoDequeue (void)
     //NS_LOG_LOGIC("virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime);  
     
   } else {
-//    std::cout<<" plain dequeue "<<std::endl;
+    std::cout<<" plain dequeue "<<std::endl;
   }
  
 

@@ -139,7 +139,7 @@ CheckQueueSize (Ptr<Queue> queue)
   }
 
   
-//    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
     if(Simulator::Now().GetSeconds() >= sim_time+1.0) {
       Simulator::Stop();
     }
@@ -150,6 +150,7 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;  
+  cmd.AddValue ("wfq_testing", "wfq_testing", wfq);
   cmd.AddValue ("fct_alpha", "fctalpha for utility", fct_alpha);
   cmd.AddValue ("nNodes", "Number of nodes", N);
   cmd.AddValue ("prefix", "Output prefix", prefix);
@@ -179,6 +180,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
+  cmd.AddValue ("xfabric_eta", "xfabric_eta", xfabric_eta);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
@@ -266,6 +268,8 @@ void common_config(void)
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
     Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   }
+
+  Config::SetDefault("ns3::Ipv4L3Protocol::wfq_testing", BooleanValue(wfq));
     
   Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
@@ -276,6 +280,7 @@ void common_config(void)
   Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
+  Config::SetDefault("ns3::PrioQueue::gamma1",DoubleValue(xfabric_eta));
 
 
   Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
