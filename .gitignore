@@ -1,3 +1,9 @@
+
+# Compiled Object files
+*.out
+*.err
+*.png
+
 # Compiled Object files
 *.slo
 *.lo

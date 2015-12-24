@@ -44,7 +44,7 @@ def ewma(values, g=1.0/8):
 for line in f:
   l1 = line.rstrip();
   xy = l1.split(' ');
-  
+
   if(xy[0] == "DestRate"):
     flow_id=int(xy[2])
     t1 = float(xy[3])
@@ -56,26 +56,24 @@ for line in f:
 
     dtimes[flow_id].append(t1)
     drates[flow_id].append(rate)
-    
-    
+
+
 colors = ['r','b','g', 'm', 'c', 'y','k']
 
-plt.figure(1)
+plt.figure;
 plt.title("Sending rates")
 i=0
 for key in dtimes:
-  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key)) 
+  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key))
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')
 plt.ylabel('Rate in Mbps')
+plt.title('%s' %(pre) )
 plt.legend(loc='upper right')
-plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
+plt.savefig('%s.%s.png' %(pre,"rates"))
 
 plt.draw()
-
-
-
 plt.show()
 
 f.close()
