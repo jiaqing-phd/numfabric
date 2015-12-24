@@ -346,8 +346,8 @@ PrioQueue::updateLinkPrice(void)
 
     double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
   
-    //double new_price = min_price_inc - m_gamma1*incr*current_price;
-    double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
+    double new_price = min_price_inc - m_gamma1*incr*current_price;
+    //double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
 //    std::cout<<" eta value "<<m_gamma1<<std::endl;
     
    if(new_price < 0.0) {

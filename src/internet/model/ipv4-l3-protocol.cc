@@ -881,7 +881,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
    std::string flowkey = ss.str(); 
 
   if(rate_based && issource(source)) {
-    std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
+ //   std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
   } else {
     NS_LOG_LOGIC(" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid());
