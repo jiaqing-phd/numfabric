@@ -295,6 +295,8 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   // get the ipv4 object 
   Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
   ipv4->setPriceValid(flowkey);
+
+  ipv4->setNumHops(flowkey, tcpHeader.GetHopCount());
   //uint32_t fid = ipv4->flowids[flowkey];
 
   if(m_strawmancc || m_dctcp) { // we want to update rates in case of both strawman and dctcp

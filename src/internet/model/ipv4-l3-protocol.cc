@@ -880,6 +880,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
    ss <<source<<":"<<destination<<":"<<destPort;
    std::string flowkey = ss.str(); 
 
+
   if(rate_based && issource(source)) {
  //   std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
@@ -1457,32 +1458,17 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     priheader.wfq_weight = virtual_pkt_length;
 	  priheader.residue = (store_prio[flowkey] - current_netw_price);
 
-    double num_hops = 1.0;
+    uint32_t flow_num_hops = 1;
     if(host_compensate) {
-      uint32_t f = flowids[flowkey];
-      num_hops = 2.0;
-    /*  if(f == 1 || f == 3 || f == 5) {
-        num_hops = 4.0;
-      }
-      if(f == 2 || f == 4) {
-        num_hops =  5.0;
-      }
-	*/
-   /*
-	  if(f==1 || f==2 || f==4 || f==5 || f ==6 || f==8 || f==11) {
-		num_hops = 2.0;
-	  }
-	 if(f==3 || f==7 || f==10) {
-		num_hops = 3.0;
-	 }
-     if(f == 9 ) {
-		num_hops = 5.0;
-	 }
-  */
+      if(num_hops.find(flowkey) != num_hops.end()) {
+      	flow_num_hops = num_hops[flowkey];
+      } else {
+	flow_num_hops = 4;
+      }	
    }
 
     if(price_valid[flowkey]) {
-      priheader.residue = priheader.residue / num_hops;
+      priheader.residue = priheader.residue / (1.0*flow_num_hops);
     } else {
       priheader.residue = 50000.0; // basically invalid value
     }
@@ -1544,6 +1530,11 @@ void Ipv4L3Protocol::removeFlow(uint32_t fid)
 void Ipv4L3Protocol::setPriceValid(std::string flow)
 {
   price_valid[flow] = true;
+}
+
+void Ipv4L3Protocol::setNumHops(std::string flow, uint32_t nh)
+{
+  num_hops[flow] = nh;
 }
 
   
@@ -1657,8 +1648,6 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
     {
       if (outInterface->IsUp ())
         {
-          NS_LOG_LOGIC ("Send to gateway " << route->GetGateway ());
-          NS_LOG_LOGIC("packet size is "<<packet->GetSize()<<" id "<<packet->GetUid());
           if ( packet->GetSize () > outInterface->GetDevice ()->GetMtu () )
             {
               std::list<Ptr<Packet> > listFragments;

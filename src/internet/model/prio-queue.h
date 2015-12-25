@@ -99,6 +99,9 @@ public:
   double outgoing_rate;
   double incoming_bytes;
   double outgoing_bytes;
+
+  double departure_rate;
+  double previous_departure;
    
   uint32_t getFlowID(Ptr<Packet> p);
   int getflowid_temp(std::string);
@@ -125,6 +128,10 @@ public:
   uint32_t GetCurCount(void);
   uint32_t GetCurSize(void);
   double getCurrentPrice(void);
+  double getCurrentDepartureRate(void);
+  double getCurrentUtilTerm(void);
+  double short_ewma_const;
+  double current_util;
 
   uint32_t m_ECNThreshBytes;  
   uint32_t m_ECNThreshPackets;

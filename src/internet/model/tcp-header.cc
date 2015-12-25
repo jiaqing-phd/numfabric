@@ -61,6 +61,19 @@ void TcpHeader::SetECN(int ec)
   ecn_ = ec;
 }
 
+void 
+TcpHeader::SetHopCount(uint32_t h)
+{
+  m_hop_count = h;
+}
+
+uint32_t 
+TcpHeader::GetHopCount(void) const
+{
+ return m_hop_count;
+}
+
+
 double TcpHeader::GetRate() const
 {
   return m_rate;
@@ -356,6 +369,9 @@ TcpHeader::Serialize (Buffer::Iterator start)  const
   uint8_t b[sizeof(double)];
   memcpy((void *)b, (void *)&m_linkprice, sizeof(double));
   i.Write(b, sizeof(double));
+
+  i.WriteHtonU32 (m_hop_count);
+
   // Serialize options if they exist
   // This implementation does not presently try to align options on word
   // boundaries using NOP options
@@ -411,6 +427,8 @@ TcpHeader::Deserialize (Buffer::Iterator start)
   uint8_t b[sizeof(double)];
   i.Read(b, sizeof(double));
   memcpy((void *)&m_linkprice, (void *)b, sizeof(double)); 
+
+  m_hop_count = i.ReadNtohU32();
 
   // Deserialize options if they exist
   m_options.clear ();
@@ -483,7 +501,8 @@ uint8_t
 TcpHeader::CalculateHeaderLength () const
 {
   //uint32_t len = 20;
-  uint32_t len = 40; //kanthi 4 ecn 8 m_rate 8 m_linkprice
+  //uint32_t len = 40; //kanthi 4 ecn 8 m_rate 8 m_linkprice
+  uint32_t len = 44; //kanthi 4 ecn 8 m_rate 8 m_linkprice 4 hop counter;
   TcpOptionList::const_iterator i;
 
   for (i = m_options.begin (); i != m_options.end (); ++i)

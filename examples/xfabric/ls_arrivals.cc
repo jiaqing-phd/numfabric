@@ -374,9 +374,9 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_a_flow(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.1;
+  double delay = 0.0;
   if(num_flows > 4) {
-     delay = 1;
+     delay = 4;
   }
   /*
   if(num_flows > 3) {
@@ -430,7 +430,7 @@ main(int argc, char *argv[])
   std::cout<<*argv<<std::endl;
   std::cout<<"set prefix to "<<prefix<<std::endl;
   
- // LogComponentEnable("Ipv4GlobalRouting", LOG_LEVEL_DEBUG);
+ // LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
  // initAll();
 
   if(deadline_mode){

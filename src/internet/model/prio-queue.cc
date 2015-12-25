@@ -227,6 +227,8 @@ PrioQueue::PrioQueue () :
   control_virtualtime = 0.0;
   updated_virtual_time = 0.0;
   current_price = 0.0;
+  previous_departure = 1.0 * 1.0e+9; // in ns
+  //want to make sure that previous departure is start of simulation
 
   Simulator::Schedule(Seconds(1.0), &ns3::PrioQueue::updateLinkPrice, this);
   
@@ -273,18 +275,17 @@ PrioQueue::getRateDifference(Time time_interval)
 double
 PrioQueue::getRateDifferenceNormalized(Time time_interval)
 {
-    double link_incoming_rate = (8.0 * outgoing_bytes) /(1000000.0 * time_interval.GetSeconds());
+   // double link_outgoing_rate = (8.0 * outgoing_bytes) /(1000000.0 * time_interval.GetSeconds());
+    double time_considered = time_interval.GetMicroSeconds() - m_guardTime.GetMicroSeconds();
+    double link_outgoing_rate = ((8.0 * outgoing_bytes)+12000) /time_considered; //in Mbps
     double available_capacity = (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
 
-    double ratio = 1.0 - link_incoming_rate / available_capacity;
+    double ratio = 1.0 - link_outgoing_rate / available_capacity;
 
   
-    //double ratio1 = std::max(0.0, ratio);
- 
-    //current_incoming_rate = link_incoming_rate;
-    //NS_LOG_LOGIC(" queuerate "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" current_incoming_rate "<<link_incoming_rate<<" bytes "<<incoming_bytes<<" available_capacity "<<available_capacity<<" ratio "<<ratio);
-//    std::cout<<" xFabric link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<std::endl;
+//    std::cout<<" xFabric link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_outgoing_rate<<" time considered "<<time_considered<<" bytes transferred "<<(8.0*outgoing_bytes)+12000<<" ratio "<<ratio<<" time interval "<<1000000.0*time_interval.GetSeconds()<<std::endl;
     outgoing_bytes = 0.0;
+    current_util = ratio;
     return ratio;
 }
 
@@ -294,6 +295,17 @@ PrioQueue::getCurrentPrice(void)
   return current_price;
 }
   
+double
+PrioQueue::getCurrentDepartureRate(void)
+{
+  return departure_rate;
+}
+
+double
+PrioQueue::getCurrentUtilTerm(void)
+{
+  return current_util;
+}
 
 void
 PrioQueue::updateLinkPrice(void)
@@ -1026,7 +1038,33 @@ PrioQueue::DoDequeue (void)
 //  Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
 //  double rand_num = uv->GetValue(0.0, 1.0);
   Ptr<Packet> p = m_packets.front ();
-  outgoing_bytes += p->GetSize(); 
+
+  if(update_minimum) {
+     outgoing_bytes += p->GetSize(); 
+  }
+
+  short_ewma_const = 10000; //10us - make is same as ipv4 short const - TBD
+
+  double pkt_departure = Simulator::Now().GetNanoSeconds();
+  double pkt_interdeparture = pkt_departure - previous_departure;
+  previous_departure = pkt_departure;
+  double pkt_rate = (p->GetSize() * 1.0 * 8.0) / (pkt_interdeparture * 1.0e-9 * 1.0e+6); // should be in Mbps
+
+
+  // update rate
+  if(pkt_interdeparture == 0.0) {
+      departure_rate = m_bps.GetBitRate()/1000000.0;
+  } else {
+
+      double epower = exp((-1.0*pkt_interdeparture)/short_ewma_const);
+      double first_term = (1.0 - epower)*pkt_rate;
+
+      double second_term = epower * departure_rate;
+      departure_rate = first_term + second_term;
+   }
+
+
+//  std::cout<<"QRATE linkid "<<linkid_string<<" "<<pkt_departure<<" "<<pkt_interdeparture<<" "<<pkt_rate<<std::endl;
 
   double lowest_deadline = 0.0;
   double pkt_wait_duration = 0.0;
@@ -1125,29 +1163,22 @@ PrioQueue::DoDequeue (void)
    ret_packet->RemoveHeader(temp_ppp);
    ret_packet->RemoveHeader(temp_pheader);
    ret_packet->RemoveHeader(temp_ip_header);
+   ret_packet->RemoveHeader(temp_tcpheader);
 
-   if(pkt_wait_duration >= 0) {
-    if(pkt_wait_duration > ONEPACKET) {
-      // bottlenecked
-     // NS_LOG_LOGIC(" setting ecn ";
-      temp_ip_header.SetEcn(Ipv4Header::ECN_CE);
-    } else {
-     // NS_LOG_LOGIC(" notsetting ecn ";
-    }
-   }
-
-  bool control_packet = false;
+   bool control_packet = false;
 
   
-  uint32_t header_size_total = temp_tcpheader.GetSerializedSize() + temp_ip_header.GetSerializedSize() + temp_pheader.GetSerializedSize() + temp_ppp.GetSerializedSize();
-  if((pktsize - header_size_total) == 0) {
+   uint32_t header_size_total = temp_tcpheader.GetSerializedSize() + temp_ip_header.GetSerializedSize() + temp_pheader.GetSerializedSize() + temp_ppp.GetSerializedSize();
+   if((pktsize - header_size_total) == 0) {
     control_packet = true;
-  }
+   }
 
     // increment virtual time
     if(!control_packet) {
       current_virtualtime = std::max(current_virtualtime*1.0, lowest_deadline);
-//      std::cout<<"noncontrol pkt size "<<pktsize<<" deadline "<<lowest_deadline<<" "<<Simulator::Now().GetSeconds()<<" "<<pkt_wait_duration<<" "<<GetLinkIDString()<<std::endl;
+      uint32_t num_hops = temp_tcpheader.GetHopCount();
+      num_hops++;
+      temp_tcpheader.SetHopCount(num_hops);
     } else if (control_packet) {
   //    std::cout<<"control pkt size "<<pktsize<<" deadline "<<lowest_deadline<<" "<<Simulator::Now().GetSeconds()<<" "<<pkt_wait_duration<<" "<<GetLinkIDString()<<std::endl;
       control_virtualtime =  std::max(control_virtualtime*1.0, lowest_deadline);
@@ -1164,50 +1195,13 @@ PrioQueue::DoDequeue (void)
    ph.netw_price += current_price;
    temp_pheader.SetData(ph);
 
+
+   ret_packet->AddHeader(temp_tcpheader);
    ret_packet->AddHeader(temp_ip_header);
    ret_packet->AddHeader(temp_pheader);
    ret_packet->AddHeader(temp_ppp);
 
-   //NS_LOG_LOGIC("Queue "<<linkid_string<<" node "<<nodeid<<" pkt_wait_duration "<<pkt_wait_duration<<" "<<Simulator::Now().GetNanoSeconds()<<" flow "<<getflowid_temp(GetFlowKey(ret_packet))<<" pkt "<<ret_packet->GetUid());
-
-   if(delay_mark) {
-    //double pkt_depart = Simulator::Now().GetNanoSeconds();
-    //double pkt_wait_duration = pkt_depart - pkt_arrival[ret_packet->GetUid()];
-    ecn_delaythreshold = 1000000000.0 * (m_ECNThreshBytes * 8.0)/(m_bps.GetBitRate()); // in ns, assuming m_link_datarate is in bps
-    std::string flowkey = GetFlowKey(ret_packet);
-  //  if(linkid_string == "0_0_1") {
- //     NS_LOG_LOGIC("QWAIT "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" "<<flow_ids[flowkey]<<" spent "<<pkt_wait_duration<<" in queue "<<linkid_string);
-//      NS_LOG_LOGIC("DEQUEUE "<<linkid_string<<" "<<Simulator::Now().GetMicroSeconds()<<" "<<flow_ids[flowkey]<<" pkt size "<<ret_packet->GetSize());
-   // }
-//    NS_LOG_LOGIC(" DEQUEUE PKT "<<ret_packet->GetUid()<<" link "<<linkid_string);
-  
-    if(pkt_wait_duration > ecn_delaythreshold) {
-        Ipv4Header ipheader;
-        PrioHeader pheader;
-        PppHeader  ppp;
-
-        ret_packet->RemoveHeader(ppp);
-        ret_packet->RemoveHeader(pheader);
-        ret_packet->RemoveHeader(ipheader);
-
-        ipheader.SetEcn(Ipv4Header::ECN_CE);
-        
-        ret_packet->AddHeader(ipheader);
-        ret_packet->AddHeader(pheader);
-        ret_packet->AddHeader(ppp);
-
-        //std::string flowkey = GetFlowKey(ret_packet);
-        //NS_LOG_LOGIC("marking pkt from flow "<<flowkey);
-
-    }
-  }
-
-  /* Update the network price - 08/09 kn */
-
-//  GetCurSize(); // dummy call to get debug output	
-
-
-  return ret_packet;
+   return ret_packet;
 }
 
 void

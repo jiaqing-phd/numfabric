@@ -56,8 +56,8 @@ double price_update_time = 0.000200;
 double xfabric_eta=10.0;
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.0001;
-uint32_t pkt_size = 1454;
+float sampling_interval = 0.001;
+uint32_t pkt_size = 1446; // reduced further to allow for 1 byte counter
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
 uint32_t weight_normalized = 0;
@@ -75,7 +75,7 @@ uint32_t vpackets = 1;
 bool host_compensate;
 
 /* TCP variables */
-uint32_t max_segment_size = 1414;
+uint32_t max_segment_size = 1410; // reduced further to allow for 1 bytes counter
 uint32_t ssthresh_value = 3000;
 uint32_t recv_buf_size = 1310720;
 uint32_t send_buf_size = 1310720;

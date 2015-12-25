@@ -150,6 +150,7 @@ public:
   double GetShortRate(std::string fkey);
   void setFlow(std::string flow, uint32_t fid, double size=0.0, uint32_t weight = 1.0);
   void setPriceValid(std::string);
+  void setNumHops(std::string, uint32_t h);
   void removeFlow(uint32_t fid);
   void setFlows(FlowId_ flowid_set);
   void setFlowUtils(std::vector<double> futils);
@@ -199,6 +200,7 @@ public:
   bool rate_based;
   bool host_compensate;
   std::map<std::string, bool> price_valid;
+  std::map<std::string, uint32_t> num_hops;
   uint32_t bytes_in_queue;
   double deq_bytes;
   std::map<std::string, double> cnp;

@@ -79,8 +79,10 @@ CheckQueueSize (Ptr<Queue> queue)
     uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
     std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
     double cur_price = StaticCast<PrioQueue> (queue)->getCurrentPrice();
+    double cur_departrate = StaticCast<PrioQueue> (queue)->getCurrentDepartureRate();
+    double cur_utilterm = StaticCast<PrioQueue> (queue)->getCurrentUtilTerm();
     checkTimes++;
-    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<cur_price<<std::endl;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<cur_price<<" "<<cur_departrate<<" "<<cur_utilterm<<std::endl;
     std::map<std::string, uint32_t>::iterator it;
 /*    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
