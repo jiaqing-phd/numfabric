@@ -28,10 +28,8 @@ for line in f:
 
 #print(arguments)
 orig_prefix=arguments["prefix"]
-for pupdate_time in (0.000036,0.000042,0.000048,0.000048, 0.000054 , 0.000064):
-#(0.00480,0.00960):
-  for gupdate_time in (0.0000120, 0.0000180, .0000240):
-#(0.000040, 0.000045, 0.000050, 0.000060):
+for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
+  for gupdate_time in (0.0, 0.000016, 0.000032, .000048):
     arguments["price_update_time"] = str(pupdate_time)
     arguments["guardtime"] = str(gupdate_time)
     prefix_str=orig_prefix
@@ -44,9 +42,9 @@ for pupdate_time in (0.000036,0.000042,0.000048,0.000048, 0.000054 , 0.000064):
 
     cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
     print(cmd_line)
-    #subprocess.call(cmd_line, shell="False")
-    plot_cmd_line="python "+plot_script+" "+prefix_str + " "
-    print(plot_cmd_line)
-    subprocess.call(plot_cmd_line, shell="False")
+    subprocess.call(cmd_line, shell="False")
+    #plot_cmd_line="python "+plot_script+" "+prefix_str + " "
+    #print(plot_cmd_line)
+    #subprocess.call(plot_cmd_line, shell="False")
 f.close()
 

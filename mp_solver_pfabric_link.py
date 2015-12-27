@@ -13,7 +13,7 @@ smoothing = 0.0
 tol = 1e-3
 epsilon = sys.float_info.epsilon
 ONEMILLION=1000000
-capacity = 10000000000
+capacity = 10000000000  #10G
 UMAX_INT = 9999999999999
 ################################################################
 
@@ -477,7 +477,7 @@ class Simulation:
     for frate in self.umax_mp.x:
       f = self.getFlowWithIndex(idx)
       print("time %f flow %d datarate %f" %(time/ONEMILLION, self.real_id[idx],frate))
-      print("capacity %f for_time %f" %(capacity, for_time))
+      #print("capacity %f for_time %f" %(capacity, for_time))
       self.umax_mp.data_sent[idx] = 1.0*self.umax_mp.data_sent[idx] + (frate * for_time * capacity/8.0);
       idx +=1
 

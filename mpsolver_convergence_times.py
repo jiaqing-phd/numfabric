@@ -7,59 +7,20 @@ import numpy as np
 ###################### Global constants ########################
 num_instances = 1
 max_iterations = 10000
-max_capacity = 1.0
+max_capacity = 10.0
 gamma = 0.01
 smoothing = 0.0
-tol = 1e-10
+tol = 1e-3
 epsilon = sys.float_info.epsilon
 ONEMILLION=1000000
 capacity = 1000000000
 UMAX_INT = 9999999999
 
-num_flows = 11
-num_links = 14
-
-paths = {}
-#paths[(0,10)]=[0,0,1,0,1,0,0,0,0,0,0,0,0,0]
-#paths[(4,12)]=[0,0,0,0,1,0,0,0,1,0,0,0,0,0]
-#paths[(1,14)]=[0,0,0,1,0,0,1,0,0,0,0,0,1,0]
-#paths[(10,18)]=[0,0,0,0,0,0,0,0,1,1,0,0,0,0]
-#paths[(19,16)]=[0,0,0,0,0,0,0,0,0,0,1,1,0,0]
-#paths[(2,8)]=[0,1,0,1,0,0,0,0,0,0,0,0,0,0]
-#paths[(6,17)]=[0,0,0,1,0,0,1,0,0,0,0,1,0,0]
-#paths[(9,17)]=[0,0,0,0,0,0,1,0,0,0,0,1,0,0]
-#paths[(2,19)]=[1,0,1,0,1,0,0,0,1,1,0,0,0,0]
-#paths[(10,20)]=[0,0,0,0,0,0,0,0,1,1,1,0,0,0]
-#paths[(11,14)]=[0,0,0,0,1,1,0,0,0,0,0,0,0,0]
-
-
-paths[(11,21)]=[0,0,1,0,1,0,0,0,0,0,0,0,0,0]
-paths[(15,23)]=[0,0,0,0,1,0,0,0,1,0,0,0,0,0]
-paths[(12,25)]=[0,0,0,1,0,0,1,0,0,0,0,0,0,1]
-paths[(21,29)]=[0,0,0,0,0,0,0,0,1,1,0,0,0,0]
-paths[(30,27)]=[0,0,0,0,0,0,0,0,0,0,1,1,0,0]
-paths[(13,19)]=[0,1,0,1,0,0,0,0,0,0,0,0,0,0]
-paths[(17,28)]=[0,0,0,1,0,0,1,0,0,0,0,0,1,0]
-paths[(20,28)]=[0,0,0,0,0,0,1,0,0,0,0,0,1,0]
-paths[(13,30)]=[1,0,1,0,1,0,0,0,1,1,0,0,0,0]
-paths[(21,31)]=[0,0,0,0,0,0,0,0,1,1,1,0,0,0]
-paths[(22,25)]=[0,0,0,0,0,1,1,0,0,0,0,0,0,0]
-
-## second set
-paths[(24,27)]=[0,0,0,0,0,0,0,1,0,0,0,0,1,0]
-paths[(13,26)]=[0,1,0,1,0,0,1,0,0,0,0,0,0,0]
-paths[(12,30)]=[0,0,1,0,1,0,0,0,1,1,0,0,0,0]
-paths[(11,27)]=[0,0,0,1,0,0,1,0,0,0,0,0,1,1]
-paths[(15,19)]=[0,0,0,0,1,1,0,0,0,0,0,0,0,0]
-paths[(15,26)]=[0,0,0,0,1,1,1,0,0,0,0,0,0,0]
-paths[(24,28)]=[0,0,0,0,0,0,0,1,0,0,0,0,1,0]
-paths[(24,25)]=[0,0,0,0,0,0,0,1,0,0,0,0,0,0]
-paths[(12,20)]=[0,0,0,1,0,0,0,0,0,0,0,0,0,1]
-################################################################
+###############################################
   
 
 class Flow:
-  def __init__(self, starttime, flowid, flowsize, srcid, dstid, weight):
+  def __init__(self, starttime, flowid, flowsize, srcid, dstid, weight, ecmp_hash):
     self.starttime = starttime
     self.flowid = flowid
     self.flowsize = flowsize
@@ -67,6 +28,7 @@ class Flow:
     self.srcid = srcid
     self.dstid = dstid
     self.weight = weight
+    self.ecmp_hash = ecmp_hash
 
   def printFlow(self):
     print("flow_id %d flow_starttime %f %d %d" %(self.flowid, self.starttime, self.srcid, self.dstid))
@@ -79,7 +41,7 @@ class event:
 
 class UtilMax:
     #def __init__(self, routes, w, c, alpha=1, method='gradient'):
-    def __init__(self, numports, method="mp",alpha=1.0):
+    def __init__(self, numports, c, method='mp', alpha=1.0):
         
         ########################## Inputs ##############################        
         #(self.num_flows, self.num_links) = routes.shape
@@ -91,7 +53,7 @@ class UtilMax:
         self.num_flows = 0
         self.routes = np.zeros((self.num_flows, self.num_links))
         self.w = np.ones((self.num_flows, 1))
-        self.c = np.ones((self.num_links, 1))
+        self.c = c
         self.maxdata = np.zeros(self.num_flows)
         ################################################################
         # time
@@ -451,17 +413,22 @@ def gen_A_from_B(B):
  
 class Simulation:
 
-  def init_custom(self, nports, meth, alpha_val):
+  def init_custom(self, nports, meth, numleaf, numPortsPerLeaf, numspines,edgeCapacity,fabricCapacity):
     self.Flows = []
-    self.numports = nports
     self.events = []
+
+    self.numports = nports
+    self.numleaf = numleaf
+    self.numPortsPerLeaf = numPortsPerLeaf
+    self.numspines = numspines
+    self.num_links= nports + numleaf * numspines
+    self.c = np.concatenate(( edgeCapacity*np.ones((nports,1)), fabricCapacity* np.ones((numleaf*numspines,1))),axis=0)
     if(meth == "mp"):
-        self.umax_mp = UtilMax(self.numports, method=meth, alpha=alpha_val)
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=1.0)
     elif(meth ==  "alpha_dif"):
-        self.umax_mp = UtilMax(self.numports, method=meth, alpha=0.25)
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=0.25)
     else:
-        self.umax_mp = UtilMax(self.numports, method=meth, alpha=1.0)
-        
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=1.0)
         
     self.realids = {}
     self.method = meth
@@ -501,22 +468,25 @@ class Simulation:
     #f = Flow(flow_arrival/1000.0, flow_id, flow_size, srcid, dstid, weight)
     #self.Flows.append(f)
 
-  def add_event_list(self, flow_id, flow_size, time, srcid, dstid, weight, event_type):
+  def add_event_list(self, flow_id, flow_size, time, srcid, dstid, weight, ecmp_hash, event_type):
     print("adding event flow at time %f event_type %d" %(time, event_type))
-    f = Flow(time/1000.0, flow_id, flow_size, srcid, dstid, weight)
+    f = Flow(time/1000.0, flow_id, flow_size, srcid, dstid, weight, ecmp_hash)
     new_event = event(f, event_type)
     self.events.append(new_event)
 
   def addFlow(self, f):
-    #print("flow being inserted.. flow id %d classid %d "%(f.flowid, f.classid))
-    print("trying to add flow %d" %f.flowid)
-    new_row = np.zeros((1, self.numports))
-    print("addFlow src %d dst %d" %(f.srcid, f.dstid))
-    new_row = np.asmatrix(paths[(f.srcid, f.dstid)])
-    #print("adding new_row")
-    #print(new_row)
+    print("flow being inserted.. flow id %d "%(f.flowid))
+    new_row = np.zeros((1, self.numports + self.numleaf * self.numspines))
+    new_row[0, f.srcid] = 1
+    new_row[0, f.dstid] = 1
+    leafSrcid= np.floor(f.srcid/self.numPortsPerLeaf);
+    new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
+    leafDstid= np.floor(f.dstid/self.numPortsPerLeaf);
+    new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
+    print("addFlow new row ")
+    print(new_row)
 
   def removeFlow(self, f):
    # flow_index = self.reverse_map[f.flowid]
@@ -732,15 +702,6 @@ class Simulation:
     self.converged = False
     self.first_time = False
 
-  def get_class_nums(self):
-    class_nums = {}
-    for flow_id in self.real_id:
-      f = self.get_flow_with_realid(flow_id)
-      class_id = f.classid
-      if(class_id not in class_nums):
-        class_nums[class_id] = 0
-      class_nums[class_id] += 1 
-    return class_nums
 
   def get_flow_with_realid(self, real_id):
     for f in self.Flows:
@@ -793,10 +754,6 @@ class Simulation:
     tol = 1e-10
     max_it = 100
     return_rates = {} 
-    #while it < max_it and good < conseq_good:
-    #print("Starting simulation... ")
-    #self.sort_flows_on_arrivaltime()
-    #while(self.flow_has_traffic() or self.flow_pending()):
     while(self.event_pending()):
        #self.it += 1
        #self.umax_mp.step()
@@ -809,112 +766,6 @@ class Simulation:
          real_flow_id = int(self.real_id[idx])
          return_rates[real_flow_id] = rate #rates[idx]
          idx +=1
-
-        
-       # check for new flows
-       #for f in self.Flows:
-       #  if(f.starttime <= it and f.added == False):
-           #print("flow start time %d it %d"%(f.starttime, it))
-       #    self.addFlow(f, it)
-
-       # remove any ended flows
-       #for fidx in range(0, (self.umax_mp.data_sent.shape)[0]):
-         ##print("%d %d %d %d" %((self.umax_mp.data_sent.shape)[0], (self.umax_mp.maxdata.shape)[0], fidx, self.umax_mp.num_flows))
-        # if(fidx < (self.umax_mp.data_sent.shape)[0]): # double check for multiple deletions in a single loop
-        #   if(self.umax_mp.data_sent[fidx] > self.umax_mp.maxdata[fidx]):
-        #     self.dropFlow(fidx, it)
-
-       #if self.umax_mp.opt_gap < tol:   
-       #    good += 1
-       #else:
-       #    good = 0
-    #return ((good==conseq_good), self.umax_mp.opt_gap, it)
     return return_rates
   
-
-  def main_solver(self,B, w, c, numports, numflows, prices, ratios, data_sent, flow_sizes, flowids):
-    nports = numports;
-    nflows = numflows
-    (A, nflows, w ) = gen_A_from_B(B)
-
-    need_check = []
-    alpha=1.0
-    
-    #for inst in range(num_instances):
-    #nports = np.random.randint(3, 50)
-    #nflows = np.random.randint(nports/3, 10*nports)
-    #(A, w, c) = gen_bipartite_instance(nports, nflows)
-    #print ("A = ")
-    #print A
-
-     
-    self.umax_mp = UtilMax(A, w, c, alpha=alpha, method='mp')
-    (success, opt_gap, num_it) = self.umax_mp.solve(tol=1e-10, max_it=1000)
-    
-    #umax_gradient = UtilMax(A, w, c, alpha=alpha, method='gradient')
-    #umax_gradient.solve(tol=1e-10, max_it=1000)
-                                      
-    #print '\n###################### instance %d #######################' % inst
-    print '\n###################### instance #######################'
-    print 'nflows=', A.shape[0]
-    print 'nports=', A.shape[1]/2
-    print 'num_it=', num_it
-                
-    if success:
-        print 'optimality gap=', opt_gap, ' --> good'
-    else:                
-        need_check.append(0)
-        print 'A='
-        print A
-        print 'w='
-        print w.T
-        print 'c='
-        print c.T
-        print '**********************************************************'
-                    
-        umax_mp.print_details()
-        print '---'
-        #umax_gradient.print_details()
-        
-        print 'need_check thus far='
-        print need_check
-                                                                        
-    ##plt.figure('instance %d -- link rate' % inst)
-    #plt.figure(1)
-    #plt.title('link rates')
-    #plt.plot(np.dot(umax_mp.xs.T, umax_mp.routes))
-    ##plt.plot(np.dot(umax_gradient.xs.T, umax_mp.routes), '--')
-    #plt.legend(range(umax_mp.num_links))
-    #plt.show()
-                
-    ##plt.figure('instance %d -- price' % inst)
-    #plt.figure(2)
-    #plt.title('link prices')
-    #plt.plot(umax_mp.prs.T)
-    ##plt.plot(umax_gradient.prs.T, '--')
-    #plt.legend(range(umax_mp.num_links))
-    #plt.show()  
-
-    ##plt.figure('instance %d -- flow rate' % inst)
-    #plt.figure(3)
-    #plt.title('flow rates')
-    #plt.plot(umax_mp.xs.T)
-    ##plt.plot(umax_gradient.xs.T, '--')
-    #plt.ylim(0,2)
-    #plt.legend(range(umax_mp.num_flows))
-    #plt.show()
-
-    ##plt.figure('instance %d -- optimality gap' % inst)
-    #plt.figure(4)
-    #plt.title('optimality gap')
-    #plt.semilogy(umax_mp.opt_gaps)
-    ##plt.semilogy(umax_gradient.opt_gaps, '--')
-    #plt.show()            
-        
-    sys.stdout.flush()
-                
-if __name__ == '__main__':
-#    main()
-    main_solver()
-
 

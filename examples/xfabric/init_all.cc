@@ -56,7 +56,7 @@ double price_update_time = 0.000200;
 double xfabric_eta=10.0;
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.001;
+float sampling_interval = 0.0001;
 uint32_t pkt_size = 1446; // reduced further to allow for 1 byte counter
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;

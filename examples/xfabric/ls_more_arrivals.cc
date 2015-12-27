@@ -18,13 +18,13 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 12;
+const uint32_t max_system_flows = 200;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 8;
-uint32_t max_flows_allowed = 10;
+uint32_t min_flows_allowed = 50;
+uint32_t max_flows_allowed = 100;
 
 bool compare_flow_deadlines(const FlowData &a, const FlowData &b)
 {
@@ -310,9 +310,10 @@ void startFlowsStatic(void)
 }
 */
 
-void stop_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
+void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  while (true) {
+  uint32_t num_flows_stopped = 0;
+  while (num_flows_stopped < 10) {
     UniformVariable urand;
     uint32_t i = urand.GetInteger(1, max_system_flows);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
@@ -332,13 +333,14 @@ void stop_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
       src_node_ipv4->removeFlow(i);
       break;
     }
+    num_flows_stopped++;
   }
 }
 
-void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
+void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  
-    while(true) 
+  uint32_t num_flows_started = 0;
+    while(num_flows_started < 10) 
     {
      UniformVariable urand;
      uint32_t i = urand.GetInteger(1, max_system_flows-1);
@@ -353,7 +355,7 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
         
        flow_started[i] = 1;
        num_flows++;
-       break;
+       num_flows_started++;
      }
    }
 }
@@ -362,16 +364,16 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   if(num_flows >= max_flows_allowed) {
-    stop_a_flow(sourcenodes, sinknodes);
+    stop_flows(sourcenodes, sinknodes);
   } else if(num_flows <= min_flows_allowed) {
-    start_a_flow(sourcenodes, sinknodes);
+    start_flows(sourcenodes, sinknodes);
   } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
      double rand_num = uv->GetValue(0.0, 1.0);
      if(rand_num < 0.5) {
-        start_a_flow(sourcenodes, sinknodes);
+        start_flows(sourcenodes, sinknodes);
       } else {
-        stop_a_flow(sourcenodes, sinknodes);
+        stop_flows(sourcenodes, sinknodes);
       }
   }
   double delay = 0.01;
