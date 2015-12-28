@@ -235,6 +235,29 @@ PrioQueue::PrioQueue () :
   NS_LOG_LOGIC(" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold);
 }
 
+void
+PrioQueue::dropFlowPackets(std::string arg_flowkey)
+{
+
+   drop_list[arg_flowkey] = 1;
+
+   typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
+   PacketQueueI pp = m_packets.begin();
+
+   while(pp != m_packets.end()) {
+
+        std::string flowkey = GetFlowKey(*pp);
+        if(flowkey == arg_flowkey) {
+            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" erasing packet of flow "<<flowkey<<std::endl;
+            pp = m_packets.erase(pp);
+        } else {
+            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" NOTerasing packet of flow "<<flowkey<<std::endl;
+            ++pp;
+        }
+    }
+}
+        
+
 uint32_t
 PrioQueue::getFlowID(Ptr<Packet> p)
 {
@@ -470,7 +493,7 @@ uint32_t
 PrioQueue::GetCurSize(void)
 {
 
-  /*
+  
    typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
    std::map<std::string,uint32_t> flow_count;
    uint32_t total_pkts = 0;
@@ -479,8 +502,14 @@ PrioQueue::GetCurSize(void)
    //NS_LOG_UNCOND("Current queue .. "); 
    for (PacketQueueI pp = m_packets.begin (); pp != m_packets.end (); pp++)
    {
+       MyTag t1; 
+       (*pp)->PeekPacketTag(t1);
+       double tagval = t1.GetValue();
 
        std::string flowkey = GetFlowKey(*pp);
+//       if(linkid_string == "11_11_7") {
+           std::cout<<" Q "<<linkid_string<<" "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<" tagval "<<tagval<<std::endl;
+  //     }
 
         if(flow_count.find(flowkey) == flow_count.end()) {
          flow_count[flowkey] = 0;
@@ -494,10 +523,9 @@ PrioQueue::GetCurSize(void)
      //NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string);
      std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString()<<std::endl;
      total_pkts += it->second;
-   } */
+   } 
   
    //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" totalpktscounter "<<total_pkts<<" nodeid "<<nodeid);  
-   
 
   return m_bytesInQueue;
 }
@@ -851,16 +879,23 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   PppHeader ppp;
   p->PeekHeader(ppp);
   
-
-
   Ptr<Packet> min_pp = p;
+
+  if(drop_list.find(GetFlowKey(min_pp)) != drop_list.end()) {
+    // drop this packet
+    std::cout<<Simulator::Now().GetSeconds()<<" Dropiing pkt from flow "<<GetFlowKey(min_pp)<<" at q "<<linkid_string<<std::endl;
+    Drop (p);
+    return false;
+  }
+    
+
   PriHeader min_prio_header = pheader.GetData();
   double min_wfq_weight = min_prio_header.wfq_weight; //this is the deadline  
   double p_residue = min_prio_header.residue;
 
   bool control_packet = false;
 
-//  std::cout<<GetLinkIDString()<<" pkt from flow "<<GetFlowKey(min_pp)<<std::endl;
+// std::cout<<GetLinkIDString()<<" pkt from flow "<<GetFlowKey(min_pp)<<std::endl;
  
   uint32_t header_size_total = tcph.GetSerializedSize() + pheader.GetSerializedSize() + h1.GetSerializedSize() + ppp.GetSerializedSize();
   if((min_pp->GetSize() - header_size_total) == 0) {
@@ -879,6 +914,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     MyTag tag;
     std::string flowkey = GetFlowKey(min_pp);
     double deadline = get_stored_deadline(flowkey);
+    
+    
     if(deadline == -1 || control_packet) {
       if(control_packet) {
         tag.SetValue(control_virtualtime * 1.0, Simulator::Now().GetNanoSeconds());

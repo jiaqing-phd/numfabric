@@ -156,12 +156,12 @@ MyApp::StopApplication (void)
   // same flows 
   // When we have dynamic traffic, the stop has to be declared from the destination
   // So, remove it when using dynamic traffic
-   std::cout<<"flow_stop "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId() <<" "<<m_weight<<" "<<ecmp_hash_value<<" "<<std::endl;
-//  std::cout<<"flow_stop "<<m_fid<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" at "<<(Simulator::Now()).GetNanoSeconds()<<" "<<m_maxBytes<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" weight "<<m_weight<<std::endl;
+//   std::cout<<"flow_stop "<<m_fid<<" start_time "<<Simulator::Now().GetNanoSeconds()<<" flow_size "<<m_maxBytes<<" "<<srcNode->GetId()<<" "<<destNode->GetId() <<" "<<m_weight<<" "<<ecmp_hash_value<<" "<<std::endl;
+  std::cout<<"flow_stop "<<m_fid<<" "<<srcNode->GetId()<<" "<<destNode->GetId()<<" at "<<(Simulator::Now()).GetNanoSeconds()<<" "<<m_maxBytes<<" port "<< InetSocketAddress::ConvertFrom (m_peer).GetPort () <<" weight "<<m_weight<<std::endl;
 //  Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> (srcNode->GetObject<Ipv4> ());
 //  ipv4->addToDropList(m_fid);
 
-  //std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" stopped sending after sending "<<m_totBytes<<std::endl;
+  std::cout<<Simulator::Now().GetSeconds()<<" flowid "<<m_fid<<" stopped sending after sending "<<m_totBytes<<std::endl;
 }
 
 bool

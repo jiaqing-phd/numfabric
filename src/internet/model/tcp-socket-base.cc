@@ -494,6 +494,7 @@ TcpSocketBase::Close (void)
       SendRST ();
       return 0;
     }
+
  
   if (m_txBuffer.SizeFromSequence (m_nextTxSequence) > 0)
     { // App close with pending data must wait until all data transmitted
@@ -504,7 +505,7 @@ TcpSocketBase::Close (void)
         }
       return 0;
     }
-
+   
  
   return DoClose ();
 }

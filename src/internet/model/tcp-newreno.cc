@@ -297,7 +297,11 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
   ipv4->setPriceValid(flowkey);
 
   ipv4->setNumHops(flowkey, tcpHeader.GetHopCount());
-  //uint32_t fid = ipv4->flowids[flowkey];
+  uint32_t fid = ipv4->flowids[flowkey];
+
+/*  if(fid == 8) {
+  std::cout<<Simulator::Now().GetSeconds()<<" processRate flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+m_dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<" using dt "<<m_dt<<std::endl; 
+    } */
 
   if(m_strawmancc || m_dctcp) { // we want to update rates in case of both strawman and dctcp
 //    std::cout<<"either true.. strawman"<<m_strawmancc<<" dctcp "<<m_dctcp<<" xfabric "<<m_xfabric<<" node "<<m_node->GetId()<<std::endl;
@@ -392,7 +396,8 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           /* Now get the short term average for setting window */
           double target_rate = ipv4->GetShortTermRate(flowkey);
           unquantized_window = target_rate * (1000000.0/8.0) * (d0+m_dt);
-//          std::cout<<"processRate flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+m_dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<" using dt "<<m_dt<<std::endl; 
+        
+      //    std::cout<<"processRate flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+m_dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<" using dt "<<m_dt<<std::endl; 
       
           // our old xfabric scheme
         }

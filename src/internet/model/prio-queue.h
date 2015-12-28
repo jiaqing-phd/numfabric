@@ -74,6 +74,9 @@ public:
   PrioQueue ();
   virtual ~PrioQueue ();
 
+  void dropFlowPackets(std::string);
+  std::map<std::string, uint32_t> drop_list;
+
   bool IsEmpty (void) const;
   void SetMode (PrioQueue::QueueMode mode);
   uint32_t nodeid;
