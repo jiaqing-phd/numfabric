@@ -49,6 +49,7 @@ extern uint32_t hostflows;
 
 
 extern double price_update_time ;
+extern double xfabric_eta;
 extern double guard_time;
 extern double rate_update_time ;
 extern double dgd_gamma;
@@ -162,4 +163,5 @@ extern double kvalue_price;
 extern double kvalue_rate;
 
 extern void dump_config(void);
+extern bool price_multiply;
 #endif 

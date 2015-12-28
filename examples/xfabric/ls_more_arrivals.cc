@@ -18,28 +18,21 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 10;
+const uint32_t max_system_flows = 200;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 7;
-uint32_t max_flows_allowed = 9;
+uint32_t min_flows_allowed = 50;
+uint32_t max_flows_allowed = 100;
 
-std::map<uint32_t, std::string> flowkeys;
-
-//uint32_t min_flows_allowed = 8;
-//uint32_t max_flows_allowed = 10;
-
-
-void dropFlowFromQueues(uint32_t f)
+bool compare_flow_deadlines(const FlowData &a, const FlowData &b)
 {
-    for(uint32_t i=0; i<AllQueues.size(); i++) {
-      Ptr<Queue> q = AllQueues[i];
-      StaticCast<PrioQueue> (q)->dropFlowPackets(flowkeys[f]);
-    }
+  if(a.flow_deadline < b.flow_deadline) {
+    return true;
+  }
+  return false;
 }
-    
 
 void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
 {
@@ -220,7 +213,6 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
     ss<<addr<<":"<<remoteIp<<":"<<ports[sinkN];
     std::string s = ss.str(); 
     flowids[s] = flow_id;
-    flowkeys[flow_id] = s;
 
     //flow_dest_port[clientNodes.Get(sourceN)->GetId()] = ports[sinkN];
     //
@@ -228,7 +220,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
     ipv4->setFlow(s, flow_id, flow_size, rand_weight);
     sink_node_ipv4->setFlow(s, flow_id, flow_size, rand_weight);
       
-  std::cout<<"FLOW_INFO source_node "<<(sourceNodes.Get(sourceN))->GetId()<<" sink_node "<<(sinkNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<ports[sinkN]<<" flow_size "<<flow_size<<" "<<rand_weight<<std::endl;
+  //std::cout<<"FLOW_INFO source_node "<<(clientNodes.Get(sourceN))->GetId()<<" sink_node "<<(clientNodes.Get(sinkN))->GetId()<<" "<<addr<<":"<<remoteIp<<" flow_id "<<flow_id<<" start_time "<<flow_start<<" dest_port "<<port<<" flow_size "<<flow_size<<" "<<rand_weight<<std::endl;
   //flow_id++;
   return SendingApp;
 }
@@ -318,9 +310,10 @@ void startFlowsStatic(void)
 }
 */
 
-void stop_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
+void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  while (true) {
+  uint32_t num_flows_stopped = 0;
+  while (num_flows_stopped < 10) {
     UniformVariable urand;
     uint32_t i = urand.GetInteger(1, max_system_flows);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
@@ -338,16 +331,16 @@ void stop_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
       Ptr<Ipv4L3Protocol> src_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(source_node))->GetObject<Ipv4> ());
       sink_node_ipv4->removeFlow(i);
       src_node_ipv4->removeFlow(i);
-      dropFlowFromQueues(i);
       break;
     }
+    num_flows_stopped++;
   }
 }
 
-void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
+void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  
-    while(true)
+  uint32_t num_flows_started = 0;
+    while(num_flows_started < 10) 
     {
      UniformVariable urand;
      uint32_t i = urand.GetInteger(1, max_system_flows-1);
@@ -362,32 +355,28 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
         
        flow_started[i] = 1;
        num_flows++;
-       break;
+       num_flows_started++;
      }
-  }
+   }
 }
 
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   if(num_flows >= max_flows_allowed) {
-    stop_a_flow(sourcenodes, sinknodes);
-  } else if(num_flows < min_flows_allowed) {
-    start_a_flow(sourcenodes, sinknodes);
+    stop_flows(sourcenodes, sinknodes);
+  } else if(num_flows <= min_flows_allowed) {
+    start_flows(sourcenodes, sinknodes);
   } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
      double rand_num = uv->GetValue(0.0, 1.0);
      if(rand_num < 0.5) {
-        start_a_flow(sourcenodes, sinknodes);
+        start_flows(sourcenodes, sinknodes);
       } else {
-        stop_a_flow(sourcenodes, sinknodes);
+        stop_flows(sourcenodes, sinknodes);
       }
   }
   double delay = 0.01;
-//  if(num_flows < 30) {
-//     delay = 0.0001; //start up the first 30 flows very fast
-//  }
-    
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }

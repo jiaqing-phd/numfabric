@@ -74,6 +74,9 @@ public:
   PrioQueue ();
   virtual ~PrioQueue ();
 
+  void dropFlowPackets(std::string);
+  std::map<std::string, uint32_t> drop_list;
+
   bool IsEmpty (void) const;
   void SetMode (PrioQueue::QueueMode mode);
   uint32_t nodeid;
@@ -99,6 +102,9 @@ public:
   double outgoing_rate;
   double incoming_bytes;
   double outgoing_bytes;
+
+  double departure_rate;
+  double previous_departure;
    
   uint32_t getFlowID(Ptr<Packet> p);
   int getflowid_temp(std::string);
@@ -125,6 +131,10 @@ public:
   uint32_t GetCurCount(void);
   uint32_t GetCurSize(void);
   double getCurrentPrice(void);
+  double getCurrentDepartureRate(void);
+  double getCurrentUtilTerm(void);
+  double short_ewma_const;
+  double current_util;
 
   uint32_t m_ECNThreshBytes;  
   uint32_t m_ECNThreshPackets;
@@ -184,6 +194,7 @@ private:
   bool m_pkt_tagged;
   bool m_onlydctcp;
   bool m_pfabricdequeue;
+  bool m_price_multiply;
   bool m_strawmancc;
   bool m_dctcp_mark;
   DataRate m_bps;

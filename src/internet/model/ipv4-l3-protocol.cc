@@ -73,7 +73,7 @@ Ipv4L3Protocol::GetTypeId (void)
                   BooleanValue(false),
                   MakeBooleanAccessor (&Ipv4L3Protocol::host_compensate),
                   MakeBooleanChecker ())
-    .AddAttribute("m_wfq",
+    .AddAttribute("wfq_testing",
                   "Enable or disable wfq like behavior",
                   BooleanValue(false),
                   MakeBooleanAccessor (&Ipv4L3Protocol::m_wfq),
@@ -880,8 +880,9 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
    ss <<source<<":"<<destination<<":"<<destPort;
    std::string flowkey = ss.str(); 
 
+
   if(rate_based && issource(source)) {
-    NS_LOG_LOGIC(" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid());
+ //   std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
   } else {
     NS_LOG_LOGIC(" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid());
@@ -1239,7 +1240,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
    double link_rate = 10000.0;
-   double limit_tr = 1000.0;
+   double limit_tr = 1.0;
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
       if(m_method == 1) {
@@ -1317,14 +1318,14 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     flow_target_rate[flowkey] = target_rate;
 
 
-/*
+
     if(m_wfq) {
       uint32_t fid = 0;
       fid = flowids[flowkey];
       double fweight = 1.0; //futils_copy[fid];
       return ((packet->GetSize()+46)*8.0) / fweight;
     } 
-*/
+
 /*    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; */
     return current_deadline * 1.0;
 }
@@ -1362,6 +1363,11 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 {
 
   double pkt_rate = 10000.0;
+
+  if(inter_arrival > 8000000) { // for a flow that was inactive for along time - 8 ms
+    long_term_ewma_rate[flowkey] = 0.0;
+    short_term_ewma_rate[flowkey] = 0.0;
+  }
   if(inter_arrival > 0.000000000001) { // bug fix - verify later
     pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
   }
@@ -1371,7 +1377,8 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   /* if(m_node->GetId() == 2 || m_node->GetId() == 3) {
     std::cout<<"instant_rate "<<Simulator::Now().GetSeconds()<<" "<<flowids[flowkey]<<" "<<pkt_rate<<std::endl;
   } */
-  //  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
+//  if(flowids[flowkey] == 8)
+//  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
 
   double epower = exp((-1.0*inter_arrival)/long_ewma_const);
   double first_term = (1.0 - epower)*pkt_rate;
@@ -1455,34 +1462,24 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
 
     priheader.wfq_weight = virtual_pkt_length;
-	  priheader.residue = (store_prio[flowkey] - current_netw_price);
+	priheader.residue = (store_prio[flowkey] - current_netw_price);
 
-    double num_hops = 1.0;
+/*    if(flowids[flowkey] == 8) {
+        std::cout<<Simulator::Now().GetSeconds()<<" virtual_pkt_length "<<virtual_pkt_length<<" "<<flowkey<<" "<<pktsize<<std::endl;
+    }
+*/
+
+    uint32_t flow_num_hops = 1;
     if(host_compensate) {
-      uint32_t f = flowids[flowkey];
-      num_hops = 2.0;
-    /*  if(f == 1 || f == 3 || f == 5) {
-        num_hops = 4.0;
-      }
-      if(f == 2 || f == 4) {
-        num_hops =  5.0;
-      }
-	*/
-   /*
-	  if(f==1 || f==2 || f==4 || f==5 || f ==6 || f==8 || f==11) {
-		num_hops = 2.0;
-	  }
-	 if(f==3 || f==7 || f==10) {
-		num_hops = 3.0;
-	 }
-     if(f == 9 ) {
-		num_hops = 5.0;
-	 }
-  */
+      if(num_hops.find(flowkey) != num_hops.end()) {
+      	flow_num_hops = num_hops[flowkey];
+      } else {
+	flow_num_hops = 4;
+      }	
    }
 
     if(price_valid[flowkey]) {
-      priheader.residue = priheader.residue / num_hops;
+      priheader.residue = priheader.residue / (1.0*flow_num_hops);
     } else {
       priheader.residue = 50000.0; // basically invalid value
     }
@@ -1544,6 +1541,11 @@ void Ipv4L3Protocol::removeFlow(uint32_t fid)
 void Ipv4L3Protocol::setPriceValid(std::string flow)
 {
   price_valid[flow] = true;
+}
+
+void Ipv4L3Protocol::setNumHops(std::string flow, uint32_t nh)
+{
+  num_hops[flow] = nh;
 }
 
   
@@ -1657,8 +1659,6 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
     {
       if (outInterface->IsUp ())
         {
-          NS_LOG_LOGIC ("Send to gateway " << route->GetGateway ());
-          NS_LOG_LOGIC("packet size is "<<packet->GetSize()<<" id "<<packet->GetUid());
           if ( packet->GetSize () > outInterface->GetDevice ()->GetMtu () )
             {
               std::list<Ptr<Packet> > listFragments;

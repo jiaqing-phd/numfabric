@@ -267,6 +267,9 @@ public:
   void SetRate(double rate);
   double GetPrice() const;
   void SetPrice(double pr);
+  
+  uint32_t GetHopCount() const;
+  void SetHopCount(uint32_t h);
 
 private:
   /**
@@ -305,6 +308,7 @@ private:
   int ecn_;
   double m_rate;
   double m_linkprice;
+  uint32_t m_hop_count;
 
 
   typedef std::list< Ptr<TcpOption> > TcpOptionList; //!< List of TcpOption

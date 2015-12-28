@@ -79,8 +79,10 @@ CheckQueueSize (Ptr<Queue> queue)
     uint32_t nid = StaticCast<PrioQueue> (queue)->nodeid;
     std::string qname = StaticCast<PrioQueue> (queue)->GetLinkIDString();
     double cur_price = StaticCast<PrioQueue> (queue)->getCurrentPrice();
+    double cur_departrate = StaticCast<PrioQueue> (queue)->getCurrentDepartureRate();
+    double cur_utilterm = StaticCast<PrioQueue> (queue)->getCurrentUtilTerm();
     checkTimes++;
-    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<cur_price<<std::endl;
+    std::cout<<"QueueStats "<<qname<<" "<<Simulator::Now ().GetSeconds () << " " << qSize<<" "<<nid<<" "<<cur_price<<" "<<cur_departrate<<" "<<cur_utilterm<<std::endl;
     std::map<std::string, uint32_t>::iterator it;
 /*    for (std::map<std::string,uint32_t>::iterator it= flowids.begin(); it!= flowids.end(); ++it) {
       double dline = StaticCast<PrioQueue> (queue)->get_stored_deadline(it->first);
@@ -150,6 +152,7 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;  
+  cmd.AddValue ("wfq_testing", "wfq_testing", wfq);
   cmd.AddValue ("fct_alpha", "fctalpha for utility", fct_alpha);
   cmd.AddValue ("nNodes", "Number of nodes", N);
   cmd.AddValue ("prefix", "Output prefix", prefix);
@@ -179,6 +182,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("deadline_mode", "deadline_mode", deadline_mode);
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
+  cmd.AddValue ("xfabric_eta", "xfabric_eta", xfabric_eta);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
@@ -195,6 +199,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("flow_ecmp", "flow_ecmp", flow_ecmp);
   cmd.AddValue ("packet_spraying", "packet_spraying", packet_spraying);
   cmd.AddValue ("dt_val", "dt_value", dt_val);
+  cmd.AddValue ("price_multiply", "price_multiply", price_multiply);
 
   return cmd;
 }
@@ -266,6 +271,8 @@ void common_config(void)
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
     Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   }
+
+  Config::SetDefault("ns3::Ipv4L3Protocol::wfq_testing", BooleanValue(wfq));
     
   Config::SetDefault ("ns3::PrioQueue::Mode", StringValue("QUEUE_MODE_BYTES"));
   Config::SetDefault ("ns3::PrioQueue::MaxBytes", UintegerValue (max_queue_size));
@@ -276,6 +283,8 @@ void common_config(void)
   Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
+  Config::SetDefault("ns3::PrioQueue::gamma1",DoubleValue(xfabric_eta));
+  Config::SetDefault("ns3::PrioQueue::price_multiply",BooleanValue(price_multiply));
 
 
   Config::SetDefault ("ns3::FifoQueue::Mode", StringValue("QUEUE_MODE_BYTES"));

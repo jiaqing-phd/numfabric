@@ -645,6 +645,7 @@ protected:
   Time              m_cnTimeout;       //!< Timeout for connection retry
 
   double            last_data_recvd, recvr_measured_rate;
+  uint32_t	    num_hops;
 
   // Connections to other layers of TCP/IP
 //  Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint made public 12/21 Kanthi:

@@ -494,6 +494,7 @@ TcpSocketBase::Close (void)
       SendRST ();
       return 0;
     }
+
  
   if (m_txBuffer.SizeFromSequence (m_nextTxSequence) > 0)
     { // App close with pending data must wait until all data transmitted
@@ -504,7 +505,7 @@ TcpSocketBase::Close (void)
         }
       return 0;
     }
-
+   
  
   return DoClose ();
 }
@@ -1651,6 +1652,7 @@ TcpSocketBase::SendEmptyPacket (uint8_t flags)
   Ptr<Packet> p = Create<Packet> ();
   TcpHeader header;
   SequenceNumber32 s = m_nextTxSequence;
+  header.SetHopCount(num_hops);
 
   if(flags & TcpHeader::ECE) {
     header.SetECN(1);
@@ -1988,6 +1990,7 @@ TcpSocketBase::SendDataPacket (SequenceNumber32 seq, uint32_t maxSize, bool with
   NS_LOG_LOGIC("Senddatapacket : "<<Simulator::Now().GetSeconds()<<" current_netw_price "<<current_netw_price<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId());
   header.SetPrice(current_netw_price); // kn - this is just to send it to the IP layer along with the packet
   header.SetRate(recvr_measured_rate); //kn - ditto as above
+  header.SetHopCount(0);
 
   if (m_endPoint)
     {
@@ -2159,10 +2162,10 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
     recvr_measured_rate = ipv4->getInterArrival(flowkey); //kanthi - checking 5/12
 
-  /* if(flowkey == "10.1.0.1:10.1.2.2:2") {
-      NS_LOG_LOGIC("inter_pkt_delay "<<inter_pkt_delay<<" recvr_measured_rate "<<recvr_measured_rate<<" node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey);
-    } */
-  //}
+    // at this point, copy out the num_hops to be copied back in the ACK
+    num_hops = tcpHeader.GetHopCount();
+
+   // std::cout<<"tcp node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<" num_hops "<<num_hops<<std::endl;
 
   /* process ECN first */
   TcpHeader::Flags_t ce_flag;
