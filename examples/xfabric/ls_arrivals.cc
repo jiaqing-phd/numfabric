@@ -18,18 +18,16 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 50;
+const uint32_t max_system_flows = 10;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 30;
-uint32_t max_flows_allowed = 40;
 
 std::map<uint32_t, std::string> flowkeys;
 
-//uint32_t min_flows_allowed = 8;
-//uint32_t max_flows_allowed = 10;
+uint32_t min_flows_allowed = 7;
+uint32_t max_flows_allowed = 9;
 
 
 void dropFlowFromQueues(uint32_t f)
@@ -370,7 +368,7 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  if(num_flows >= max_flows_allowed) {
+  if(num_flows > max_flows_allowed) {
     stop_a_flow(sourcenodes, sinknodes);
   } else if(num_flows < min_flows_allowed) {
     start_a_flow(sourcenodes, sinknodes);
@@ -384,8 +382,8 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       }
   }
   double delay = 0.05;
-  if(num_flows < 30) {
-     delay = 0.0001; //start up the first 30 flows very fast
+  if(num_flows < 36) {
+     delay = 0.0001; //start up the first 36 flows very fast
   }
     
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
