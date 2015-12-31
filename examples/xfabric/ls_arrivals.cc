@@ -23,13 +23,11 @@ const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 7;
-uint32_t max_flows_allowed = 9;
 
 std::map<uint32_t, std::string> flowkeys;
 
-//uint32_t min_flows_allowed = 8;
-//uint32_t max_flows_allowed = 10;
+uint32_t min_flows_allowed = 7;
+uint32_t max_flows_allowed = 9;
 
 
 void dropFlowFromQueues(uint32_t f)
@@ -376,7 +374,7 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  if(num_flows >= max_flows_allowed) {
+  if(num_flows > max_flows_allowed) {
     stop_a_flow(sourcenodes, sinknodes);
   } else if(num_flows < min_flows_allowed) {
     start_a_flow(sourcenodes, sinknodes);
@@ -389,15 +387,6 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_a_flow(sourcenodes, sinknodes);
       }
   }
-
-
-/*  double delay = 0.0;
-  if(num_flows >= 7) {
-     delay = 0.05; //start up the first 30 flows very fast
-  }
-  if(num_flows >=8) {
-    delay = 5.0;
-  } */
   double delay = 0.01;
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 }

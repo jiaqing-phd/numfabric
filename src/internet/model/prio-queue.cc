@@ -370,6 +370,8 @@ PrioQueue::updateLinkPrice(void)
     } else {
       latest_avg_prio = 0.0;
     }
+
+
     //reset values
     running_avg_prio = 0.0;
     total_samples = 0;
@@ -420,7 +422,7 @@ PrioQueue::updateLinkPrice(void)
  */  
   
     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
-   NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" min_price_inc "<<min_price_inc<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate);
+//   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" lastest_min_prio "<<latest_min_prio<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
    // when you update the price - set a timer to not update the minimum for an interval
    update_minimum = false;
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
@@ -904,8 +906,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   uint32_t pkt_uid = min_pp->GetUid();
 
-   //std::cout<<Simulator::Now().GetSeconds()<<" link "<<GetLinkIDString()<<" residue "<<p_residue<<" weight "<<min_wfq_weight<<" from flow "<<GetFlowKey(min_pp)<<std::endl;
 
+//  std::cout<<Simulator::Now().GetSeconds()<<" link "<<GetLinkIDString()<<" residue "<<p_residue<<" weight "<<min_wfq_weight<<" from flow "<<GetFlowKey(min_pp)<<std::endl;
    if(p_residue < running_min_prio && !control_packet && update_minimum) {
      running_min_prio = p_residue;
    }

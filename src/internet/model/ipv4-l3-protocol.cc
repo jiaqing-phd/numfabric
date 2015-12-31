@@ -1240,7 +1240,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
    double link_rate = 10000.0;
-   double limit_tr = 1.0;
+   double limit_tr = 10.0;
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
       if(m_method == 1) {
@@ -1251,6 +1251,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
         target_rate = utilInverse(flowkey, current_netw_price, ALPHA1UTILITY);
       }
     }
+    
     //NS_LOG_LOGIC(" Node "<<m_node->GetId()<<" target_rate = "<<target_rate<<" for price "<<current_netw_price);
     // Do we need to cap this ? 
     if(target_rate > (limit_tr* link_rate)) {
@@ -1464,10 +1465,10 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     priheader.wfq_weight = virtual_pkt_length;
 	priheader.residue = (store_prio[flowkey] - current_netw_price);
 
-/*    if(flowids[flowkey] == 8) {
-        std::cout<<Simulator::Now().GetSeconds()<<" virtual_pkt_length "<<virtual_pkt_length<<" "<<flowkey<<" "<<pktsize<<std::endl;
-    }
-*/
+ /*   if(flowids[flowkey] == 8) {
+       std::cout<<Simulator::Now().GetSeconds()<<" virtual_pkt_length "<<virtual_pkt_length<<" "<<flowkey<<" "<<pktsize<<std::endl;
+    } */
+
 
     uint32_t flow_num_hops = 1;
     if(host_compensate) {

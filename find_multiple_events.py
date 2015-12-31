@@ -4,6 +4,7 @@ import os
 import numpy as np
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
+num_events=10
 
 flow_start = "flow_start"
 #log_file = sys.argv[1]
@@ -14,7 +15,7 @@ fstart_index = 3
 fsize_index = 5
 weight_index=8
 ecmp_hash_index=9
-event_epoch=0.05
+event_epoch=0.01
 
 num_flow_index = 1
 num_port_index = 1
@@ -29,13 +30,13 @@ iter_value=0.0001
 
 averaged = {}
 
-def close_enough(rate1, rate2, thresh):
+def close_enough(rate1, rate2):
   diff = (rate1 - rate2)/rate2
-  if(abs(diff) < thresh):
+  if(abs(diff) < (0.2)):
     return True
   return False
 
-def find_converge_time(ret_rates, fname, start_time, stop_time, g, thresh):
+def find_converge_time(ret_rates, fname, start_time, stop_time, g):
   print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
   print("ret_rates are ")
   print(ret_rates)
@@ -70,7 +71,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g, thresh):
       #if(flowid in ret_rates and flowid in averaged): 
         #print("flowid %d ret_rates %f rate %f time %f" %(flowid, ret_rates[flowid],rate, time)) 
     
-      if((flowid in ret_rates) and (close_enough(rate, ret_rates[flowid], thresh)) and (flow_converged[flowid] == False)):
+      if((flowid in ret_rates) and (close_enough(rate, ret_rates[flowid])) and (flow_converged[flowid] == False)):
 #        print("%f checking if %f is closeeniugh to %f for flow %d" %(time, rate,ret_rates[flowid],flowid))
         good[flowid] += 1
       else:
@@ -91,10 +92,12 @@ def getclass(self, srcid, dstid):
     return 3
   print("unknown src %d dst %d pair" %(srcid, dstid))
 
-def get_optimal_rates(log_file, method, alpha, g, thresh): 
+def get_optimal_rates(log_file, method, alpha, g): 
 
         fh = open(log_file, "r")
         sim = solver.Simulation()
+
+        num_events_parsed=0
 
         for line in fh:
           l1 = line.rstrip();
@@ -111,6 +114,7 @@ def get_optimal_rates(log_file, method, alpha, g, thresh):
       		sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
 
           if((elems[0] == "flow_start") or (elems[0] == "flow_stop")):
+            num_events_parsed += 1
             if(elems[0] == "flow_start"):
                 # new flow, we need to insert into our matrix 
                 print("parsing line")
@@ -137,29 +141,29 @@ def get_optimal_rates(log_file, method, alpha, g, thresh):
                 ecmp_hash = 0
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 2)
 
-
-            event_time = flow_arrival/1000000000.0;
-            next_event_time = event_time+ event_epoch;
-            opt_rates = sim.startSim() #these are optimal rates
-            print(opt_rates) 
-            (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g, thresh) 
-            con = 1
-            max_conv=0.0
-            if(event_time > 1.04):
+            if(num_events_parsed == num_events):
+                num_events_parsed=0
+                event_time = flow_arrival/1000000000.0;
+                next_event_time = event_time+ event_epoch;
+                opt_rates = sim.startSim() #these are optimal rates
+                print(opt_rates) 
+                (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
+                con = 1
+                max_conv=0.0
                 print("##########################################")
                 for key in opt_rates:
-                  if(key not in converge_times):
-                    print("converge_times 0.05 - not found flowid %d" %key)
-                    max_conv=0.0
-                    con = 0
+                    if(key not in converge_times):
+                        print("converge_times 0.05 - not found flowid %d" %key)
+                        max_conv=0.0
+                        con = 0
 
                 for key in converge_times:
                     print("converge_times: %f %d" %(converge_times[key], key))
                     if(converge_times[key] > max_conv and converge_times[key] != 0.05):
                         max_conv=converge_times[key]
                 if(con == 1):
-                    print("converge_times_maximum %f" %max_conv)
+                  print("converge_times_maximum %f" %max_conv)
                 print("##########################################")
             
 
-get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, float(sys.argv[3]))
+get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0)

@@ -85,6 +85,7 @@ for line in f:
 
 
 colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef','#ababab','#badaff','#deadbe','#bedead','#afafaf','#8eba42','#e5e5e5','#6d904f']
+
 plt.figure(1);
 plt.title("Sending rates")
 i=0

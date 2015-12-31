@@ -376,10 +376,11 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.01;
+  double delay = 0.05; //50ms
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }
+
 void setUpTraffic()
 {
   splitHosts();
