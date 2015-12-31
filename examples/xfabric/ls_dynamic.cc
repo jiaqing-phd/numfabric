@@ -402,6 +402,76 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 }
 
+Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname)
+{
+  Ptr<EmpiricalRandomVariable> x = CreateObject<EmpiricalRandomVariable> ();
+  std::ifstream myfile (fname.c_str(),  std::ifstream::in);
+  if (myfile.is_open())
+  {
+    double val, one, prob;
+
+    while(myfile >> val >> one >> prob)
+    {
+      
+      std::cout<<"EmpiricalRandSetup val = "<<val<<" prob = "<<prob<<" one "<<one<<std::endl;
+      x->CDF(val, prob); 
+    }
+    myfile.close();
+  } else {
+    NS_LOG_UNCOND("EmpiricalRandSetup. File not found "<<fname );
+  }
+  return x;
+}
+
+void startRandomFlows()
+{
+  
+  NS_LOG_UNCOND("EmpiricalRandSetup : file "<<empirical_dist_file);
+  Ptr<EmpiricalRandomVariable> empirical_rand = SetUpEmpirical(empirical_dist_file);
+  meanflowsize = empirical_rand->avg();
+  NS_LOG_UNCOND("Avg of empirical values.. "<<meanflowsize);
+  double lambda = (link_rate * load ) / (meanflowsize*8.0);
+  std::cout<<"lambda first "<<lambda<<" load "<<load<<std::endl;
+  //lambda = lambda / (sinkNodes.GetN() * sourceNodes.GetN()); 
+  lambda = lambda / sourceNodes.GetN();
+  double avg_interarrival = 1/lambda;
+
+  Ptr<ExponentialRandomVariable> exp = CreateObject<ExponentialRandomVariable> ();
+  exp->SetAttribute("Mean", DoubleValue(avg_interarrival));
+
+  std::cout<<"lambda is "<<lambda<<" denom "<<sourceNodes.GetN()<<" avg_interarrival "<<avg_interarrival<<" meanflowsize "<<meanflowsize<<" link_rate "<<link_rate<<" load "<<load<<std::endl;
+
+  uint32_t flow_num = 1;
+
+  std::cout<<"num "<<sourceNodes.GetN()<<" "<<sinkNodes.GetN()<<std::endl;
+   
+  for (uint32_t i=0; i < sourceNodes.GetN(); i++) 
+  {
+    for(uint32_t j=0; j < sinkNodes.GetN(); j++) 
+    {
+      double flow_start_time = 0.0;
+      double time_now = 1.0;
+     
+      uint32_t flow_counter = 0;
+      while(time_now < (sim_time-3.0))
+      {
+        // flow size 
+        double flow_size = empirical_rand->GetValue(); 
+        double inter_arrival = exp->GetValue();
+        flow_start_time = time_now + inter_arrival;
+        std::cout<<"next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time<<std::endl;
+        time_now = flow_start_time;
+
+        uint32_t flow_weight = 1.0; 
+
+        startFlow(i, j, flow_start_time, flow_size, flow_num, flow_weight);
+        flow_num++;
+      } // end while
+    }
+  }
+
+}
+
 void setUpTraffic()
 {
   splitHosts();
@@ -424,10 +494,9 @@ void setUpTraffic()
   }
 
   std::cout<<" generated source node "<<sourcenodes.size()<<" sink nodes "<<sinknodes.size()<<std::endl;
-  Simulator::Schedule (Seconds (1.0), &startflowwrapper, sourcenodes, sinknodes);
+  //Simulator::Schedule (Seconds (1.0), &startflowwrapper, sourcenodes, sinknodes);
   //startFlowsStatic();
-  //startRandomEvents();
-  //startRandomFlows(x);
+  startRandomFlows();
 }
  
 int

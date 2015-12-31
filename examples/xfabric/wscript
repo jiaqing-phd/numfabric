@@ -9,6 +9,9 @@ def build(bld):
     obj = bld.create_ns3_program('ls_arrivals', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['ls_arrivals.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
   
+    obj = bld.create_ns3_program('ls_dynamic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['ls_dynamic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+
     obj = bld.create_ns3_program('ls_more_arrivals', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['ls_more_arrivals.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 

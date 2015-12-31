@@ -6,11 +6,12 @@ import scipy
 from scipy.stats import cumfreq
 import numpy as np
 
-num_bins =  10000000
+num_bins =  1000000
 labels = []
 
 def cyret1(b):
   a = np.asarray(b)
+  print(a)
   counts, bin_edges = np.histogram(a, bins=num_bins, normed=True)
 #  counts, bin_edges = np.histogram(a, bins=num_bins, density=True)
   cdf = np.cumsum(counts)
@@ -37,13 +38,12 @@ for i in range(0, (len(sys.argv)-2)):
   for line in f[i]:
     l1 = line.rstrip();
     xy = l1.split(' ');
-    if(float(xy[0]) > 10.0):
-      x.append(float(xy[0]));
+    x.append(float(xy[0]));
   listoflists.append(x)
 
 
 plt.figure(1)
-plt.title("CDF of error margins (min 10)")
+plt.title("CDF of convergence times")
 
 for i in range(0, (len(sys.argv)-2)):
    y = cyret1(listoflists[i])

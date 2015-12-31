@@ -84,13 +84,12 @@ for line in f:
     qutils[queue_id].append(qutil)
 
 
-colors = ['r','b','g', 'm', 'c', 'y','k']
-
+colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef','#ababab','#badaff','#deadbe','#bedead','#afafaf','#8eba42','#e5e5e5','#6d904f']
 plt.figure(1);
 plt.title("Sending rates")
 i=0
 for key in dtimes:
-  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key))
+  plt.plot(dtimes[key], ewma(drates[key], 1.0), color=colors[i], label=str(key))
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')

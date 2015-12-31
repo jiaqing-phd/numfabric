@@ -25,17 +25,17 @@ ONEMILLION = 1000000
 
 enough_good = 10
 capacity=10000
-iter_value=0.0005
+iter_value=0.0001
 
 averaged = {}
 
-def close_enough(rate1, rate2):
+def close_enough(rate1, rate2, thresh):
   diff = (rate1 - rate2)/rate2
-  if(abs(diff) < (0.05)):
+  if(abs(diff) < thresh):
     return True
   return False
 
-def find_converge_time(ret_rates, fname, start_time, stop_time, g):
+def find_converge_time(ret_rates, fname, start_time, stop_time, g, thresh):
   print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
   print("ret_rates are ")
   print(ret_rates)
@@ -70,7 +70,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
       #if(flowid in ret_rates and flowid in averaged): 
         #print("flowid %d ret_rates %f rate %f time %f" %(flowid, ret_rates[flowid],rate, time)) 
     
-      if((flowid in ret_rates) and (close_enough(rate, ret_rates[flowid])) and (flow_converged[flowid] == False)):
+      if((flowid in ret_rates) and (close_enough(rate, ret_rates[flowid], thresh)) and (flow_converged[flowid] == False)):
 #        print("%f checking if %f is closeeniugh to %f for flow %d" %(time, rate,ret_rates[flowid],flowid))
         good[flowid] += 1
       else:
@@ -91,7 +91,7 @@ def getclass(self, srcid, dstid):
     return 3
   print("unknown src %d dst %d pair" %(srcid, dstid))
 
-def get_optimal_rates(log_file, method, alpha, g): 
+def get_optimal_rates(log_file, method, alpha, g, thresh): 
 
         fh = open(log_file, "r")
         sim = solver.Simulation()
@@ -142,7 +142,7 @@ def get_optimal_rates(log_file, method, alpha, g):
             next_event_time = event_time+ event_epoch;
             opt_rates = sim.startSim() #these are optimal rates
             print(opt_rates) 
-            (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
+            (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g, thresh) 
             con = 1
             max_conv=0.0
             if(flow_arrival > 1.04):
@@ -162,4 +162,4 @@ def get_optimal_rates(log_file, method, alpha, g):
                 print("##########################################")
             
 
-get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0)
+get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, float(sys.argv[3]))

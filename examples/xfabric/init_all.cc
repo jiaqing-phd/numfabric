@@ -56,7 +56,7 @@ double price_update_time = 0.000200;
 double xfabric_eta=10.0;
 double guard_time = 0.000100; 
 
-float sampling_interval = 0.0005;
+float sampling_interval = 0.0001;
 uint32_t pkt_size = 1446; // reduced further to allow for 1 byte counter
 uint32_t flows_tcp = 1;
 uint32_t weight_change = 1;
@@ -121,9 +121,9 @@ uint32_t num_spines = 1, num_leafs = 2, num_hosts_per_leaf = 2;
 bool pkt_tag = true;
 
 std::string empirical_dist_file_DCTCP_heavy="DCTCP_CDF_HEAVY";
-std::string empirical_dist_file="DCTCP_CDF";
 std::string empirical_dist_file_DCTCP_light="DCTCP_CDF_LIGHT";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
+std::string empirical_dist_file="DCTCP_CDF";
 
 std::string link_twice_string = "20Gbps";
 
