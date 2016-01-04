@@ -29,22 +29,22 @@ for line in f:
 #print(arguments)
 orig_prefix=arguments["prefix"]
 for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
-  for gupdate_time in (0.0, 0.000008, 0.000016, 0.000032):
+  for gupdate_time in (0.0, 0.000016, 0.000032):
     if(pupdate_time <= gupdate_time):
         next
-    for ewma_time in (10000, 20000):
-        for dt_val in (0.000008, 0.000012, 0.000024):
-            arguments["price_update_time"] = str(pupdate_time)
-            arguments["guardtime"] = str(gupdate_time)
-            arguments["dt_val"] = str(dt_val)
-            arguments["kvalue_rate"] = str(ewma_time)
-            prefix_str=orig_prefix
-            prefix_str=prefix_str+"_"+arguments["price_update_time"]+"_"+arguments["guardtime"]+"_"+arguments["dt_val"]+"_"+arguments["kvalue_rate"]
-            final_args=""
-            for arg_key in arguments:
-                final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
-            cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
-            print(cmd_line)
-            #subprocess.call(cmd_line, shell="False")
+    ewma_time=10000
+    for dt_val in (0.000012, 0.000024):
+        arguments["price_update_time"] = str(pupdate_time)
+        arguments["guardtime"] = str(gupdate_time)
+        arguments["dt_val"] = str(dt_val)
+        arguments["kvalue_rate"] = str(ewma_time)
+        prefix_str=orig_prefix
+        prefix_str=prefix_str+"_"+arguments["price_update_time"]+"_"+arguments["guardtime"]+"_"+arguments["dt_val"]+"_"+arguments["kvalue_rate"]
+        final_args=""
+        for arg_key in arguments:
+            final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
+        cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+        print(cmd_line)
+        subprocess.call(cmd_line, shell="False")
 f.close()
 

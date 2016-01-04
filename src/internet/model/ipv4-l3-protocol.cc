@@ -1463,7 +1463,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
 
     priheader.wfq_weight = virtual_pkt_length;
-	priheader.residue = (store_prio[flowkey] - current_netw_price);
+    priheader.residue = (store_prio[flowkey] - current_netw_price);
 
  /*   if(flowids[flowkey] == 8) {
        std::cout<<Simulator::Now().GetSeconds()<<" virtual_pkt_length "<<virtual_pkt_length<<" "<<flowkey<<" "<<pktsize<<std::endl;
