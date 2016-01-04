@@ -1374,7 +1374,6 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   }
   instant_rate_store[flowkey] = pkt_rate;
 
-
   /* if(m_node->GetId() == 2 || m_node->GetId() == 3) {
     std::cout<<"instant_rate "<<Simulator::Now().GetSeconds()<<" "<<flowids[flowkey]<<" "<<pkt_rate<<std::endl;
   } */

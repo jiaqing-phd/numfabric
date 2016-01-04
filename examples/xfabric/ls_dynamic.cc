@@ -454,12 +454,13 @@ void startRandomFlows()
      
       uint32_t flow_counter = 0;
       while(time_now < (sim_time-3.0))
+//      while(flow_num<2)
       {
         // flow size 
-        double flow_size = empirical_rand->GetValue(); 
+        uint32_t flow_size = empirical_rand->GetValue(); 
         double inter_arrival = exp->GetValue();
         flow_start_time = time_now + inter_arrival;
-        std::cout<<"next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time<<std::endl;
+        std::cout<<"next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time<<" flow size "<<flow_size<<std::endl;
         time_now = flow_start_time;
 
         uint32_t flow_weight = 1.0; 
@@ -512,7 +513,7 @@ main(int argc, char *argv[])
   std::cout<<*argv<<std::endl;
   std::cout<<"set prefix to "<<prefix<<std::endl;
   
- // LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
+  //LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
  // initAll();
 
   if(deadline_mode){

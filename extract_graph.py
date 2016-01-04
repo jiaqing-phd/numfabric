@@ -5,12 +5,11 @@ import numpy as np
 import mpsolverdynamic as solver
 
 flow_start = "flow_start"
-#log_file = sys.argv[1]
-fid_index = 1
-src_index = 2
-dst_index = 3
-fstart_index = 5
-fsize_index = 6
+#fid_index = 1
+#src_index = 2
+#dst_index = 3
+#fstart_index = 5
+#fsize_index = 6
 
 num_flow_index = 1
 num_port_index = 1

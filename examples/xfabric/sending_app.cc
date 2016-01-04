@@ -182,8 +182,16 @@ MyApp::keepSending(void)
 void
 MyApp::SendPacket (void)
 {
+  uint32_t pktsize = m_packetSize;
+
+  if(m_maxBytes > 0) {
+    uint32_t bytes_remaining = m_maxBytes - m_totBytes;
+    if(bytes_remaining < m_packetSize) {
+      pktsize = bytes_remaining;
+    }
+  }
   
-  Ptr<Packet> packet = Create<Packet> (m_packetSize);
+  Ptr<Packet> packet = Create<Packet> (pktsize);
 
   int ret_val = m_socket->Send( packet ); 
   //std::cout<<"***  "<<Simulator::Now().GetSeconds()<<" sent packet with id "<<packet->GetUid()<<" size "<<packet->GetSize()<<" flowid "<<m_fid<<" source "<<srcNode->GetId()<<" destNode "<<destNode->GetId()<<" myaddress "<<myAddress<<" peeraddress "<<m_peer<<" *** "<<std::endl;  
@@ -197,7 +205,8 @@ MyApp::SendPacket (void)
   //  {
     if(keepSending()) {
       ScheduleTx ();
-    } else {
+    } else if(m_maxBytes == 0) {
+      // for a finite flow, we close the socket from the peer side
       StopApplication();
     }
   
@@ -209,7 +218,8 @@ MyApp::ScheduleTx (void)
   //if (m_running)
   if ((m_maxBytes == 0) || (m_totBytes < m_maxBytes))
     {
-      Time tNext (Seconds ((m_packetSize+38) * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
+      //Time tNext (Seconds ((m_packetSize+38) * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
+      Time tNext (Seconds (1500 * 8 / static_cast<double> (m_dataRate.GetBitRate ())));
       m_sendEvent = Simulator::Schedule (tNext, &MyApp::SendPacket, this);
     } else {
       StopApplication();
