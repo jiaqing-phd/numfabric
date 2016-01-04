@@ -883,6 +883,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   
   Ptr<Packet> min_pp = p;
 
+
   if(drop_list.find(GetFlowKey(min_pp)) != drop_list.end()) {
     // drop this packet
     std::cout<<Simulator::Now().GetSeconds()<<" Dropiing pkt from flow "<<GetFlowKey(min_pp)<<" at q "<<linkid_string<<std::endl;
@@ -904,7 +905,6 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
     control_packet = true;
   }
 
-  uint32_t pkt_uid = min_pp->GetUid();
 
 
 //  std::cout<<Simulator::Now().GetSeconds()<<" link "<<GetLinkIDString()<<" residue "<<p_residue<<" weight "<<min_wfq_weight<<" from flow "<<GetFlowKey(min_pp)<<std::endl;
@@ -936,7 +936,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   }
 
   /* Also store time of arrival for each packet */
-  pkt_arrival[pkt_uid] = Simulator::Now().GetNanoSeconds();
+  //pkt_arrival[pkt_uid] = Simulator::Now().GetNanoSeconds();
   incoming_bytes += min_pp->GetSize(); 
     
 
@@ -988,8 +988,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
         } // if pfabric == 1 
     } /* if queue is going to be full */
 
-  else if ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue >= m_ECNThreshBytes)) ||
-        (m_mode == QUEUE_MODE_PACKETS && m_packets.size() >= m_ECNThreshPackets))
+  else if (!xfabric_price && ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue >= m_ECNThreshBytes)) ||
+        (m_mode == QUEUE_MODE_PACKETS && m_packets.size() >= m_ECNThreshPackets))) 
     {
           // NS_LOG_UNCOND("Queue size greater than ECNThreshold. Marking packet");
           // Find the lowest priority packet and mark it with ECN marking 
@@ -1081,7 +1081,7 @@ PrioQueue::DoDequeue (void)
   if(update_minimum) {
      outgoing_bytes += p->GetSize(); 
   }
-
+/*
   short_ewma_const = 10000; //10us - make is same as ipv4 short const - TBD
 
   double pkt_departure = Simulator::Now().GetNanoSeconds();
@@ -1102,7 +1102,7 @@ PrioQueue::DoDequeue (void)
       departure_rate = first_term + second_term;
    }
 
-
+*/
 //  std::cout<<"QRATE linkid "<<linkid_string<<" "<<pkt_departure<<" "<<pkt_interdeparture<<" "<<pkt_rate<<std::endl;
 
   double lowest_deadline = 0.0;
@@ -1170,8 +1170,8 @@ PrioQueue::DoDequeue (void)
     p->RemovePacketTag(t1);
     lowest_deadline = t1.GetValue();
 
-    double pkt_depart = Simulator::Now().GetNanoSeconds();
-    pkt_wait_duration = pkt_depart - t1.GetArrival();
+  //  double pkt_depart = Simulator::Now().GetNanoSeconds();
+  //  pkt_wait_duration = pkt_depart - t1.GetArrival();
 
 //    std::cout<<"pkt_tagged_dequeue "<<std::endl;
 

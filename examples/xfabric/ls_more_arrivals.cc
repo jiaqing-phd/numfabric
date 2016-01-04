@@ -18,13 +18,13 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 200;
+const uint32_t max_system_flows = 250;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 50;
-uint32_t max_flows_allowed = 100;
+uint32_t min_flows_allowed = 150;
+uint32_t max_flows_allowed = 200;
 
 bool compare_flow_deadlines(const FlowData &a, const FlowData &b)
 {
