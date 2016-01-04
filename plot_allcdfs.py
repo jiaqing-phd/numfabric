@@ -37,8 +37,9 @@ for i in range(0, (len(sys.argv)-2)):
   x = []
   for line in f[i]:
     l1 = line.rstrip();
-    xy = l1.split(' ');
-    x.append(float(xy[0]));
+    #xy = l1.split(' ');
+    #x.append(float(xy[0]));
+    x.append(float(l1));
   listoflists.append(x)
 
 

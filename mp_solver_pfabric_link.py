@@ -360,12 +360,12 @@ class Simulation:
 
   def add_flow_list(self,src_id, dst_id, flow_id, flow_size, flow_arrival,weight, ecmp_hash):
     # a list of flows sorted according to their arrivals
-    print("adding flow with src_id %d dst_id %d flow_id %d flow_size %d flow_arrival %f" %(src_id, dst_id, flow_id, flow_size, flow_arrival))
+    #print("adding flow with src_id %d dst_id %d flow_id %d flow_size %d flow_arrival %f" %(src_id, dst_id, flow_id, flow_size, flow_arrival))
     f = Flow(src_id, dst_id, flow_arrival/1000.0, flow_id, flow_size,weight,ecmp_hash)
     self.Flows.append(f)
 
   def addFlow(self, f):
-    print("flow being inserted.. flow id %d "%(f.flowid))
+    #print("flow being inserted.. flow id %d "%(f.flowid))
     new_row = np.zeros((1, self.numports + self.numleaf * self.numspines))
     new_row[0, f.srcid] = 1
     new_row[0, f.dstid] = 1
@@ -375,8 +375,8 @@ class Simulation:
     new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
-    print("addFlow new row ")
-    print(new_row)
+    #print("addFlow new row ")
+    #print(new_row)
 
   def getFlowWithIndex(self, fidx):
     flowid = self.real_id[fidx]
@@ -427,6 +427,7 @@ class Simulation:
     return False
 
   def get_next_arrival(self):
+    f = 0
     for f in self.Flows:
       if(f.starttime >= self.it and f.added == False):
         #print("flow id %d iteration %d arrival %d" %(f.flowid, self.it, f.starttime))
@@ -476,7 +477,7 @@ class Simulation:
     for_time /= ONEMILLION * 1.0
     for frate in self.umax_mp.x:
       f = self.getFlowWithIndex(idx)
-      print("time %f flow %d datarate %f" %(time/ONEMILLION, self.real_id[idx],frate))
+      #print("time %f flow %d datarate %f" %(time/ONEMILLION, self.real_id[idx],frate))
       #print("capacity %f for_time %f" %(capacity, for_time))
       self.umax_mp.data_sent[idx] = 1.0*self.umax_mp.data_sent[idx] + (frate * for_time * capacity/8.0);
       idx +=1

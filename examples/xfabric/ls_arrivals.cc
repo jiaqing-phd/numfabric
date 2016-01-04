@@ -346,8 +346,8 @@ uint32_t start_flow_index = 1;
 
 void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  
-    while(true)
+   uint32_t num_attempts = 0; 
+    while(num_attempts < 100)
     {
      UniformVariable urand;
      //uint32_t i = start_flow_index; //urand.GetInteger(1, max_system_flows-1);
@@ -368,6 +368,7 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
        num_flows++;
        break;
      }
+     num_attempts++;
   }
 }
 

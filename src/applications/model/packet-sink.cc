@@ -224,7 +224,7 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
           flow_start_time = Simulator::Now();
         }
         m_totalRx += packet->GetSize ();
-        // std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
+        //std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
 //      }
 
 
