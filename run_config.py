@@ -37,7 +37,7 @@ print final_args
 
 cmd_line="./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err"
 print(cmd_line)
-#subprocess.call(cmd_line, shell="False")
+subprocess.call(cmd_line, shell="False")
 
 #cmd_line="python "+plot_script+" "+prefix_str
 #print(cmd_line)

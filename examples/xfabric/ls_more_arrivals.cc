@@ -331,7 +331,6 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
       Ptr<Ipv4L3Protocol> src_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(source_node))->GetObject<Ipv4> ());
       sink_node_ipv4->removeFlow(i);
       src_node_ipv4->removeFlow(i);
-      break;
     }
     num_flows_stopped++;
   }
@@ -364,19 +363,23 @@ void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   if(num_flows >= max_flows_allowed) {
+    std::cout<<Simulator::Now().GetSeconds()<<" stop_flows because excess"<<std::endl;
     stop_flows(sourcenodes, sinknodes);
   } else if(num_flows <= min_flows_allowed) {
+    std::cout<<Simulator::Now().GetSeconds()<<" start_flows because less"<<std::endl;
     start_flows(sourcenodes, sinknodes);
   } else {
      Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
      double rand_num = uv->GetValue(0.0, 1.0);
      if(rand_num < 0.5) {
+        std::cout<<Simulator::Now().GetSeconds()<<" start_flows random"<<std::endl;
         start_flows(sourcenodes, sinknodes);
       } else {
+        std::cout<<Simulator::Now().GetSeconds()<<" stop_flows random"<<std::endl;
         stop_flows(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.05; //50ms
+  double delay = 0.1; //50ms
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }
