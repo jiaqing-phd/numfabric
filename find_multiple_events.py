@@ -15,7 +15,7 @@ fstart_index = 3
 fsize_index = 5
 weight_index=8
 ecmp_hash_index=9
-event_epoch=0.05
+event_epoch=0.1
 
 num_flow_index = 1
 num_port_index = 1
@@ -24,7 +24,7 @@ numports = 0
 numflows = 0
 ONEMILLION = 1000000
 
-enough_good = 10
+enough_good = 30
 capacity=10000
 iter_value=0.0001
 
@@ -32,14 +32,14 @@ averaged = {}
 
 def close_enough(rate1, rate2):
   diff = (rate1 - rate2)/rate2
-  if(abs(diff) < (0.2)):
+  if(abs(diff) < (0.1)):
     return True
   return False
 
 def find_converge_time(ret_rates, fname, start_time, stop_time, g):
-  print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
-  print("ret_rates are ")
-  print(ret_rates)
+  #print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
+#  print("ret_rates are ")
+#  print(ret_rates)
   f1 = open(fname, "r")
   converged_time = {}
   times= {}
@@ -80,17 +80,9 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
       if(good[flowid] == enough_good):
         converged_time[flowid] = time - (enough_good-1)*iter_value - start_time
         flow_converged[flowid] = True
-        print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
+        #print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
-def getclass(self, srcid, dstid):
-  if(srcid == 0 and dstid == 2):
-    return 1
-  if(srcid == 0 and dstid == 3):
-    return 2
-  if(srcid == 1 and dstid == 2):
-    return 3
-  print("unknown src %d dst %d pair" %(srcid, dstid))
 
 def get_optimal_rates(log_file, method, alpha, g): 
 
@@ -117,7 +109,7 @@ def get_optimal_rates(log_file, method, alpha, g):
             num_events_parsed += 1
             if(elems[0] == "flow_start"):
                 # new flow, we need to insert into our matrix 
-                print("parsing line")
+                #print("parsing line")
                 print(elems)
                 flow_id = int(elems[fid_index])
                 src_id = int(elems[src_index]) 
@@ -130,8 +122,9 @@ def get_optimal_rates(log_file, method, alpha, g):
                 ecmp_hash = int(elems[ecmp_hash_index])
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 1)
 
-            if(elems[0] == "flow_stop"): #temporary - remove with new code
-                print("flow_stop event ")
+            if(elems[0] == "flow_stop"): 
+                #print("flow_stop event ")
+                print(elems)
                 flow_id = int(elems[1])
                 src_id = int(elems[2])
                 dst_id = int(elems[3])
@@ -146,20 +139,20 @@ def get_optimal_rates(log_file, method, alpha, g):
                 event_time = flow_arrival/1000000000.0;
                 next_event_time = event_time+ event_epoch;
                 opt_rates = sim.startSim() #these are optimal rates
-                print(opt_rates) 
+                #print(opt_rates) 
                 (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
                 con = 1
                 max_conv=0.0
                 print("##########################################")
                 for key in opt_rates:
                     if(key not in converge_times):
-                        print("converge_times 0.05 - not found flowid %d" %key)
+                        print("converge_times %f - not found flowid %d time %f" %(event_epoch,key,event_time))
                         max_conv=0.0
                         con = 0
 
                 for key in converge_times:
                     print("converge_times: %f %d" %(converge_times[key], key))
-                    if(converge_times[key] > max_conv and converge_times[key] != 0.05):
+                    if(converge_times[key] > max_conv and converge_times[key] != event_epoch):
                         max_conv=converge_times[key]
                 if(con == 1):
                   print("converge_times_maximum %f" %max_conv)

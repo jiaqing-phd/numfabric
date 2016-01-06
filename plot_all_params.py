@@ -38,8 +38,9 @@ for pupdate_time in ("1.6e-05", "3.2e-05","4.8e-05", "6.4e-05"):
         prefix_str=orig_prefix
         prefix_str=prefix_str+"_"+pupdate_time+"_"+gupdate_time+"_"+dt_val+"_"+str(ewma_time)
         # Let's first plot convergence CDF
-        converge_time_str = "python find_multiple_events.py "+prefix_str+".out mp 0.1 | grep maximum | cut -f2 -d\" \" >"+prefix_str+"_converge_times.out&"
+        converge_time_str = "python find_multiple_events.py "+prefix_str+".out mp 0.1 > "+prefix_str+"_converge_times.out&"
+#| grep maximum | cut -f2 -d\" \" >"+prefix_str+"_converge_times.out&"
         print(converge_time_str)
-#        subprocess.call(converge_time_str, shell="False")
+        subprocess.call(converge_time_str, shell="False")
 f.close()
 
