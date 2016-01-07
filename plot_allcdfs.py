@@ -11,7 +11,7 @@ labels = []
 
 def cyret1(b):
   a = np.asarray(b)
-  print(a)
+  #print(a)
   counts, bin_edges = np.histogram(a, bins=num_bins, normed=True)
 #  counts, bin_edges = np.histogram(a, bins=num_bins, density=True)
   cdf = np.cumsum(counts)
@@ -50,8 +50,8 @@ for i in range(0, (len(sys.argv)-2)):
    y = cyret1(listoflists[i])
    #X1  = np.linspace(min(listoflists[i]),max(listoflists[i]),num_bins)
    X1  = np.linspace(min(listoflists[i]),max(listoflists[i]),num_bins)
-   print (X1)
-   print (y)
+   #print (X1)
+   #print (y)
 #   plt.xlim(0,0.01)
    plt.plot(X1, y, label=labels[i])
    plt.legend(loc='lower right')

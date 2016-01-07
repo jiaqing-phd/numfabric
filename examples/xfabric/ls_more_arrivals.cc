@@ -379,7 +379,9 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.1; //50ms
+
+  double delay = 0.1; //0ms
+  if(num_flows < 60) { delay = 0.0;}
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }
