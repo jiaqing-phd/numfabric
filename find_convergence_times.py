@@ -14,7 +14,7 @@ fstart_index = 3
 fsize_index = 5
 weight_index=8
 ecmp_hash_index=9
-event_epoch=0.05
+event_epoch=0.1
 
 num_flow_index = 1
 num_port_index = 1
@@ -25,7 +25,7 @@ ONEMILLION = 1000000
 
 enough_good = 10
 capacity=10000
-iter_value=0.0001
+iter_value=0.0005
 
 averaged = {}
 

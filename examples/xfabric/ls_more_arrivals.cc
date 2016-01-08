@@ -18,7 +18,7 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 250;
+const uint32_t max_system_flows = 500;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
@@ -362,6 +362,7 @@ void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
+  max_flows_allowed = min_flows_allowed = number_flows+1;
   if(num_flows >= max_flows_allowed) {
     std::cout<<Simulator::Now().GetSeconds()<<" stop_flows because excess"<<std::endl;
     stop_flows(sourcenodes, sinknodes);
@@ -381,7 +382,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
   }
 
   double delay = 0.1; //0ms
-  if(num_flows < 60) { delay = 0.0;}
+  if(num_flows < number_flows) { delay = 0.0;}
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }

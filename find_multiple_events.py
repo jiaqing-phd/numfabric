@@ -4,7 +4,6 @@ import os
 import numpy as np
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
-num_events=10
 
 flow_start = "flow_start"
 #log_file = sys.argv[1]
@@ -103,6 +102,7 @@ def get_optimal_rates(log_file, method, alpha, g):
       		#fabricCapacity=2#int(elems[5])
       		edgeCapacity=int(elems[4])
       		fabricCapacity=int(elems[5])
+      		num_events=200
       		sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
 
           if((elems[0] == "flow_start") or (elems[0] == "flow_stop")):
@@ -135,6 +135,7 @@ def get_optimal_rates(log_file, method, alpha, g):
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 2)
 
             if(num_events_parsed == num_events):
+                num_events=10
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 next_event_time = event_time+ event_epoch;

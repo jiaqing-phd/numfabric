@@ -30,13 +30,19 @@ for line in f:
 orig_prefix=arguments["prefix"]
 #for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
-for pupdate_time in (0.0001, 0.00015, 0.0002):
-  for gupdate_time in (0.0, 0.00005,0.0001):
+#for pupdate_time in (0.0001, 0.00015, 0.0002):
+for pupdate_time in (0.0001, 0.000064)
+  for gupdate_time in (0.000032, 0.000048, 0.000016):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
     for ewma_time in (10000, 20000):
+        if(ewma_time == int(20000)):
+            continue
         for dt_val in (0.000012, 0.000024):
-            for eta_val in (1.0, 10.0, 20.0, 30.0):
+            if(dt_val == float(0.000024)):
+                continue
+            for eta_val in (1.0, 10.0):
+                for num_flows in (
                 arguments["price_update_time"] = str(pupdate_time)
                 arguments["guardtime"] = str(gupdate_time)
                 arguments["dt_val"] = str(dt_val)

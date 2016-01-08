@@ -7,7 +7,7 @@ import numpy as np
 ###################### Global constants ########################
 num_instances = 1
 max_iterations = 10000
-max_capacity = 10.0
+max_capacity = 100.0
 gamma = 0.01
 smoothing = 0.0
 tol = 1e-3

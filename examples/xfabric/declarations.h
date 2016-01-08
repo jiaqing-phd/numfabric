@@ -164,4 +164,5 @@ extern double kvalue_rate;
 
 extern void dump_config(void);
 extern bool price_multiply;
+extern uint32_t number_flows;
 #endif 
