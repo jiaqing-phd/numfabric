@@ -18,7 +18,7 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 500;
+const uint32_t max_system_flows = 10000;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
