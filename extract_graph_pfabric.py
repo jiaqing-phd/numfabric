@@ -54,7 +54,7 @@ for line in fh:
       headers_total = num_packets * (pkt_size - data_size)
 #      print("flow_size %d num_packets %d headers_total %d" %(flow_size,num_packets,headers_total))
       flow_size = flow_size + headers_total
-      
+
       if(flow_size == 0):
           flow_size = 2500000000
       flow_arrival = float(elems[fstart_index])
