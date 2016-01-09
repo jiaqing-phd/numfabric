@@ -408,6 +408,7 @@ PrioQueue::updateLinkPrice(void)
    } else {
      current_price = new_price;
    }
+//   std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<rate_increase<<" "<<latest_min_prio<<std::endl;
 
 //    set  optimal price - testing
 /*   if(GetLinkIDString() == "0_0_1") {

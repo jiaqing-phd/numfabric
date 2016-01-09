@@ -3,7 +3,7 @@ import sys
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-
+import scipy.io as sio
 ###################### Global constants ########################
 num_instances = 1
 max_iterations = 20000
@@ -355,6 +355,7 @@ class Simulation:
       weight = np.vstack([w, [weight]])
       self.real_id = np.vstack([self.real_id, [fid]])
     num_flows += 1
+    sio.savemat('np_vector.mat', {'new_matrix':new_matrix})
 
     self.umax_mp.util_reinit(new_matrix, new_ratios, new_datasent, new_maxdata, weight, num_flows, self.it)
 

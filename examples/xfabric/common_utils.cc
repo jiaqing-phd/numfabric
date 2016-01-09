@@ -141,7 +141,7 @@ CheckQueueSize (Ptr<Queue> queue)
   }
 
   
- //   Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+//    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
     if(Simulator::Now().GetSeconds() >= sim_time+1.0) {
       Simulator::Stop();
     }
@@ -201,6 +201,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("dt_val", "dt_value", dt_val);
   cmd.AddValue ("price_multiply", "price_multiply", price_multiply);
   cmd.AddValue ("cdf_file", "cdf_file", empirical_dist_file);
+  cmd.AddValue ("num_flows", "num_flows", number_flows);
 
   return cmd;
 }
@@ -230,6 +231,8 @@ void dump_config(void)
   std::cout<<"kvalue_rate "<<kvalue_rate<<std::endl;
   std::cout<<"kvalue_price "<<kvalue_price<<std::endl;
   std::cout<<"application_datarate "<<application_datarate<<std::endl;
+  std::cout<<"eta_val "<<xfabric_eta<<std::endl;
+  std::cout<<"host_compensate "<<host_compensate<<std::endl;
 
   std::string::size_type sz;
   double edge_data = atof(get_datarate(edge_datarate).c_str());

@@ -71,7 +71,7 @@ for key in dtimes:
 plt.xlabel('Time in seconds')
 plt.ylabel('Rate in Mbps')
 plt.title('%s' %(pre) )
-plt.legend(loc='upper right')
+#plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
 
 plt.draw()

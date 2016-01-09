@@ -7,7 +7,7 @@ import numpy as np
 ###################### Global constants ########################
 num_instances = 1
 max_iterations = 10000
-max_capacity = 10.0
+max_capacity = 100.0
 gamma = 0.01
 smoothing = 0.0
 tol = 1e-3
@@ -258,7 +258,7 @@ class UtilMax:
               if(good == conseq_good):
                 self.converged = True    
                 #print("MP Rates : self.converged %d" %self.converged)
-                print(self.x)
+                #print(self.x)
               converg_it+=1
               #print("Trying for the rates to converge.. iteration %d gap %f" %(converg_it, self.opt_gap))
        ## print rates
@@ -318,7 +318,7 @@ class UtilMax:
               converg_it+=1
               #print("Trying for the rates to converge.. iteration %d gap %f" %(converg_it, self.opt_gap))
               
-            self.update_data_sent()
+            #self.update_data_sent()
         elif self.method == 'maxmin':
             if(self.first_time):
               self.update_rates_maxmin(np.dot(self.routes, self.pr), beta=0.0)
@@ -469,13 +469,13 @@ class Simulation:
     #self.Flows.append(f)
 
   def add_event_list(self, flow_id, flow_size, time, srcid, dstid, weight, ecmp_hash, event_type):
-    print("adding event flow at time %f event_type %d" %(time, event_type))
+    #print("adding event flow at time %f event_type %d" %(time, event_type))
     f = Flow(time/1000.0, flow_id, flow_size, srcid, dstid, weight, ecmp_hash)
     new_event = event(f, event_type)
     self.events.append(new_event)
 
   def addFlow(self, f):
-    print("flow being inserted.. flow id %d "%(f.flowid))
+    #print("flow being inserted.. flow id %d "%(f.flowid))
     new_row = np.zeros((1, self.numports + self.numleaf * self.numspines))
     new_row[0, f.srcid] = 1
     new_row[0, f.dstid] = 1
@@ -485,12 +485,12 @@ class Simulation:
     new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
-    print("addFlow new row ")
-    print(new_row)
+    #print("addFlow new row ")
+    #print(new_row)
 
   def removeFlow(self, f):
    # flow_index = self.reverse_map[f.flowid]
-    print("trying to remove flow %d" %f.flowid)
+    #print("trying to remove flow %d" %f.flowid)
     flow_index = -1
     index = 0
     for fid in self.real_id:
@@ -535,12 +535,6 @@ class Simulation:
   
     self.umax_mp.util_reinit(new_matrix, new_ratios, new_datasent, new_maxdata, weight, num_flows, self.it)
 
-  def flow_has_traffic(self):
-    for fidx in range(0, len(self.umax_mp.data_sent)):
-      if(self.umax_mp.data_sent[fidx] < self.umax_mp.maxdata[fidx]):
-        return True
-    return False
-
   def event_pending(self):
     if(len(self.events) > 0):
       for f in self.events:
@@ -560,15 +554,6 @@ class Simulation:
     #print("no flows pending.. returning False")
     return False
 
-  def get_next_arrival(self):
-    for f in self.Flows:
-      if(f.starttime >= self.it and f.added == False):
-        #print("flow id %d iteration %d arrival %d" %(f.flowid, self.it, f.starttime))
-        return (f, f.starttime)
-
-    # there are no more arrivals
-    return (f, -1)
-
   def get_next_event(self):
     #print("get_next_event.. ")
     for e in self.events:
@@ -577,99 +562,6 @@ class Simulation:
         return (e, e.event_type)
 
     return (e , -1)
-      
-
-  def get_earliest_finish(self, datasent):
-    #for fidx in range(0, (self.umax_mp.data_sent.shape)[0]):
-    min_finish_time = UMAX_INT
-    min_finish_fid = -1
-    fidx = 0
-    for frate in self.umax_mp.x:
-      if(datasent[fidx] >= self.umax_mp.maxdata[fidx]):
-      # this flow will finish .. but exactly when?
-        data_remaining = self.umax_mp.maxdata[fidx] - self.umax_mp.data_sent[fidx]
-        #print("data_remaining %d maxdata %d data_sent %d" %(data_remaining, self.umax_mp.maxdata[fidx],self.umax_mp.data_sent[fidx]))
-        #print("rate = %f" %frate)
-        time_to_send = data_remaining * 8.0 * ONEMILLION/ (frate * capacity)
-        if(min_finish_time > time_to_send):
-          min_finish_time = time_to_send
-          min_finish_fid = fidx
-    #print("the flow that'll finish fastest %d %d "%(min_finish_time, min_finish_fid))
-    return (min_finish_time, min_finish_fid)
-
-  def get_shortest_remaining_flow(self):
-    #for fidx in range(0, (self.umax_mp.data_sent.shape)[0]):
-    min_finish_time = UMAX_INT
-    min_finish_fid = -1
-    fidx = 0
-    for frate in self.umax_mp.x:
-      data_remaining = self.umax_mp.maxdata[fidx] - self.umax_mp.data_sent[fidx]
-      #print("get_shortest: remaining data %d for flow %d at time %d"%(data_remaining,fidx,self.it))
-      time_to_send = self.it + (data_remaining * 8.0 * ONEMILLION / (frate * capacity))
-      if(min_finish_time > time_to_send):
-        min_finish_time = time_to_send
-        min_finish_fid = fidx
-      fidx+=1
-    #print("get_shortest_remaining_flow: the flow that'll finish soonest %d at time %f"%(min_finish_fid, min_finish_time))
-    return (min_finish_time, min_finish_fid)
-
-
-  def update_all_data_sent(self, time, for_time):
-    idx = 0
-    #print("update_all_data_sent : fortime %f"%for_time)
-    class_rates = {}
-    num_flows = {}
-    total_rate = 0
-    total_numflows = 0
-    total_rate_long = 0
-    total_rate_short = 0
-
-    #for key in (1,2,3):
-    #  class_rates[key] = 0
-    #  num_flows[key] = 0 
-
-    for_time /= ONEMILLION * 1.0
-    for frate in self.umax_mp.x:
-      f = self.getFlowWithIndex(idx)
-      #classid = f.classid
-      #if(classid not in class_rates):
-      #  class_rates[classid] = 0
-      #  num_flows[classid] = 0
-      #class_rates[classid] += frate 
-      #num_flows[classid] += 1
-      #if(classid == 0):
-      #  total_rate_long += frate
-      #else:
-      #  total_rate_short += frate
-      #total_rate += frate
-      #total_numflows += 1
-
-      #print("time %f flow %d datarate %f classid %d" %(time/ONEMILLION, self.real_id[idx],frate, classid))
-      self.umax_mp.data_sent[idx] = 1.0*self.umax_mp.data_sent[idx] + (frate * for_time * capacity/8.0);
-      idx +=1
-
-    ######## STATS ##########
-    for key in class_rates:
-      print("class_rates time %f class %d rate %f num_flows %d total_rate %f"%(time/ONEMILLION, key, class_rates[key], num_flows[key], total_rate))
-
-
-    #if(num_flows[1] != 0 or num_flows[2] !=0 or num_flows[3] != 0): 
-       
-    #  r1n1=class_rates[1]
-    #  r2n2=class_rates[2]
-    #  r3n3=class_rates[3]
-
-    #  if((r1n1 - (float(num_flows[1])/float(num_flows[1]+num_flows[2]+num_flows[3]))) > 0.00001):
-    #    print("r1n1 sanity doesn't check")
-#      if((r1n1 -num_flows[1]*1.0/(1.0*float((1.0*num_flows[1] + float(max(num_flows[2], num_flows[3]))))))> 0.0000001):
-#        print("r1n1 sanity doesn't check..look stats above %f %d %d %d %f" %(r1n1, num_flows[1], num_flows[2], num_flows[3], (1.0*float((1.0*num_flows[1] + float(max(num_flows[2], num_flows[3]))))) ))
-    #  if((r2n2 - (1-r1n1)) > 0.00000001):
-    #    print("r2n2 sanity doesn't check..look stats above %f %f" %(r2n2, (1-r1n1)))
-    
-
-    #print("total_rate %f %f %d %f %f" %(time/ONEMILLION, total_rate, total_numflows, total_rate_long, total_rate_short))
-      
-      
 
   def execute_next_event(self):
     (next_flow, event_type) = self.get_next_event();
