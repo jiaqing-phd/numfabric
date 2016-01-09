@@ -84,7 +84,6 @@ for line in f:
 colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef','#ababab','#badaff','#deadbe','#bedead','#afafaf','#8eba42','#e5e5e5','#6d904f']
 
 plt.figure(1);
-plt.title("Sending rates")
 i=0
 for key in dtimes:
   plt.plot(dtimes[key], ewma(drates[key], 1.0), color=colors[i], label=str(key))
@@ -92,8 +91,8 @@ for key in dtimes:
 
 plt.xlabel('Time in seconds')
 plt.ylabel('Rate in Mbps')
-plt.title('%s' %(pre) )
-plt.legend(loc='upper right')
+plt.title('%s_rates' %(pre) )
+#plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
 
 plt.draw()
@@ -102,7 +101,7 @@ hosts = list(xrange(144))
 leafs = list(xrange(144,153))
 
 plt.figure(2)
-plt.title("QueuePrices Edge")
+plt.title('%s_edgelink_prices' %(pre) )
 i=0
 for key in qprices:
     parts = key.split('_');
@@ -119,7 +118,7 @@ plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_prices_edge"))
 plt.draw()
 
 plt.figure(5)
-plt.title("QueuePrices Leaf")
+plt.title('%s_leaflink_prices' %(pre) )
 i=0
 for key in qprices:
     parts = key.split('_');
@@ -135,7 +134,7 @@ plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_prices"))
 plt.draw()
 
 plt.figure(3)
-plt.title("Queue MinResidues Leaf")
+plt.title('%s_leaflink_minresidues' %(pre) )
 i=0
 for key in qprices:
     parts = key.split('_');
@@ -150,7 +149,7 @@ plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_minresidues_leaf"))
 plt.draw()
 
 plt.figure(7)
-plt.title("Queue MinResidues Edge")
+plt.title('%s_edgelink_minresidues' %(pre) )
 i=0
 for key in qprices:
     parts = key.split('_');
@@ -160,12 +159,12 @@ for key in qprices:
 #plt.plot(qx1, qy1, 'k', label="switch1")
 plt.xlabel('Time in seconds')
 plt.ylabel('Queue MinResidues')
-plt.legend(loc='lower right', prop={'size':6})
+#plt.legend(loc='lower right', prop={'size':6})
 plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_residues_edge"))
 plt.draw()
 
 plt.figure(4)
-plt.title("QueueUtils Edge")
+plt.title('%s_edgelink_utils' %(pre) )
 i=0
 for key in qprices:
     parts = key.split("_")
@@ -176,12 +175,12 @@ for key in qprices:
 plt.ylim(0,1.2)
 plt.xlabel('Time in seconds')
 plt.ylabel('Queue Utils')
-plt.legend(loc='lower right', prop={'size':6})
+#plt.legend(loc='lower right', prop={'size':6})
 plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_utils_edge"))
 plt.draw()
 
 plt.figure(6)
-plt.title("QueueUtils Leaf")
+plt.title('%s_leaflink_utils' %(pre) )
 i=0
 for key in qprices:
     parts = key.split("_")
@@ -192,11 +191,11 @@ for key in qprices:
 plt.ylim(0,1.2)
 plt.xlabel('Time in seconds')
 plt.ylabel('Queue Rates')
-plt.legend(loc='lower right', prop={'size':6})
+#plt.legend(loc='lower right', prop={'size':6})
 plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_utils_leaf"))
 plt.draw()
 
-plt.show()
+#plt.show()
 
 f.close()
 
