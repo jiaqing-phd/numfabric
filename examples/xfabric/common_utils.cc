@@ -321,10 +321,15 @@ void common_config(void)
 
 
   flowTracker = new Tracker();
-  //flowTracker->register_callback(scheduler_wrapper);
+  flowTracker->register_callback(scheduler_wrapper);
 
   return;
 
+}
+
+void scheduler_wrapper(uint32_t fid)
+{
+     std::cout<<"trackercalled "<<fid<<" stopped "<<std::endl;
 }
 
 static void

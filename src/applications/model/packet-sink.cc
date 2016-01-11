@@ -114,10 +114,10 @@ uint32_t PacketSink::GetTotalRx ()
 
     std::cout<<"flow_stop "<<m_flowID<<" stop_time "<<Simulator::Now().GetNanoSeconds()<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" flow_started "<<flow_start_time.GetSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
 
-   /* if(flowTracker) {
+    if(flowTracker) {
       FlowData fd(m_flowID);
       flowTracker->registerEvent(2, fd);
-    } */
+    } 
 
     flow_finished = true;
   }
