@@ -159,5 +159,7 @@ Ipv4InterfaceContainer assignAddress(NetDeviceContainer dev, uint32_t subnet_ind
 void CheckQueueSize (Ptr<Queue> queue);
 bool price_multiply = false;
 
+uint32_t number_flows = 100;
+
 
 #endif 

@@ -7,7 +7,7 @@ import numpy as np
 ###################### Global constants ########################
 num_instances = 1
 max_iterations = 10000
-max_capacity = 10.0
+max_capacity = 100.0
 gamma = 0.01
 smoothing = 0.0
 tol = 1e-3
@@ -485,6 +485,7 @@ class Simulation:
     new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
+
     #print("addFlow new row ")
     #print(new_row)
 

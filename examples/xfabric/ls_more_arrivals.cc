@@ -25,15 +25,15 @@ Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
 uint32_t min_flows_allowed = 150;
 uint32_t max_flows_allowed = 200;
+std::map<uint32_t, std::string> flowkeys;
 
-bool compare_flow_deadlines(const FlowData &a, const FlowData &b)
+void dropFlowFromQueues(uint32_t f)
 {
-  if(a.flow_deadline < b.flow_deadline) {
-    return true;
-  }
-  return false;
+    for(uint32_t i=0; i<AllQueues.size(); i++) {
+      Ptr<Queue> q = AllQueues[i];
+      StaticCast<PrioQueue> (q)->dropFlowPackets(flowkeys[f]);
+    }
 }
-	
 void config_queue(Ptr<Queue> Q, uint32_t nid, uint32_t vpackets, std::string fkey1)
 {
       Q->SetNodeID(nid);
@@ -213,6 +213,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
     ss<<addr<<":"<<remoteIp<<":"<<ports[sinkN];
     std::string s = ss.str(); 
     flowids[s] = flow_id;
+    flowkeys[flow_id] = s;
 
     //flow_dest_port[clientNodes.Get(sourceN)->GetId()] = ports[sinkN];
     //
@@ -331,8 +332,9 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
       Ptr<Ipv4L3Protocol> src_node_ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(source_node))->GetObject<Ipv4> ());
       sink_node_ipv4->removeFlow(i);
       src_node_ipv4->removeFlow(i);
+      dropFlowFromQueues(i);
+      num_flows_stopped++;
     }
-    num_flows_stopped++;
   }
 }
 
@@ -379,9 +381,9 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
+  double delay = 0.05; //100ms
 
-  double delay = 0.1; //0ms
-  if(num_flows < 60) { delay = 0.0;}
+  if(Simulator::Now().GetSeconds() < 1.85) { delay = 0.0; }
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }

@@ -4,7 +4,6 @@ import os
 import numpy as np
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
-num_events=10
 
 flow_start = "flow_start"
 #log_file = sys.argv[1]
@@ -84,12 +83,13 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
   return(converged_time, flow_converged)
 
 
-def get_optimal_rates(log_file, method, alpha, g): 
+def get_optimal_rates(log_file, method, alpha, g, num_events): 
 
         fh = open(log_file, "r")
         sim = solver.Simulation()
 
         num_events_parsed=0
+        print("num_events %d" %num_events)
 
         for line in fh:
           l1 = line.rstrip();
@@ -135,6 +135,7 @@ def get_optimal_rates(log_file, method, alpha, g):
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 2)
 
             if(num_events_parsed == num_events):
+                num_events=10
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 next_event_time = event_time+ event_epoch;
@@ -159,4 +160,4 @@ def get_optimal_rates(log_file, method, alpha, g):
                 print("##########################################")
             
 
-get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0)
+get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, int(sys.argv[3]))

@@ -1474,9 +1474,9 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
       if(num_hops.find(flowkey) != num_hops.end()) {
       	flow_num_hops = num_hops[flowkey];
       } else {
-	flow_num_hops = 4;
+    	flow_num_hops = 4;
       }	
-   }
+    }
 
     if(price_valid[flowkey]) {
       priheader.residue = priheader.residue / (1.0*flow_num_hops);

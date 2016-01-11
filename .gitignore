@@ -3,6 +3,10 @@
 *.out
 *.err
 *.png
+*.converge_times
+*.convergence_times
+*_ctimes_only
+*_convergence_times
 
 # Compiled Object files
 *.slo
