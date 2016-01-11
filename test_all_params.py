@@ -31,13 +31,11 @@ orig_prefix=arguments["prefix"]
 #for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
 #for pupdate_time in (0.0001, 0.00015, 0.0002):
-for pupdate_time in (0.0001, 0.000064, 0.0002):
-  for gupdate_time in (0.000032, 0.0):
+for pupdate_time in (0.0001, 0.000050):
+  for gupdate_time in (0.000025, 0.00005):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
-    for ewma_time in (10000, 20000):
-        if(ewma_time == 20000):
-            continue
+    for ewma_time in (20000, 40000, 60000, 80000):
         for dt_val in (0.000012, 0.000024):
             for eta_val in (1.0, 10.0):
                 if(eta_val == 1.0):
@@ -46,14 +44,17 @@ for pupdate_time in (0.0001, 0.000064, 0.0002):
                 arguments["guardtime"] = str(gupdate_time)
                 arguments["dt_val"] = str(dt_val)
                 arguments["kvalue_rate"] = str(ewma_time)
+                arguments["kvalue_price"] = str(ewma_time)
                 arguments["xfabric_eta"] = str(eta_val)
                 prefix_str=orig_prefix
                 prefix_str=prefix_str+"_"+arguments["price_update_time"]+"_"+arguments["guardtime"]+"_"+arguments["dt_val"]+"_"+arguments["kvalue_rate"]+"_"+arguments["xfabric_eta"]
                 final_args=""
                 for arg_key in arguments:
                     final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
-                cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
-#                cmd_line="python plot_qr.py "+prefix_str+"&"
+#                cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+#               cmd_line="python plot_qr.py "+prefix_str+"&"
+                cmd_line="python plot_onlyrates.py "+prefix_str+"&"
+#               cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
                 print(cmd_line)
                 subprocess.call(cmd_line, shell="False")
 f.close()

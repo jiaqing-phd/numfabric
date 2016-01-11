@@ -382,6 +382,8 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       }
   }
   double delay = 0.05; //100ms
+
+  if(Simulator::Now().GetSeconds() < 1.85) { delay = 0.0; }
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }

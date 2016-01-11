@@ -485,6 +485,7 @@ class Simulation:
     new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
+
     #print("addFlow new row ")
     #print(new_row)
 

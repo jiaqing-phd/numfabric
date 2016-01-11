@@ -26,8 +26,8 @@ uint32_t num_flows = 0;
 
 std::map<uint32_t, std::string> flowkeys;
 
-uint32_t min_flows_allowed = 7;
-uint32_t max_flows_allowed = 9;
+uint32_t min_flows_allowed = 3;
+uint32_t max_flows_allowed = 5;
 
 
 void dropFlowFromQueues(uint32_t f)
@@ -434,7 +434,7 @@ main(int argc, char *argv[])
   std::cout<<*argv<<std::endl;
   std::cout<<"set prefix to "<<prefix<<std::endl;
   
- // LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
+  LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
  // initAll();
 
   if(deadline_mode){

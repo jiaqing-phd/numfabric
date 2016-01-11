@@ -76,6 +76,9 @@ public:
 
   void dropFlowPackets(std::string);
   std::map<std::string, uint32_t> drop_list;
+    
+  double averaged_ratio;
+  double g; 
 
   bool IsEmpty (void) const;
   void SetMode (PrioQueue::QueueMode mode);
