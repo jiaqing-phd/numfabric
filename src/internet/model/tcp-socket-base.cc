@@ -1331,6 +1331,7 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
           m_endPoint6->SetPeer (Inet6SocketAddress::ConvertFrom (fromAddress).GetIpv6 (),
                                 Inet6SocketAddress::ConvertFrom (fromAddress).GetPort ());
         }
+//        current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
       // Always respond to first data packet to speed up the connection.
       // Remove to get the behaviour of old NS-3 code.
       m_delAckCount = m_delAckMaxCount;

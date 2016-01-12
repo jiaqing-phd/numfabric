@@ -72,10 +72,9 @@ FlowUtil::getAlpha1InverseByFlowId(uint32_t fid, double price)
 double 
 FlowUtil::getUtilInverseByFlowId(uint32_t fid, double priority)
 {
-  double c = 0;
-  double ret_val = 1.0/(priority+c);
+  double ret_val = 1.0/(priority);
   if (flow_weights.find( fid ) != flow_weights.end()){
-      ret_val = flow_weights[fid]/(priority+c);
+      ret_val = flow_weights[fid]/(priority);
   }
   //std::cout<<" getUtilInverseByFlowID fid "<<fid<<" weight "<<flow_weights[fid]<<" priority "<<priority<<" c "<<c<<std::endl;
   return ret_val;
@@ -169,6 +168,7 @@ FlowUtil::getUtilByFlowID(uint32_t fid, double rate)
     rate = 0.000000000000001;
   }
   if (flow_weights.find( fid ) != flow_weights.end()){
+//      std::cout<<"adding "<<c<<" to rate "<<rate<<std::endl;
       return flow_weights[fid]/(rate + c);
   }
   return 1.0/(rate + c);
