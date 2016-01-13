@@ -355,7 +355,8 @@ class Simulation:
       weight = np.vstack([w, [weight]])
       self.real_id = np.vstack([self.real_id, [fid]])
     num_flows += 1
-    sio.savemat('np_vector.mat', {'new_matrix':new_matrix})
+    if(num_flows==170): 
+        sio.savemat('np_vector.mat', {'new_matrix':new_matrix, 'num_flows':num_flows,'real_id':self.real_id})
 
     self.umax_mp.util_reinit(new_matrix, new_ratios, new_datasent, new_maxdata, weight, num_flows, self.it)
 

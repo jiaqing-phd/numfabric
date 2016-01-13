@@ -14,7 +14,7 @@ fstart_index = 3
 fsize_index = 5
 weight_index=8
 ecmp_hash_index=9
-event_epoch=0.05
+event_epoch=0.1
 
 num_flow_index = 1
 num_port_index = 1
@@ -25,7 +25,7 @@ ONEMILLION = 1000000
 
 enough_good = 30
 capacity=10000
-iter_value=0.0005
+iter_value=0.0001
 
 averaged = {}
 
@@ -36,9 +36,9 @@ def close_enough(rate1, rate2):
   return False
 
 def find_converge_time(ret_rates, fname, start_time, stop_time, g):
-  print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
-  print("ret_rates are ")
-  print(ret_rates)
+  #print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
+#  print("ret_rates are ")
+#  print(ret_rates)
   f1 = open(fname, "r")
   converged_time = {}
   times= {}
@@ -116,13 +116,14 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 dst_id = int(elems[dst_index])
                 flow_size = int(elems[fsize_index])
                 if(flow_size == 0):
-          		    flow_size = float("inf") #25000000000
+          		    flow_size = 2500000000
                 flow_arrival = float(elems[fstart_index])
                 weight = float(elems[weight_index])
                 ecmp_hash = int(elems[ecmp_hash_index])
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 1)
 
             if(elems[0] == "flow_stop"): 
+                num_events = 7
                 #print("flow_stop event ")
                 print(elems)
                 flow_id = int(elems[1])
@@ -130,19 +131,20 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 dst_id = int(elems[3])
                 flow_size = 0
                 flow_arrival = float(elems[5])
+                if(flow_arrival == 1950000000):
+                    num_events=8
                 weight = 1
                 ecmp_hash = 0
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 2)
 
             if(num_events_parsed == num_events):
+                num_events=10
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 next_event_time = event_time+ event_epoch;
                 opt_rates = sim.startSim() #these are optimal rates
-                #print(opt_rates)
-                print(" length %d time %f" %( len(opt_rates) ,event_time))
+                #print(opt_rates) 
                 (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
-                
                 con = 1
                 max_conv=0.0
                 print("##########################################")
@@ -158,7 +160,6 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                         max_conv=converge_times[key]
                 if(con == 1):
                   print("converge_times_maximum %f" %max_conv)
-		  
                 print("##########################################")
             
 
