@@ -18,7 +18,7 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 10;
+const uint32_t max_system_flows = 50;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
@@ -26,8 +26,8 @@ uint32_t num_flows = 0;
 
 std::map<uint32_t, std::string> flowkeys;
 
-uint32_t min_flows_allowed = 7;
-uint32_t max_flows_allowed = 9;
+uint32_t min_flows_allowed = 10;
+uint32_t max_flows_allowed = 20;
 
 
 void dropFlowFromQueues(uint32_t f)
@@ -135,6 +135,7 @@ void createTopology(void)
       Ptr<Queue> queue = nd->GetQueue ();
       uint32_t nid = (nd->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd->GetNode())->GetId()<<std::endl;
+      queue->setdesync(desynchronize);
       AllQueues.push_back(queue);
 
       // the other end
@@ -143,6 +144,7 @@ void createTopology(void)
       uint32_t nid1 = (nd1->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd1->GetNode())->GetId()<<std::endl;
 
+      queue1->setdesync(desynchronize);
       AllQueues.push_back(queue1);
      // get the string version of names of the queues 
      std::stringstream ss;
@@ -389,7 +391,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       }
   }
   double delay = 0.01;
-  if(num_flows < number_flows) { delay = 0.0;}
+  //if(num_flows < number_flows) { delay = 0.0;}
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 }
 
@@ -434,7 +436,7 @@ main(int argc, char *argv[])
   std::cout<<*argv<<std::endl;
   std::cout<<"set prefix to "<<prefix<<std::endl;
   
- // LogComponentEnable("Ipv4L3Protocol", LOG_LEVEL_ALL);
+  LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
  // initAll();
 
   if(deadline_mode){

@@ -51,8 +51,8 @@ for line in f:
     flow_id=int(xy[2])
     t1 = float(xy[3])
     rate=float(xy[4])
-    if( t1 > 2.2): 
-        break
+    #if( t1 > 1.5): 
+    #    break
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
@@ -63,10 +63,10 @@ for line in f:
 colors = ['r','b','g', 'm', 'c', 'y','k']
 
 plt.figure(1);
-plt.title(pre)
+plt.title("Sending rates")
 i=0
 for key in dtimes:
-  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key))
+  plt.plot(dtimes[key], ewma(drates[key], 0.8), colors[i], label=str(key))
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')
@@ -75,10 +75,8 @@ plt.title('%s' %(pre) )
 #plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"rates"))
 
-plt.draw()
-
-
-plt.show()
+#plt.draw()
+#plt.show()
 
 f.close()
 

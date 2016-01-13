@@ -1233,9 +1233,6 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    ss <<source<<":"<<destination<<":"<<destPort;
    std::string flowkey = ss.str(); 
   
-//   NS_LOG_LOGIC("getdeadline node "<<m_node->GetId()<<" flowkey "<<flowkey<<" destport "<<destPort);
-
-   //NS_LOG_UNCOND("current_path_price at node "<<m_node->GetId()<<" is "<<current_pathprice<<" flow "<<flowkey);
    // Calculate the rate corresponding to this price
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
@@ -1327,7 +1324,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       return ((packet->GetSize()+46)*8.0) / fweight;
     } 
 
-/*    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; */
+//    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" fid "<<flowids[flowkey]<<" pkt_dur "<<pkt_dur<<" flow "<<flowkey<<" pkt size "<<8.0*(packet->GetSize()+46)<<" target_rate "<<target_rate<<" current_deadline "<<current_deadline<<" current_netw_price "<<current_netw_price<<std::endl; 
     return current_deadline * 1.0;
 }
 
@@ -1463,6 +1460,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
     priheader.wfq_weight = virtual_pkt_length;
     priheader.residue = (store_prio[flowkey] - current_netw_price);
+    
 
  /*   if(flowids[flowkey] == 8) {
        std::cout<<Simulator::Now().GetSeconds()<<" virtual_pkt_length "<<virtual_pkt_length<<" "<<flowkey<<" "<<pktsize<<std::endl;
@@ -1483,7 +1481,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     } else {
       priheader.residue = 50000.0; // basically invalid value
     }
-	  priheader.netw_price = 0.0;  // start the network price at zero
+    priheader.netw_price = 0.0;  // start the network price at zero
 //  std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<" "<<flowkey<<std::endl; 
 
  

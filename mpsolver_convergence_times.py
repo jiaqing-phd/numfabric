@@ -239,7 +239,9 @@ class UtilMax:
         max_iterations = 1000
         good = 0
         conseq_good = 50 
+        print("updateRates.... ")
         #print(self.routes)
+        #print("updateRates.... ")
         #print(self.pr)
         if(self.method == "mp"):
             while(self.converged == False and converg_it < max_iterations):
@@ -454,8 +456,9 @@ class Simulation:
       new_maxdata = np.vstack([maxdata, [flow_size]])
       weight = np.vstack([w, [new_weight]])
       self.real_id = np.vstack([self.real_id, [fid]])
-      #print("realids...")
-      #print(self.real_id)
+      ##print("realids...")
+      ##print(self.real_id)
+      ##print(new_matrix)
     # mapping from real id to row number in current matrix
     num_flows += 1
   
@@ -485,6 +488,7 @@ class Simulation:
     new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
+
     #print("addFlow new row ")
     #print(new_row)
 
@@ -517,10 +521,12 @@ class Simulation:
     #print(self.real_id)
     flowid = self.real_id[fidx]
     self.real_id = np.delete(self.real_id, fidx, axis=0)
+    #print("after deletion.. realids")
+    #print(self.real_id)
 
     for f in self.Flows:
       if(f.flowid == flowid):
-        #print("removing flow with index %d realid %d at time %f: time_taken %f flow_size %d flow_start %d" %(fidx, f.flowid, self.it/ONEMILLION, (self.it-f.starttime)/ONEMILLION, f.flowsize, f.starttime/ONEMILLION))
+        print("removing flow with index %d realid %d at time %f: time_taken %f flow_size %d flow_start %d" %(fidx, f.flowid, self.it/ONEMILLION, (self.it-f.starttime)/ONEMILLION, f.flowsize, f.starttime/ONEMILLION))
         self.Flows.remove(f)
 
     (routes, ratios, data_sent, time, maxdata,w, num_flows) = self.umax_mp.get_snapshot()
@@ -533,6 +539,7 @@ class Simulation:
     weight = np.delete(w, fidx, axis=0)
     num_flows -= 1
   
+    #print(new_matrix)
     self.umax_mp.util_reinit(new_matrix, new_ratios, new_datasent, new_maxdata, weight, num_flows, self.it)
 
   def event_pending(self):
@@ -565,7 +572,7 @@ class Simulation:
 
   def execute_next_event(self):
     (next_flow, event_type) = self.get_next_event();
-    #print("next flowid %d arrival at %d" %(next_flow.flowid, arrival))
+    print("next flowid %d arrival at %d" %(next_flow.flow.flowid, next_flow.flow.starttime))
     #(finish_time, finish_fid) = (UMAX_INT, -1)
     #(finish_time, finish_fid) = self.get_shortest_remaining_flow()
 
@@ -645,7 +652,7 @@ class Simulation:
     conseq_good = 100
     tol = 1e-10
     max_it = 100
-    return_rates = {} 
+    #return_rates = {} 
     while(self.event_pending()):
        #self.it += 1
        #self.umax_mp.step()
@@ -653,11 +660,13 @@ class Simulation:
        rates = self.update_rates_wrapper()
        
        idx = 0
+       return_rates = {}
        for rate in rates:
-         #print("flow %d rate %f" %(self.real_id[idx], rates[idx]))
          real_flow_id = int(self.real_id[idx])
          return_rates[real_flow_id] = rate #rates[idx]
          idx +=1
+    #print("returning....... ")
+    #print(return_rates)
     return return_rates
   
 

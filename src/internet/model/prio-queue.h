@@ -16,6 +16,7 @@
 #include "ns3/boolean.h"
 #include "tcp-header.h"
 #include "ns3/tag.h"
+#include "ns3/event-id.h"
 
 //#include "ns3/traced-callback.h"
 
@@ -76,6 +77,9 @@ public:
 
   void dropFlowPackets(std::string);
   std::map<std::string, uint32_t> drop_list;
+    
+  double averaged_ratio;
+  double g; 
 
   bool IsEmpty (void) const;
   void SetMode (PrioQueue::QueueMode mode);
@@ -83,6 +87,7 @@ public:
   uint32_t linkid;
   std::string linkid_string;
   virtual void SetNodeID (uint32_t nodeid);
+  virtual void setdesync(bool);
   void SetLinkID (uint32_t linkid);
   void SetLinkIDString (std::string linkid_string);
   std::string GetLinkIDString(void);
@@ -119,12 +124,15 @@ public:
   void enableUpdates(void);
   bool host_compensate;
 
+  EventId m_updateEvent;
+
 
   /**
    * Get the encapsulation mode of this device.
    *
    * \returns The encapsulation mode of this device.
    */
+  bool m_desynchronize;
   PrioQueue::QueueMode GetMode (void);
   uint32_t GetMaxPackets(void);
   uint32_t GetMaxBytes(void);

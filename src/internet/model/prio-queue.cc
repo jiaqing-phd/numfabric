@@ -107,6 +107,11 @@ TypeId PrioQueue::GetTypeId (void)
                   BooleanValue(false),
                   MakeBooleanAccessor (&PrioQueue::m_price_multiply),
                   MakeBooleanChecker ())
+    .AddAttribute("desynchronize",
+                  "Desynchronoze",
+                  BooleanValue(false),
+                  MakeBooleanAccessor (&PrioQueue::m_desynchronize),
+                  MakeBooleanChecker ())
     .AddAttribute("m_pfabricdequeue",
                   "Enable or disable only pfabric like behavior",
                   BooleanValue(false),
@@ -229,8 +234,18 @@ PrioQueue::PrioQueue () :
   current_price = 0.0;
   previous_departure = 1.0 * 1.0e+9; // in ns
   //want to make sure that previous departure is start of simulation
-
-  Simulator::Schedule(Seconds(1.0), &ns3::PrioQueue::updateLinkPrice, this);
+  averaged_ratio = 0;
+  g = 1.0/8.0;
+ 
+  double start_time = 1.0;
+  /*if(m_desynchronize) {
+     std::cout<<"desynchronize "<<m_desynchronize<<std::endl;
+     Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+     double rand_num = uv->GetValue(0.0, (m_updatePriceTime.GetSeconds()));
+     start_time = start_time + rand_num;
+  } 
+  std::cout<<"Switch "<<GetLinkIDString()<<" starting at "<<start_time<<std::endl; */
+  m_updateEvent = Simulator::Schedule(Seconds(start_time), &ns3::PrioQueue::updateLinkPrice, this);
   
   NS_LOG_LOGIC(" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold);
 }
@@ -270,6 +285,25 @@ PrioQueue::getFlowID(Ptr<Packet> p)
 }
 
 void
+PrioQueue::setdesync(bool desync)
+{
+   double start_time = 1.0;
+   if(desync) {
+     std::cout<<"desynchronize "<<m_desynchronize<<std::endl;
+     Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+     double rand_num = uv->GetValue(0.0, (m_updatePriceTime.GetSeconds()));
+     start_time = start_time + rand_num;
+
+     if(m_updateEvent.IsRunning()) {
+	m_updateEvent.Cancel ();
+      }
+	
+      std::cout<<Simulator::Now().GetSeconds()<<" Switch "<<GetLinkIDString()<<" starting at "<<start_time<<std::endl; 
+      m_updateEvent = Simulator::Schedule(Seconds(start_time), &ns3::PrioQueue::updateLinkPrice, this);
+    }
+}
+
+void
 PrioQueue::setFlowID(std::string flowkey, uint32_t fid, double fweight, uint32_t known)
 {
  // NS_LOG_LOGIC("SetFlowID Queue "<<linkid_string<<" flowkey "<<flowkey<<" fid "<<fid);
@@ -303,10 +337,17 @@ PrioQueue::getRateDifferenceNormalized(Time time_interval)
     double link_outgoing_rate = ((8.0 * outgoing_bytes)+12000) /time_considered; //in Mbps
     double available_capacity = (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
 
-    double ratio = 1.0 - link_outgoing_rate / available_capacity;
+    //double ratio = 1.0 - link_outgoing_rate / available_capacity;
+    double util_ratio = link_outgoing_rate / available_capacity;
 
-  
-//    std::cout<<" xFabric link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_outgoing_rate<<" time considered "<<time_considered<<" bytes transferred "<<(8.0*outgoing_bytes)+12000<<" ratio "<<ratio<<" time interval "<<1000000.0*time_interval.GetSeconds()<<std::endl;
+    //averaged_ratio = g* util_ratio + (1-g)*averaged_ratio;
+    
+    //double ratio = 1-averaged_ratio;
+    double ratio = 1-util_ratio;
+     
+//    std::cout<<" xFabric link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_outgoing_rate<<" time considered "<<time_considered<<" bytes transferred "<<(8.0*outgoing_bytes)+12000<<" ratio "<<ratio<<" time interval "<<1000000.0*time_interval.GetSeconds()<<" "<<averaged_ratio<<" "<<g<<std::endl;
+
+    
     outgoing_bytes = 0.0;
     current_util = ratio;
     return ratio;
@@ -389,6 +430,10 @@ PrioQueue::updateLinkPrice(void)
     double rate_increase = getRateDifferenceNormalized(m_updatePriceTime);
 
     double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
+
+  /* if(GetCurSize() > 1) {
+        incr = 0;
+     } */
   
     double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
     
@@ -408,7 +453,8 @@ PrioQueue::updateLinkPrice(void)
    } else {
      current_price = new_price;
    }
-//   std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<rate_increase<<" "<<latest_min_prio<<std::endl;
+ //  uint32_t currentQSize = GetCurSize();
+//   std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<rate_increase<<" "<<latest_min_prio<<" "<<currentQSize<<std::endl;
 
 //    set  optimal price - testing
 /*   if(GetLinkIDString() == "0_0_1") {
@@ -428,7 +474,7 @@ PrioQueue::updateLinkPrice(void)
    update_minimum = false;
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
-  Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
+  m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }
 
@@ -496,7 +542,7 @@ uint32_t
 PrioQueue::GetCurSize(void)
 {
 
-  
+  /*
    typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
    std::map<std::string,uint32_t> flow_count;
    uint32_t total_pkts = 0;
@@ -526,7 +572,7 @@ PrioQueue::GetCurSize(void)
      //NS_LOG_LOGIC("QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<linkid_string);
      std::cout<<"QOCCU "<<Simulator::Now().GetSeconds()<<" flow "<<it->first<<" pktcount "<<it->second<<" queue "<<nodeid<<" "<<GetLinkIDString()<<std::endl;
      total_pkts += it->second;
-   } 
+   } */
   
    //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" totalpktscounter "<<total_pkts<<" nodeid "<<nodeid);  
 

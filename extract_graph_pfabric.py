@@ -56,7 +56,7 @@ for line in fh:
       flow_size = flow_size + headers_total
 
       if(flow_size == 0):
-          flow_size = 2500000000
+          flow_size = 25000000000
       flow_arrival = float(elems[fstart_index])
       weight = float(elems[weight_index])
       ecmp_hash = int(elems[ecmp_hash_index])
@@ -81,8 +81,18 @@ for line in fh:
         #print f_matrix
         #solver.main_solver(f_matrix, w, c, numports/2.0, numflows)
 
-#After everything...
+"""
+    if(elems[0] == "flow_stop"):
+      # new flow, we need to insert into our matrix
+      flow_id = int(elems[fid_index])
 
+
+      if(elems[0] == "flow_start"):
+        #print("adding flow ...");
+        #print(" src %d, %d, %d, %d, %d, %d, %d " %(src_id, dst_id, flow_id, flow_size, flow_arrival, weight, ecmp_hash))
+        sim.add_flow_list(src_id, dst_id, flow_id, flow_size, flow_arrival, weight, ecmp_hash)
+#After everything...
+"""
 sim.startSim()
 
 

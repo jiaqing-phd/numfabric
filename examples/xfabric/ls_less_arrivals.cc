@@ -130,7 +130,6 @@ void createTopology(void)
       Ptr<Queue> queue = nd->GetQueue ();
       uint32_t nid = (nd->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd->GetNode())->GetId()<<std::endl;
-      queue->setdesync(desynchronize);
       AllQueues.push_back(queue);
 
       // the other end
@@ -139,7 +138,6 @@ void createTopology(void)
       uint32_t nid1 = (nd1->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd1->GetNode())->GetId()<<std::endl;
 
-      queue1->setdesync(desynchronize);
       AllQueues.push_back(queue1);
      // get the string version of names of the queues 
      std::stringstream ss;
@@ -205,7 +203,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 
     Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
     SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), rand_weight);
-//    (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
+    (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); // Get Ipv4 instance of the node
     Ipv4Address addr = ipv4->GetAddress (1, 0).GetLocal();
 
@@ -384,7 +382,6 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       }
   }
   double delay = 0.05; //100ms
-
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 
 }

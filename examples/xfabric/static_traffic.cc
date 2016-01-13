@@ -383,7 +383,7 @@ void startRandomFlows(Ptr<EmpiricalRandomVariable> empirical_rand)
   }
 
 }
-
+/*
 void scheduler_wrapper(uint32_t fid)
 {
   // this is a wrapper called from tracker object
@@ -407,6 +407,7 @@ void scheduler_wrapper(uint32_t fid)
   }
 
 }
+*/
 
 void run_scheduler_edf(FlowData fdata, uint32_t eventType)
 {

@@ -207,6 +207,10 @@ void Queue::SetVPkts(uint32_t vpkts)
 {
 }
 
+void Queue::setdesync(bool a)
+{
+}
+
 void Queue::SetNodeID(uint32_t nodeid)
 {
   std::cout<<"baseclass setnodeid"<<std::endl;
