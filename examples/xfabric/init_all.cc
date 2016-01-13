@@ -160,6 +160,7 @@ void CheckQueueSize (Ptr<Queue> queue);
 bool price_multiply = false;
 
 uint32_t number_flows = 100;
+bool desynchronize = false;
 
 
 #endif 

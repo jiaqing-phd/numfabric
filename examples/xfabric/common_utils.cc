@@ -201,7 +201,9 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("dt_val", "dt_value", dt_val);
   cmd.AddValue ("price_multiply", "price_multiply", price_multiply);
   cmd.AddValue ("cdf_file", "cdf_file", empirical_dist_file);
-  cmd.AddValue ("num_flows", "num_flows", number_flows);
+  cmd.AddValue ("num_flows", "num_flows", number_flows); 
+  cmd.AddValue ("desynchronize", "desynchronize", desynchronize);
+  std::cout<<"desync is "<<desynchronize<<std::endl;
 
   return cmd;
 }
@@ -275,6 +277,7 @@ void common_config(void)
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(true));
     Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   }
+  Config::SetDefault("ns3::PrioQueue::desynchronize" , BooleanValue(desynchronize));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::wfq_testing", BooleanValue(wfq));
     
@@ -307,7 +310,7 @@ void common_config(void)
   Config::SetDefault("ns3::Ipv4L3Protocol::host_compensate", BooleanValue(host_compensate));
 // one-set
   Config::SetDefault("ns3::Ipv4L3Protocol::m_pfabric", BooleanValue(pfabric_util));
-  Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue", BooleanValue(pfabric_util));
+  Config::SetDefault("ns3::PrioQueue::m_pfabricdequeue", BooleanValue(pfabric_util)); 
 
   Config::SetDefault("ns3::Ipv4L3Protocol::UtilFunction", UintegerValue(util_method));
   
