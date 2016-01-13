@@ -646,7 +646,6 @@ class Simulation:
     conseq_good = 100
     tol = 1e-10
     max_it = 100
-    return_rates = {} 
     while(self.event_pending()):
        #self.it += 1
        #self.umax_mp.step()
@@ -654,6 +653,7 @@ class Simulation:
        rates = self.update_rates_wrapper()
        
        idx = 0
+       return_rates = {} 
        for rate in rates:
          #print("flow %d rate %f" %(self.real_id[idx], rates[idx]))
          real_flow_id = int(self.real_id[idx])

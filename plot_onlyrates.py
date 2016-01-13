@@ -52,6 +52,9 @@ for line in f:
     t1 = float(xy[3])
     rate=float(xy[4])
 
+    #if(t1 > 1.5):
+    #  continue
+
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []

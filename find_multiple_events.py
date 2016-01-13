@@ -25,7 +25,7 @@ ONEMILLION = 1000000
 
 enough_good = 30
 capacity=10000
-iter_value=0.0001
+iter_value=0.0005
 
 averaged = {}
 
@@ -36,9 +36,9 @@ def close_enough(rate1, rate2):
   return False
 
 def find_converge_time(ret_rates, fname, start_time, stop_time, g):
-  #print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
-#  print("ret_rates are ")
-#  print(ret_rates)
+  print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
+  print("ret_rates are ")
+  print(ret_rates)
   f1 = open(fname, "r")
   converged_time = {}
   times= {}
@@ -135,7 +135,6 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 2)
 
             if(num_events_parsed == num_events):
-                num_events=10
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 next_event_time = event_time+ event_epoch;
@@ -157,6 +156,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                         max_conv=converge_times[key]
                 if(con == 1):
                   print("converge_times_maximum %f" %max_conv)
+		  
                 print("##########################################")
             
 
