@@ -42,5 +42,4 @@ for pupdate_time in ("1.6e-05", "3.2e-05","4.8e-05", "6.4e-05"):
 #| grep maximum | cut -f2 -d\" \" >"+prefix_str+"_converge_times.out&"
         print(converge_time_str)
         subprocess.call(converge_time_str, shell="False")
-f.close()
-
+f.close() 

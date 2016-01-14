@@ -10,6 +10,7 @@ if(len(sys.argv) < 2):
   print("Usage : python run_config.py <executable> <config_file> <plot or not>")
   sys.exit()
 
+plot_only=0
 plot_script="plot_qr.py"
 
 f=open(sys.argv[2], 'r')
@@ -57,9 +58,17 @@ for pupdate_time in (0.0001, 0.000050):
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
                 #cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
-                cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
-                #cmd_line = "grep 'maximum' "+prefix_str+"_ct > out "
-		print(cmd_line)
-#                subprocess.call(cmd_line, shell="False")
+                if (plot_only==0):
+                	cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
+			print(cmd_line)
+                	subprocess.call(cmd_line, shell="False")
+                if (plot_only==1):
+			cmd_line = "grep 'maximum' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf"  
+                	cmd_line = "grep 'converge_times' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf"  
+			print(cmd_line)
+                	subprocess.call(cmd_line, shell="False")
+                	cmd_line = "python plot_cdf.py "+prefix_str  
+			print(cmd_line)
+                	subprocess.call(cmd_line, shell="False")
 f.close()
 

@@ -5,6 +5,7 @@ import numpy as np
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
 
+sim_max_time=3.0
 flow_start = "flow_start"
 #log_file = sys.argv[1]
 fid_index = 1
@@ -22,6 +23,7 @@ num_port_index = 1
 numports = 0
 numflows = 0
 ONEMILLION = 1000000
+ONEBILLION = 1000000000.0
 
 enough_good = 30
 capacity = 10000
@@ -93,6 +95,8 @@ def get_optimal_rates(log_file, method, alpha, g):
     sim = solver.Simulation()
     curr_time = 1000000000.0
     num_events_parsed = 0
+    max_time = (sim_max_time-.001)* ONEBILLION
+    conv_time=[]
 
     for line in fh:
         l1 = line.rstrip()
@@ -121,7 +125,7 @@ def get_optimal_rates(log_file, method, alpha, g):
                 flow_arrival = float(elems[fstart_index])
             if(elems[0] == "flow_stop"):
                 flow_arrival = float(elems[5])
-            if( flow_arrival > 1990000000.0):
+            if( flow_arrival > max_time):
                 break
             if(flow_arrival > curr_time):
                 event_time = curr_time / 1000000000.0
@@ -148,7 +152,8 @@ def get_optimal_rates(log_file, method, alpha, g):
                     if(converge_times[key] > max_conv and converge_times[key] != event_epoch):
                         max_conv = converge_times[key]
                 if(con == 1):
-                    print("converge_times_maximum %f" % max_conv)
+                    	conv_time.append(max_conv)
+			print("converge_times_maximum %f" % max_conv)
                 print("##########################################")
                 curr_time = flow_arrival
 
@@ -194,6 +199,6 @@ def get_optimal_rates(log_file, method, alpha, g):
                     weight,
                     ecmp_hash,
                     2)
-
+   return conv_time
 
 get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0)
