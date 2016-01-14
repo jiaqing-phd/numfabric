@@ -70,25 +70,27 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   m_weight = weight;
 
   //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
-  m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
+  //m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this); bug fix 1/14
+  StartApplication();
 }
 
 void
 MyApp::StartApplication (void)
 {
 
+/*
   if(Simulator::Now().GetNanoSeconds() < Time(Seconds(m_startTime)).GetNanoSeconds()) {
-//    std::cout<<"Time "<<Simulator::Now().GetNanoSeconds()<<" spurious call flowid "<<m_fid<<" returning before start_time "<<  Time(Seconds(m_startTime)).GetNanoSeconds()<<std::endl;
+    std::cout<<"Time "<<Simulator::Now().GetNanoSeconds()<<" spurious call flowid "<<m_fid<<" returning before start_time "<<  Time(Seconds(m_startTime)).GetNanoSeconds()<<std::endl;
     if(Simulator::IsExpired(m_startEvent)) {
       Time tNext = Time(Seconds(m_startTime));
       m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
-//      std::cout<<"Time "<<Simulator::Now().GetSeconds()<<" spurious call flowid "<<m_fid<<" rescheduling at  "<<tNext.GetSeconds()<<std::endl;
+      std::cout<<"Time "<<Simulator::Now().GetSeconds()<<" spurious call flowid "<<m_fid<<" rescheduling at  "<<tNext.GetSeconds()<<std::endl;
       
     }
       
     return;
 
-  }
+  } */
 
   
   m_running = true;

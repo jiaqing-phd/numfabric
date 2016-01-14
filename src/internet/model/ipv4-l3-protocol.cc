@@ -201,7 +201,7 @@ Ipv4L3Protocol::Ipv4L3Protocol()
 
 //  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
   //Simulator::Schedule(Seconds (epoch_update_time), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
-  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateAllRates, this);
+//  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateAllRates, this);
 //  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
 //  Simulator::Schedule(Seconds (1.0), &ns3::Ipv4L3Protocol::CheckToSend, this);
   bytes_in_queue = 0;
@@ -1237,7 +1237,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
    double link_rate = 10000.0;
-   double limit_tr = 10.0;
+   double limit_tr = 1.0;
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
       if(m_method == 1) {
@@ -1361,15 +1361,35 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 {
 
   double pkt_rate = 10000.0;
-
-  if(inter_arrival > 8000000) { // for a flow that was inactive for along time - 8 ms
-    long_term_ewma_rate[flowkey] = 0.0;
-    short_term_ewma_rate[flowkey] = 0.0;
+  if(inter_arrival == -1) {  //invalid
+//    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<std::endl;
+    return;
   }
+
+  // else calculate instant rate
   if(inter_arrival > 0.000000000001) { // bug fix - verify later
     pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
   }
   instant_rate_store[flowkey] = pkt_rate;
+
+  // first time we got a rate feedback
+
+  // print all long_term_ewma entries here
+
+  if (long_term_ewma_rate.find(flowkey) == long_term_ewma_rate.end() || long_term_ewma_rate[flowkey] == 0.0) { // first time
+//    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<std::endl;
+    long_term_ewma_rate[flowkey] = pkt_rate;
+    short_term_ewma_rate[flowkey] = pkt_rate;
+    return;
+  }
+    
+
+  if(inter_arrival > 8000000) { // for a flow that was inactive for along time - 8 ms
+//    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<" inter_arrival "<<inter_arrival<<std::endl;
+    long_term_ewma_rate[flowkey] = pkt_rate;
+    short_term_ewma_rate[flowkey] = pkt_rate;
+    return;
+  }
 
   /* if(m_node->GetId() == 2 || m_node->GetId() == 3) {
     std::cout<<"instant_rate "<<Simulator::Now().GetSeconds()<<" "<<flowids[flowkey]<<" "<<pkt_rate<<std::endl;
@@ -1377,6 +1397,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 //  if(flowids[flowkey] == 8)
 //  std::cout<<"ratesample "<<pkt_rate<<" node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" time "<<Simulator::Now().GetSeconds()<<" inter_arrival "<<inter_arrival<<" pktsize "<<pktsize<<std::endl;
 
+//  std::cout<<Simulator::Now().GetSeconds()<<" ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<" current ewma "<<long_term_ewma_rate[flowkey]<<" short term "<<short_term_ewma_rate[flowkey]<<std::endl;
   double epower = exp((-1.0*inter_arrival)/long_ewma_const);
   double first_term = (1.0 - epower)*pkt_rate;
   double second_term = epower * long_term_ewma_rate[flowkey];
@@ -1397,15 +1418,25 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
 {
 
-  if ((last_arrival.find(flowkey) == last_arrival.end()) || ((Simulator::Now().GetNanoSeconds() - last_arrival[flowkey]) > 1000000000))  {
+  double inter_arr = -1.0;
+
+  if(last_arrival.find(flowkey) != last_arrival.end()) { //not first packet of the flow
+      inter_arr = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
+  }
+
+  /* debug info */
+  if(inter_arr == -1.0) {
+    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" inter_arr -1"<<std::endl;
+  }
+    
+/*  if ((last_arrival.find(flowkey) == last_arrival.end()) || ((Simulator::Now().GetNanoSeconds() - last_arrival[flowkey]) > 1000000000))  {
   //if (last_arrival.find(flowkey) == last_arrival.end()){
     // first packet of the flow
     last_arrival[flowkey] = Simulator::Now().GetNanoSeconds() - 1.0;
 //    long_term_ewma_rate[flowkey] = 0.0;
  //  short_term_ewma_rate[flowkey] = 0.0;
-  }
-  double inter_arr = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
-  //double pkt_rate = (pktsize * 1.0 * 8.0) / (inter_arrival * 1.0e-9 * 1.0e+6);
+  } */
+
   inter_arrival[flowkey]  = inter_arr;
   last_arrival[flowkey] = Simulator::Now().GetNanoSeconds();
 }
@@ -1479,6 +1510,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     if(price_valid[flowkey]) {
       priheader.residue = priheader.residue / (1.0*flow_num_hops);
     } else {
+      std::cout<<"putting highest residue in pkt since we don't yet know the rates "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
       priheader.residue = 50000.0; // basically invalid value
     }
 	  priheader.netw_price = 0.0;  // start the network price at zero
