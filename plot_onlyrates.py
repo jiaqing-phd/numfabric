@@ -63,7 +63,7 @@ for line in f:
 colors = ['r','b','g', 'm', 'c', 'y','k']
 
 plt.figure(1);
-plt.title("Sending rates")
+plt.title(pre)
 i=0
 for key in dtimes:
   plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key))

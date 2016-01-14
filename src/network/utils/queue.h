@@ -60,6 +60,7 @@ public:
   virtual void SetNodeID (uint32_t nodeid);
   virtual void SetLinkIDString(std::string key);
   virtual void SetVPkts(uint32_t vpkts);
+  virtual void setdesync(bool);
 
   /**
    * \return true if the queue is empty; false otherwise

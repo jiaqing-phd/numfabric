@@ -30,9 +30,12 @@ for line in f:
 orig_prefix=arguments["prefix"]
 #for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
+#for pupdate_time in (0.000064, 0.0001, 0.00015, 0.0002):
+for pupdate_time in (0.000064, 0.0001):
+  for gupdate_time in (0.0, 0.000032, 0.00005):
 #for pupdate_time in (0.0001, 0.00015, 0.0002):
-for pupdate_time in (0.00015, 0.0002):
-  for gupdate_time in (0.0, 0.000032,0.00005,0.0001):
+#for pupdate_time in (0.00015, 0.0002):
+#  for gupdate_time in (0.0, 0.000032,0.00005,0.0001):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
     for ewma_time in (10000, 20000):
@@ -45,8 +48,8 @@ for pupdate_time in (0.00015, 0.0002):
                 arguments["xfabric_eta"] = str(eta_val)
                 prefix_str=orig_prefix
                 prefix_str=prefix_str+"_"+arguments["price_update_time"]+"_"+arguments["guardtime"]+"_"+arguments["dt_val"]+"_"+arguments["kvalue_rate"]+"_"+arguments["xfabric_eta"]
-                fname = prefix_str+".out"
-                cmd_line="python find_multiple_events.py "+fname+" mp 0.1 >"+fname+".converge_times &"
+		fname = prefix_str+".out"
+		cmd_line="python find_multiple_events.py "+fname+" mp 0.1 >"+fname+".converge_times &"
                 print(cmd_line)
                 subprocess.call(cmd_line, shell="False")
 f.close()

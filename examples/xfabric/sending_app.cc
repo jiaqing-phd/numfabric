@@ -77,7 +77,6 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
 void
 MyApp::StartApplication (void)
 {
-
 /*
   if(Simulator::Now().GetNanoSeconds() < Time(Seconds(m_startTime)).GetNanoSeconds()) {
     std::cout<<"Time "<<Simulator::Now().GetNanoSeconds()<<" spurious call flowid "<<m_fid<<" returning before start_time "<<  Time(Seconds(m_startTime)).GetNanoSeconds()<<std::endl;
@@ -92,7 +91,7 @@ MyApp::StartApplication (void)
 
   } */
 
-  
+  std::cout<<"StartApplication for fid "<<m_fid<<" called at "<<Simulator::Now().GetSeconds()<<std::endl; 
   m_running = true;
   m_packetsSent = 0;
   m_totBytes = 0;

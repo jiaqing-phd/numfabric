@@ -130,6 +130,7 @@ void createTopology(void)
       Ptr<Queue> queue = nd->GetQueue ();
       uint32_t nid = (nd->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd->GetNode())->GetId()<<std::endl;
+      queue->setdesync(desynchronize);
       AllQueues.push_back(queue);
 
       // the other end
@@ -138,6 +139,7 @@ void createTopology(void)
       uint32_t nid1 = (nd1->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd1->GetNode())->GetId()<<std::endl;
 
+      queue1->setdesync(desynchronize);
       AllQueues.push_back(queue1);
      // get the string version of names of the queues 
      std::stringstream ss;

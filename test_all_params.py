@@ -54,8 +54,10 @@ for pupdate_time in (0.0001, 0.000050):
                     final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
                 cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
+                #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
+                #cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
-#                cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
+                cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
                 print(cmd_line)
                 subprocess.call(cmd_line, shell="False")
 f.close()

@@ -18,7 +18,7 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 10;
+const uint32_t max_system_flows = 50;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
@@ -26,8 +26,8 @@ uint32_t num_flows = 0;
 
 std::map<uint32_t, std::string> flowkeys;
 
-uint32_t min_flows_allowed = 3;
-uint32_t max_flows_allowed = 5;
+uint32_t min_flows_allowed = 10;
+uint32_t max_flows_allowed = 20;
 
 
 void dropFlowFromQueues(uint32_t f)
@@ -135,6 +135,7 @@ void createTopology(void)
       Ptr<Queue> queue = nd->GetQueue ();
       uint32_t nid = (nd->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd->GetNode())->GetId()<<std::endl;
+      queue->setdesync(desynchronize);
       AllQueues.push_back(queue);
 
       // the other end
@@ -143,6 +144,7 @@ void createTopology(void)
       uint32_t nid1 = (nd1->GetNode())->GetId(); 
       std::cout<<"Node id is "<<(nd1->GetNode())->GetId()<<std::endl;
 
+      queue1->setdesync(desynchronize);
       AllQueues.push_back(queue1);
      // get the string version of names of the queues 
      std::stringstream ss;

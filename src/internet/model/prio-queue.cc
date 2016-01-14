@@ -107,6 +107,11 @@ TypeId PrioQueue::GetTypeId (void)
                   BooleanValue(false),
                   MakeBooleanAccessor (&PrioQueue::m_price_multiply),
                   MakeBooleanChecker ())
+    .AddAttribute("desynchronize",
+                  "Desynchronoze",
+                  BooleanValue(false),
+                  MakeBooleanAccessor (&PrioQueue::m_desynchronize),
+                  MakeBooleanChecker ())
     .AddAttribute("m_pfabricdequeue",
                   "Enable or disable only pfabric like behavior",
                   BooleanValue(false),
@@ -231,8 +236,16 @@ PrioQueue::PrioQueue () :
   //want to make sure that previous departure is start of simulation
   averaged_ratio = 0;
   g = 1.0/8.0;
-
-  Simulator::Schedule(Seconds(1.0), &ns3::PrioQueue::updateLinkPrice, this);
+ 
+  double start_time = 1.0;
+  /*if(m_desynchronize) {
+     std::cout<<"desynchronize "<<m_desynchronize<<std::endl;
+     Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+     double rand_num = uv->GetValue(0.0, (m_updatePriceTime.GetSeconds()));
+     start_time = start_time + rand_num;
+  } 
+  std::cout<<"Switch "<<GetLinkIDString()<<" starting at "<<start_time<<std::endl; */
+  m_updateEvent = Simulator::Schedule(Seconds(start_time), &ns3::PrioQueue::updateLinkPrice, this);
   
   NS_LOG_LOGIC(" link data rate "<<m_bps<<" ecn_delaythreshold "<<ecn_delaythreshold);
 }
@@ -269,6 +282,25 @@ PrioQueue::getFlowID(Ptr<Packet> p)
     return flow_ids[flowkey];
   }
   return 0; //TBD - convert flows to ids
+}
+
+void
+PrioQueue::setdesync(bool desync)
+{
+   double start_time = 1.0;
+   if(desync) {
+     std::cout<<"desynchronize "<<m_desynchronize<<std::endl;
+     Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+     double rand_num = uv->GetValue(0.0, (m_updatePriceTime.GetSeconds()));
+     start_time = start_time + rand_num;
+
+     if(m_updateEvent.IsRunning()) {
+	m_updateEvent.Cancel ();
+      }
+	
+      std::cout<<Simulator::Now().GetSeconds()<<" Switch "<<GetLinkIDString()<<" starting at "<<start_time<<std::endl; 
+      m_updateEvent = Simulator::Schedule(Seconds(start_time), &ns3::PrioQueue::updateLinkPrice, this);
+    }
 }
 
 void
@@ -442,7 +474,7 @@ PrioQueue::updateLinkPrice(void)
    update_minimum = false;
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
-  Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
+  m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }
 

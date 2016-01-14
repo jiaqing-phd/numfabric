@@ -25,7 +25,7 @@ ONEMILLION = 1000000
 
 enough_good = 30
 capacity=10000
-iter_value=0.0001
+iter_value=0.0005
 
 averaged = {}
 
@@ -158,6 +158,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                         max_conv=converge_times[key]
                 if(con == 1):
                   print("converge_times_maximum %f" %max_conv)
+		  
                 print("##########################################")
             
 
