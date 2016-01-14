@@ -43,8 +43,8 @@ double dgd_alpha = 3*1e-10;
 */
 
 double multiplier = 0.0000000001;
-double dgd_gamma = 1.0 * multiplier; 
-double dgd_alpha = 0.3 * multiplier;
+double dgd_gamma = 1.0;
+double dgd_alpha = 0.3;
 
 
 double dt_val = 0.000012;  // should be in seconds

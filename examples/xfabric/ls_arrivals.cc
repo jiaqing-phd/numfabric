@@ -210,7 +210,7 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
 
     Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
     SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), rand_weight);
-    (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
+//    (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); // Get Ipv4 instance of the node
     Ipv4Address addr = ipv4->GetAddress (1, 0).GetLocal();
 
@@ -390,7 +390,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_a_flow(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.01;
+  double delay = 0.1;
   //if(num_flows < number_flows) { delay = 0.0;}
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 }

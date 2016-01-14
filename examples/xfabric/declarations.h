@@ -166,4 +166,5 @@ extern void dump_config(void);
 extern bool price_multiply;
 extern uint32_t number_flows;
 extern bool desynchronize;
+extern double multiplier;
 #endif 

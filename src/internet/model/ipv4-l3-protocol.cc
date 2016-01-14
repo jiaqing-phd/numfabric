@@ -127,6 +127,25 @@ Ipv4L3Protocol::GetTypeId (void)
   return tid;
 }
 
+void Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string flowkey)
+{
+   double link_rate = line_rate;
+   double limit_tr = 1.0;
+   double target_rate = limit_tr* link_rate;
+   if(current_netw_price > 0.0) {
+      if(m_method == 1) {
+        target_rate = utilInverse(flowkey, current_netw_price, LOGUTILITY);
+      } else if(m_method == 2) {
+        target_rate = utilInverse(flowkey, current_netw_price, FCTUTILITY);
+      } else if(m_method == 3) {
+        target_rate = utilInverse(flowkey, current_netw_price, ALPHA1UTILITY);
+      }
+    }
+    
+//    std::cout<<" Node "<<m_node->GetId()<<" target_rate_dgd = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+  flow_target_rate[flowkey] = target_rate;
+}
+
 void Ipv4L3Protocol::updateRate(std::string fkey)
 {
   
@@ -198,6 +217,8 @@ Ipv4L3Protocol::Ipv4L3Protocol()
   short_ewma_const = 10000; // KANTHI - TEST - REMOVE
   next_deadline = 0.0;
   last_deadline = 0.0;
+  
+  line_rate = 10000; //ticking bug. Replace it with config parameter
 
 //  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
   //Simulator::Schedule(Seconds (epoch_update_time), &ns3::Ipv4L3Protocol::updateCurrentEpoch, this);
@@ -233,13 +254,24 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
   
     DoSend(p, s, d, prot, r);
 
+    TcpHeader tcph;
+    p->PeekHeader(tcph);
 
     double trate = flow_target_rate[flowkey]; // flow_target_rate is in Mbps
+    uint32_t tcphsize = tcph.GetSerializedSize();
+    if((p->GetSize() - tcphsize) == 0) {
+        // it's an ack
+        //std::cout<<"control packet - godspeed"<<std::endl;
+        trate = line_rate;
+    }
+
+//    std::cout<<" setting_timer_dgd "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" target_rate "<<trate<<" flow "<<flowkey<<std::endl;
     
     if(trate == 0.0) {
       /* should not happen.. a known flow must have a rate assigned */
-      std::cout<<"ERROR "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate is zero"<<std::endl;
-      return;
+//      std::cout<<"ERROR "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate is zero"<<std::endl;
+      trate = line_rate; // line rate for acks
+//      std::cout<<"node "<<m_node->GetId()<<" line_rate "<<line_rate<<" for flow "<<flowkey<<std::endl;
     }
     double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
     Time tNext (NanoSeconds (pkt_dur));
@@ -885,7 +917,7 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
  //   std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
   } else {
-    NS_LOG_LOGIC(" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid());
+//    std::cout<<" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     DoSend(packet, source, destination, protocol, route);
   }
   return;
@@ -1236,8 +1268,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    // Calculate the rate corresponding to this price
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
-   double link_rate = 10000.0;
-   double limit_tr = 10.0;
+   double link_rate = line_rate;
+   double limit_tr = 1.0;
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
       if(m_method == 1) {
@@ -1249,7 +1281,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       }
     }
     
-    //NS_LOG_LOGIC(" Node "<<m_node->GetId()<<" target_rate = "<<target_rate<<" for price "<<current_netw_price);
+//    std::cout<<" Node "<<m_node->GetId()<<" target_rate = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
     // Do we need to cap this ? 
     if(target_rate > (limit_tr* link_rate)) {
       target_rate = limit_tr* link_rate;
@@ -1306,6 +1338,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     if((packet->GetSize() - tcphsize) == 0) {
         // it's an ack
         current_deadline = 0;
+        target_rate = line_rate;
     }
     if(m_pfabric) {
       current_deadline = getflowsize(flowkey);
@@ -1313,9 +1346,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
 
     last_deadline = current_deadline;
     sample_deadline = current_deadline;
-    flow_target_rate[flowkey] = target_rate;
-
-
+    //flow_target_rate[flowkey] = target_rate;
 
     if(m_wfq) {
       uint32_t fid = 0;

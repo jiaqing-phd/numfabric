@@ -203,6 +203,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("cdf_file", "cdf_file", empirical_dist_file);
   cmd.AddValue ("num_flows", "num_flows", number_flows); 
   cmd.AddValue ("desynchronize", "desynchronize", desynchronize);
+  cmd.AddValue ("dgd_m", "dgd_m", multiplier);
   std::cout<<"desync is "<<desynchronize<<std::endl;
 
   return cmd;
@@ -245,12 +246,17 @@ void dump_config(void)
 
 void common_config(void)
 {
-  double total_rtt = link_delay * 6.0;
+  double total_rtt = link_delay * 8.0;
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
 
   pkt_tag = xfabric; 
+  
+  dgd_gamma = dgd_gamma*multiplier;
+  dgd_alpha = dgd_alpha*multiplier;
+
+  std::cout<<"dgd_alpha "<<dgd_alpha<<" dgd_gamma "<<dgd_gamma<<" multiplier "<<multiplier<<std::endl;
 
   std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<std::endl;  
 

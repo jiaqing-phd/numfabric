@@ -111,6 +111,7 @@ public:
     SHORTER = 2
   };
 
+  void SetTargetRateDGD(double current_netw_price, std::string flowkey);
 
   /* Data structures required for priority kanthi */
   typedef std::map< std::string, uint32_t> FlowId_;
@@ -591,6 +592,8 @@ private:
   void updateCurrentEpoch(void);
   void updateInterArrival(std::string flowkey);
   void updateMarginalUtility(std::string fkey, double cur_rate);
+  double line_rate;
+   
 
   /// Trace of sent packets
   TracedCallback<const Ipv4Header &, Ptr<const Packet>, uint32_t> m_sendOutgoingTrace;

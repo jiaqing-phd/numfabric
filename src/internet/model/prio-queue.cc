@@ -195,7 +195,6 @@ TypeId PrioQueue::GetTypeId (void)
                    DoubleValue(0.0000000003),
                    MakeDoubleAccessor (&PrioQueue::m_alpha),
                    MakeDoubleChecker <double> ())
-
     .AddAttribute ("gamma1", 
                    "Value of gamma1 for xfabric",
                    DoubleValue(10.0),
@@ -324,8 +323,8 @@ PrioQueue::getRateDifference(Time time_interval)
 
     incoming_bytes = 0.0;
 
-//    std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
-    std::cout<<" DGD link "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<std::endl;
+//  std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
+//    std::cout<<" DGD UTIL "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<std::endl;
     return rate_difference;
 }
 
@@ -392,7 +391,7 @@ PrioQueue::updateLinkPrice(void)
     current_price = std::max(current_price, 0.0);
     current_price = std::min(current_price, 1.0);
 
-//    std::cout<<" Queue "<<linkid_string<<Simulator::Now().GetSeconds()<<" rate_term "<<rate_term<<" queue_term "<<queue_term<<" after multi qterm "<<m_alpha*queue_term<<" rterm "<<m_gamma* rate_term<<" gamma "<<m_gamma<<" alpha "<<m_alpha<<std::endl;
+//    std::cout<<" Queue "<<linkid_string<<" current_price "<<current_price<<" "<<Simulator::Now().GetSeconds()<<" rate_term "<<rate_term<<" queue_term "<<queue_term<<" after multi qterm "<<m_alpha*queue_term<<" rterm "<<m_gamma* rate_term<<" gamma "<<m_gamma<<" alpha "<<m_alpha<<std::endl;
 
 
 //    if(m_is_switch) {
@@ -933,7 +932,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
 
   if(drop_list.find(GetFlowKey(min_pp)) != drop_list.end()) {
     // drop this packet
-    std::cout<<Simulator::Now().GetSeconds()<<" Dropiing pkt from flow "<<GetFlowKey(min_pp)<<" at q "<<linkid_string<<std::endl;
+//    std::cout<<Simulator::Now().GetSeconds()<<" Dropiing pkt from flow "<<GetFlowKey(min_pp)<<" at q "<<linkid_string<<std::endl;
     Drop (p);
     return false;
   }
@@ -1227,7 +1226,7 @@ PrioQueue::DoDequeue (void)
     //NS_LOG_LOGIC("virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime);  
     
   } else {
-    std::cout<<" plain dequeue "<<std::endl;
+//    std::cout<<" plain dequeue "<<std::endl;
   }
  
 

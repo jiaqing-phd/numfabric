@@ -931,6 +931,7 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port
     }
 
   current_netw_price = tcpHeader.GetPrice();
+  updateDGDTargetRate(current_netw_price);
 
   ReadOptions (tcpHeader);
 
@@ -1299,6 +1300,18 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
     }
 }
 
+void 
+TcpSocketBase::updateDGDTargetRate(double netw_price)
+{
+    //this is the source
+     std::stringstream ss;
+     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
+     std::string flowkey = ss.str();
+     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+     ipv4->SetTargetRateDGD(current_netw_price, flowkey);
+
+}
+
 /* Received a packet upon SYN_RCVD */
 void
 TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
@@ -1331,7 +1344,8 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
           m_endPoint6->SetPeer (Inet6SocketAddress::ConvertFrom (fromAddress).GetIpv6 (),
                                 Inet6SocketAddress::ConvertFrom (fromAddress).GetPort ());
         }
-//        current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
+        current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
+     updateDGDTargetRate(current_netw_price);
       // Always respond to first data packet to speed up the connection.
       // Remove to get the behaviour of old NS-3 code.
       m_delAckCount = m_delAckMaxCount;
