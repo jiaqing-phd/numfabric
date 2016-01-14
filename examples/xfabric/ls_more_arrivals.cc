@@ -366,6 +366,7 @@ void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
+  std::cout<<" startflowwrapper "<<Simulator::Now().GetSeconds()<<" called "<<std::endl;
   if(num_flows >= max_flows_allowed) {
     std::cout<<Simulator::Now().GetSeconds()<<" stop_flows because excess"<<std::endl;
     stop_flows(sourcenodes, sinknodes);
@@ -384,9 +385,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
       }
   }
   double delay = 0.05; //100ms
-
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
-
 }
 
 void setUpTraffic()
