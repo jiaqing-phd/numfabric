@@ -31,8 +31,8 @@ orig_prefix=arguments["prefix"]
 #for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
 #for pupdate_time in (0.0001, 0.00015, 0.0002):
-for pupdate_time in (0.0001, 0.000050):
-  for gupdate_time in (0.000025, 0.00005):
+for pupdate_time in (0.000080, 0.000064):
+  for gupdate_time in (0.000025, 0.000016, 0.0):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
     for rtime in (20000, 40000, 60000, 80000):
@@ -57,9 +57,9 @@ for pupdate_time in (0.0001, 0.000050):
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
                 #cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
-                cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
+                #cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
                 #cmd_line = "grep 'maximum' "+prefix_str+"_ct > out "
 		print(cmd_line)
-#                subprocess.call(cmd_line, shell="False")
+                subprocess.call(cmd_line, shell="False")
 f.close()
 

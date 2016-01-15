@@ -16,6 +16,7 @@ weight_index=8
 ecmp_hash_index=9
 event_epoch=0.05
 
+max_sim_time=5.99
 num_flow_index = 1
 num_port_index = 1
 
@@ -31,7 +32,7 @@ averaged = {}
 
 def close_enough(rate1, rate2):
   diff = (rate1 - rate2)/rate2
-  if(abs(diff) < (0.2)):
+  if(abs(diff) < (0.1)):
     return True
   return False
 
@@ -137,7 +138,10 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
             if(num_events_parsed == num_events):
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
+                if (event_time > max_sim_time):
+                    return
                 next_event_time = event_time+ event_epoch;
+                
                 opt_rates = sim.startSim() #these are optimal rates
                 #print(opt_rates)
                 print(" length %d time %f" %( len(opt_rates) ,event_time))

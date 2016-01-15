@@ -5,7 +5,7 @@ import numpy as np
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
 
-sim_max_time = 3.0
+sim_max_time = 6.0
 flow_start = "flow_start"
 #log_file = sys.argv[1]
 fid_index = 1
