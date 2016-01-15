@@ -8,7 +8,7 @@
 *_ctimes_only
 *_convergence_times
 
-.0_ct
+*.0_ct
 
 # Compiled Object files
 *.slo
