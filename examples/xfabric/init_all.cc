@@ -94,7 +94,7 @@ double fraction_flows_deadline = .5;
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
-double link_delay = 5.0; //in microseconds
+double link_delay = 2.5; //in microseconds
 bool rate_based  = false;
 bool pfabric_util = false;
 bool flow_ecmp = false;
