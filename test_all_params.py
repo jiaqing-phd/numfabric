@@ -31,8 +31,8 @@ orig_prefix=arguments["prefix"]
 #for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
 #for pupdate_time in (0.0001, 0.00015, 0.0002):
-for pupdate_time in (0.000080, 0.000064):
-  for gupdate_time in (0.000025, 0.000016, 0.0):
+for pupdate_time in (0.000100, 0.00050):
+  for gupdate_time in (0.000025, 0.000050):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
     for rtime in (20000, 40000, 60000, 80000):
