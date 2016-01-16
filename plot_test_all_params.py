@@ -12,7 +12,7 @@ if(len(sys.argv) < 2):
   sys.exit()
 
 colors = ['r','b','g', 'm', 'c', 'y','k']
-plot_only = 1
+plot_only = 0
 plot_script = "plot_qr.py"
 
 f = open(sys.argv[2], 'r')
@@ -56,10 +56,10 @@ for pupdate_time in (0.0001, 0.000050):
                 arguments["kvalue_price"] = str(ptime)
                 arguments["xfabric_eta"] = str(eta_val)
                 prefix_str = orig_prefix
-                #prefix_str = prefix_str + "_" + arguments["price_update_time"] + "_" + arguments[
-                #    "guardtime"] + "_" + arguments["dt_val"] + "_" + arguments["kvalue_price"] + "_" + arguments["xfabric_eta"]
                 prefix_str = prefix_str + "_" + arguments["price_update_time"] + "_" + arguments[
-                    "guardtime"] + "_" + arguments["dt_val"]+ "_" + arguments["kvalue_price"] + "_" + arguments["kvalue_price"] + "_" + arguments["xfabric_eta"]
+                    "guardtime"] + "_" + arguments["dt_val"] + "_" + arguments["kvalue_price"] + "_" + arguments["xfabric_eta"]
+                #prefix_str = prefix_str + "_" + arguments["price_update_time"] + "_" + arguments[
+                #    "guardtime"] + "_" + arguments["dt_val"]+ "_" + arguments["kvalue_price"] + "_" + arguments["kvalue_price"] + "_" + arguments["xfabric_eta"]
                 final_args = ""
                 for arg_key in arguments:
                     final_args = final_args + " --" + arg_key + \

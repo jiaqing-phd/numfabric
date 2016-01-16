@@ -2,6 +2,7 @@
 import sys
 import os
 import numpy as np
+import scipy.io as sio
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
 
@@ -16,7 +17,7 @@ weight_index=8
 ecmp_hash_index=9
 event_epoch=0.05
 
-max_sim_time=5.99
+max_sim_time=3.0
 num_flow_index = 1
 num_port_index = 1
 
@@ -32,7 +33,7 @@ averaged = {}
 
 def close_enough(rate1, rate2):
   diff = (rate1 - rate2)/rate2
-  if(abs(diff) < (0.1)):
+  if(abs(diff) < (0.05)):
     return True
   return False
 
@@ -136,6 +137,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 sim.add_event_list(flow_id, flow_size, flow_arrival, src_id, dst_id, weight, ecmp_hash, 2)
 
             if(num_events_parsed == num_events):
+		num_events=10
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 if (event_time > max_sim_time):

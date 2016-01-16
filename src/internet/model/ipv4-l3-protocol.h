@@ -111,7 +111,7 @@ public:
     SHORTER = 2
   };
 
-  void SetTargetRateDGD(double current_netw_price, std::string flowkey);
+  double SetTargetRateDGD(double current_netw_price, std::string flowkey);
 
   /* Data structures required for priority kanthi */
   typedef std::map< std::string, uint32_t> FlowId_;
