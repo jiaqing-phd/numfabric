@@ -127,7 +127,7 @@ Ipv4L3Protocol::GetTypeId (void)
   return tid;
 }
 
-void Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string flowkey)
+double Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string flowkey)
 {
    double link_rate = line_rate;
    double limit_tr = 1.0;
@@ -142,8 +142,9 @@ void Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string flo
       }
     }
     
-//    std::cout<<" Node "<<m_node->GetId()<<" target_rate_dgd = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+//    std::cout<<" Node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" target_rate_dgd = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
   flow_target_rate[flowkey] = target_rate;
+  return target_rate;
 }
 
 void Ipv4L3Protocol::updateRate(std::string fkey)
@@ -273,9 +274,10 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
       trate = line_rate; // line rate for acks
 //      std::cout<<"node "<<m_node->GetId()<<" line_rate "<<line_rate<<" for flow "<<flowkey<<std::endl;
     }
+//    std::cout<<" psize "<<p->GetSize()<<" tcp header size "<<tcphsize<<std::endl;
     double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
+   
     Time tNext (NanoSeconds (pkt_dur));
-/*    std::cout<<"CheckToSend "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<" flow "<<flowkey<<" target rate "<<trate<<" pkt_dur "<<pkt_dur<<" send time "<<tNext.GetMicroSeconds()<<std::endl;*/
 
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
@@ -335,13 +337,13 @@ void Ipv4L3Protocol::setKay(double kvalue)
 
 void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
 {
-  std::cout<<"Setting long_ewma_const to "<<kvalue<<std::endl;
+//  std::cout<<"Setting long_ewma_const to "<<kvalue<<std::endl;
   long_ewma_const = kvalue;
 }
 
 void Ipv4L3Protocol::setshort_ewma_const(double kvalue)
 {
-  std::cout<<"Setting short_ewma_const to "<<kvalue<<std::endl;
+//  std::cout<<"Setting short_ewma_const to "<<kvalue<<std::endl;
   short_ewma_const = kvalue;
 }
 
@@ -1689,7 +1691,7 @@ Ipv4L3Protocol::SendRealOut (Ptr<Ipv4Route> route,
    NS_LOG_LOGIC("SendRealOut" <<this << route << packet << &ipHeader);
    if (route == 0 || (fid != 0 && (drop_list.find(fid) != drop_list.end()) && drop_list[fid]==1))
     {
-      std::cout<<" DROPPING AT IP "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<std::endl;
+//      std::cout<<" DROPPING AT IP "<<Simulator::Now().GetSeconds()<<" "<<m_node->GetId()<<std::endl;
       NS_LOG_WARN ("No route to host.  Drop.");
       m_dropTrace (ipHeader, packet, DROP_NO_ROUTE, m_node->GetObject<Ipv4> (), 0);
       return;
@@ -1851,7 +1853,9 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
   // incoming packets priority and remaining priority
   TcpHeader tcp_header;
   p->RemoveHeader(tcp_header);
-  if(p->GetSize() > 0) {
+  if((p->GetSize() > 0) || 
+       ((tcp_header.GetFlags() & TcpHeader::SYN) && !(tcp_header.GetFlags() & TcpHeader::ACK))) {
+  //if(p->GetSize() > 0) {
     TcpHeader tcph;
     uint16_t sourcePort, destPort;  
     Ipv4Address source = ipHeader.GetSource();
@@ -1874,16 +1878,19 @@ Ipv4L3Protocol::LocalDeliver (Ptr<const Packet> packet, Ipv4Header const&ip, uin
 */
 
     tcp_header.SetPrice(pre_set_netw_price);
-   
-    updateInterArrival(flowkey);
+//    std::cout<<" TCPPRICECOPY "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" Flow "<<flowkey<<" Price "<<pre_set_netw_price<<" TCPFLAGS "<<(tcp_header.GetFlags()& TcpHeader::SYN)<<" ACKFLAG "<<(tcp_header.GetFlags() &TcpHeader::ACK)<<std::endl;
+
+    if(p->GetSize() > 0) {
+      updateInterArrival(flowkey);
+    }
     
   } else {
  //   NS_LOG_UNCOND("LocalDeliver "<<Simulator::Now().GetSeconds()<<" node id "<<m_node->GetId()<<" Looks like an ACK packet.. leave it alone "<<tcp_header.GetCWR());
   }
   p->AddHeader(tcp_header);
   
-  TcpHeader tc1;
-  p->PeekHeader(tc1);
+  //TcpHeader tc1;
+  //p->PeekHeader(tc1);
    
   // Attached header end 
 

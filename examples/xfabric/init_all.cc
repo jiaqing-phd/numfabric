@@ -110,7 +110,7 @@ double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;
 
 // data rates and delays for leaf-spine
-std::string fabric_datarate = "40Gbps";
+std::string fabric_datarate = "10Gbps";
 std::string edge_datarate = "10Gbps";
 double fabricdelay=2.5, edgedelay=2.5;
 

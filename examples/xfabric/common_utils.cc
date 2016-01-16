@@ -246,7 +246,7 @@ void dump_config(void)
 
 void common_config(void)
 {
-  double total_rtt = link_delay * 8.0;
+  double total_rtt = link_delay * 8.0 * 2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
@@ -258,7 +258,7 @@ void common_config(void)
 
   std::cout<<"dgd_alpha "<<dgd_alpha<<" dgd_gamma "<<dgd_gamma<<" multiplier "<<multiplier<<std::endl;
 
-  std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<std::endl;  
+  std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<" total_rtt "<<total_rtt<<" link_rate "<<link_rate<<std::endl;  
 
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
   Config::SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue(max_segment_size));

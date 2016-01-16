@@ -24,6 +24,8 @@ drates = {}
 dprios = {}
 total_capacity=1000000
 
+tratetimes = {}
+trates = {}
 qtimes = {}
 qsizes = {}
 qprices = {}
@@ -58,6 +60,18 @@ def SecondTerm(prices, utils, eta=10.0):
 for line in f:
   l1 = line.rstrip();
   xy = l1.split(' ');
+
+  if(len(xy) > 5):
+    if(xy[5] == "target_rate_dgd"):
+     flowid = int(xy[4])
+     time = float(xy[11])
+     trate = float(xy[7])
+     if(flowid not in trates):
+       tratetimes[flowid] = []
+       trates[flowid] = []
+     tratetimes[flowid].append(time)
+     trates[flowid].append(trate)
+   
 
   if(xy[0] == "DestRate"):
     flow_id=int(xy[2])
@@ -210,63 +224,83 @@ plt.savefig('%s/%s.%s.png' %(pre,pre,"queue_utils_leaf"))
 plt.draw()
 
 #dinesh
-#eta=10.0
-#second_term = {}
-#for key in qprices:
-#    second_term[key]=SecondTerm(qprices[key],qutils[key],eta)
+eta=10.0
+second_term = {}
+for key in qprices:
+    second_term[key]=SecondTerm(qprices[key],qutils[key],eta)
 
 
-#mp.rcParams.update({"font.size":8})
+"""
+mp.rcParams.update({"font.size":8})
 
-#j=1;
-#for key in qtimes: 
-#  i=0
-#  plt.figure(j)
-#  plt.subplot(2,1,1)
-#  plt.plot(qtimes[key], ewma(qprices[key], 1.0), color=colors[i], label=str(" actual price "))
-#  i = (i+1)%len(colors)
-#  new_vec=[0.0];
-#  new_vec.extend(ewma(qprices[key],1.0))
-#  del new_vec[-1] 
-#  plt.plot(qtimes[key], new_vec, color=colors[i], label=str(" prev price "))
-#  i = (i+1)%len(colors)
-#  plt.plot(qtimes[key], ewma(second_term[key], 1.0), color=colors[i], label=str(" util contribution" ))
-#  i = (i+1)%len(colors)
-#  plt.plot(qtimes[key], ewma(qminresidues[key], 1.0), color=colors[i], label=str(" min residue contri  "))
-#  i = (i+1)%len(colors)
-#  j+=1
-#  plt.xlabel('Time in seconds')
-#  plt.ylabel('Rate in Mbps')
-#  plt.title('%s_%s' %(pre, key) )
-#  plt.legend(loc='best')
 
-#  plt.subplot(2,1,2)
-#  plt.plot(qtimes[key], qsizes[key], color=colors[i], label=str(" queue size "))
-#  j+=1
-#  plt.xlabel('Time in seconds')
-#  plt.ylabel('Queue size in bytes')
-#  plt.title('%s_%s' %(pre, key) )
-#  plt.legend(loc='best')
-#  plt.savefig('%s/%s.%s_%d.png' %(pre,pre,"rates",j))
-#  plt.close()
-#
-#"""
-#i=0
-#j=1
-#for key in qtimes: 
-#  plt.figure(j)
-#  plt.plot(qtimes[key], qsizes[key], color=colors[i], label=str(" queue size "))
-#  j+=1
-#  plt.xlabel('Time in seconds')
-#  plt.ylabel('Queue size in bytes')
-#  plt.title('%s_%s' %(pre, key) )
-#  plt.legend(loc='best')
-#  plt.savefig('%s/%s.%s_%d.png' %(pre,pre,"qsizes",j))
-#  plt.close()
-#
-#"""
-## end DINESH
-plt.show()
+j=1;
+for key in tratetimes: 
+  i=0
+  plt.figure(j)
+  #plt.subplot(2,1,1)
+  plt.plot(tratetimes[key], ewma(trates[key], 1.0), color=colors[i], label=str(" target rate "))
+  i = (i+1)%len(colors)
+  if(key in dtimes):
+	  plt.plot(dtimes[key], ewma(drates[key], 1.0), color=colors[i], label=str("actual rate "))
+  else:
+          print("key %d not there" %key)
+  j+=1
+  plt.xlabel('Time in seconds')
+  plt.ylabel('Rate in Mbps')
+  plt.title('%s_%s' %(pre, key) )
+  plt.ylim(0,10000)
+  #plt.legend(loc='best')
+  plt.savefig('%s/%s.%s_%d.png' %(pre,pre,"rates",key))
+  plt.close()
+"""
+j=1;
+for key in qtimes: 
+  i=0
+  plt.figure(j)
+  plt.subplot(2,1,1)
+  plt.plot(qtimes[key], ewma(qprices[key], 1.0), color=colors[i], label=str(" actual price "))
+  i = (i+1)%len(colors)
+  new_vec=[0.0];
+  new_vec.extend(ewma(qprices[key],1.0))
+  del new_vec[-1] 
+  plt.plot(qtimes[key], new_vec, color=colors[i], label=str(" prev price "))
+  i = (i+1)%len(colors)
+  plt.plot(qtimes[key], ewma(second_term[key], 1.0), color=colors[i], label=str(" util contribution" ))
+  i = (i+1)%len(colors)
+  plt.plot(qtimes[key], ewma(qminresidues[key], 1.0), color=colors[i], label=str(" min residue contri  "))
+  i = (i+1)%len(colors)
+  j+=1
+  plt.xlabel('Time in seconds')
+  plt.ylabel('Rate in Mbps')
+  plt.title('%s_%s' %(pre, key) )
+  plt.legend(loc='best')
+
+  plt.subplot(2,1,2)
+  plt.plot(qtimes[key], qsizes[key], color=colors[i], label=str(" queue size "))
+  j+=1
+  plt.xlabel('Time in seconds')
+  plt.ylabel('Queue size in bytes')
+  plt.title('%s_%s' %(pre, key) )
+  plt.legend(loc='best')
+  plt.savefig('%s/%s.%s_%d.png' %(pre,pre,"prices",j))
+  plt.close()
+
+i=0
+j=1
+for key in qtimes: 
+  plt.figure(j)
+  plt.plot(qtimes[key], qsizes[key], color=colors[i], label=str(" queue size "))
+  j+=1
+  plt.xlabel('Time in seconds')
+  plt.ylabel('Queue size in bytes')
+  plt.title('%s_%s' %(pre, key) )
+  plt.legend(loc='best')
+  plt.savefig('%s/%s.%s_%d.png' %(pre,pre,"qsizes",j))
+  plt.close()
+
+# end DINESH
+#plt.show()
 #
 f.close()
 

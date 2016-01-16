@@ -32,10 +32,12 @@ orig_prefix=arguments["prefix"]
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
 #for pupdate_time in (0.0001, 0.00015, 0.0002):
 for pupdate_time in (0.000100, 0.00050):
-  for gupdate_time in (0.000025, 0.000050):
+  if(pupdate_time == 0.00050):
+	continue
+  for gupdate_time in (0.000025, 0.0):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
-    for rtime in (20000, 40000, 60000, 80000):
+    for rtime in ( 60000, 80000):
         ptime = rtime
         for dt_val in (0.000012, 0.000024):
             for eta_val in (1.0, 10.0):

@@ -72,6 +72,7 @@ protected:
   virtual void DupAck (const TcpHeader& t, uint32_t count);  // Halving cwnd and reset nextTxSequence
   virtual void Retransmit (void); // Exit fast recovery upon retransmit timeout
 
+  virtual void resetCW(double);
   virtual void ProcessECN(const TcpHeader &tcpheader);
   virtual void processRate(const TcpHeader &tcpheader);
   uint32_t getFlowId(std::string fkey);
