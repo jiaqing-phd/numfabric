@@ -26,7 +26,7 @@ ONEMILLION = 1000000
 
 enough_good = 30
 capacity=10000
-iter_value=0.0005
+iter_value=0.0001
 
 averaged = {}
 

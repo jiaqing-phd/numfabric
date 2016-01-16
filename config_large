@@ -26,4 +26,4 @@ wfq_testing=false
 xfabric_eta=10.0
 price_multiply=true
 host_compensate=false
-sampling_interval=0.0005
+sampling_interval=0.0001

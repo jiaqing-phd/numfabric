@@ -1541,7 +1541,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
     if(price_valid[flowkey]) {
       priheader.residue = priheader.residue / (1.0*flow_num_hops);
     } else {
-      std::cout<<"putting highest residue in pkt since we don't yet know the rates "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
+//      std::cout<<"putting highest residue in pkt since we don't yet know the rates "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
       priheader.residue = 50000.0; // basically invalid value
     }
     priheader.netw_price = 0.0;  // start the network price at zero
