@@ -475,9 +475,9 @@ PrioQueue::updateLinkPrice(void)
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
   uint32_t currentQSize = GetCurSize();
-   if(!xfabric_price) {
-  std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<0<<" "<<0<<" "<<currentQSize<<std::endl;
-	}
+ //  if(!xfabric_price) {
+//  std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<0<<" "<<0<<" "<<currentQSize<<std::endl;
+//	}
   m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }
