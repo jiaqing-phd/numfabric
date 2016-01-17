@@ -667,6 +667,6 @@ class Simulation:
          idx +=1
     #print("returning....... ")
     #print(return_rates)
-    return return_rates
+    return (return_rates, self.real_id) 
   
 

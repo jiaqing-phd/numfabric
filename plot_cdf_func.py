@@ -20,7 +20,9 @@ def main(inputfile,inputdir, fignum, colors):
     
     # Use the histogram function to bin the data
     #counts, bin_edges = np.histogram(data, bins=num_bins, normed=True)
-    
+
+    #counts= counts/np.sum(counts)
+
     # Now find the cdf
     #cdf = np.cumsum(counts)
     
@@ -28,20 +30,24 @@ def main(inputfile,inputdir, fignum, colors):
     plt.figure(fignum)
     plt.title(pre)
     # And finally plot the cdf
-    #plt.plot(bin_edges[1:], cdf, colors[i], label=pre)
+    #plt.plot(bin_edges[1:], cdf, 'k', label=(str(len(data)) +" " + pre))
     
     sorted_data = np.sort(data)
     
-    yvals=np.arange(len(sorted_data))/float(len(sorted_data))
-    
-    plt.plot(sorted_data,yvals, colors, label=pre)
+    yvals= (1 + np.arange(len(sorted_data)))/float(len(sorted_data))
+    print(yvals) 
+    plt.plot(sorted_data,yvals, colors, label=(str(len(data)) +" " + pre))
     plt.xlabel('Convergence Time in seconds')
     plt.ylabel('CDF ')
-    plt.legend(loc='best')
-    plt.savefig('%s/%s.%s.jpg' %(inputdir,inputfile,"cdf"))
-
+    #plt.legend(loc='best')
+    lgd=plt.legend(loc='upper center', bbox_to_anchor=(0.5,-0.1))
+    plt.savefig('%s/%s.%s.jpg' %(inputdir,inputfile,"cdf"), bbox_extra_artists=(lgd,), bbox_inches='tight')
+    #plt.savefig('%s/%s.%s.jpg' %(inputdir,inputfile,"cdf"))
+    #plt.draw()
+    #plt.show()
+    #plt.close()
 if __name__=='__main__':
-    sys.exit(main(sys.argv[1], sys.argv[2]))
+    sys.exit(main(sys.argv[1], sys.argv[2],sys.argv[3], sys.argv[4]))
 
 #plt.draw()
 #plt.show()
