@@ -3,6 +3,11 @@ import sys
 import os
 import subprocess
 from subprocess import Popen, PIPE
+import matplotlib.pyplot as plt
+import plot_cdf_func
+import plot_right_metric
+
+plt.close("all")
 
 arguments = {}
 
@@ -10,7 +15,11 @@ if(len(sys.argv) < 2):
   print("Usage : python run_config.py <executable> <config_file> <plot or not>")
   sys.exit()
 
-plot_script="plot_qr.py"
+colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef' ]#\
+#,'#ababab','#badaff','#deadbe','#bedead','#afafaf','#8eba42','#e5e5e5','#6d904f']
+       
+plot_only = 1
+plot_script = "plot_qr.py"
 
 f=open(sys.argv[2], 'r')
 for line in f:
@@ -26,21 +35,38 @@ for line in f:
     continue;
   arguments[arg_key] = arg_val
 
+i=-1
+# print(arguments)
 #print(arguments)
 orig_prefix=arguments["prefix"]
 #for pupdate_time in (0.000016, 0.000032,0.000048, 0.000064):
 #  for gupdate_time in (0.0, 0.000016, 0.000032):
 #for pupdate_time in (0.0001, 0.00015, 0.0002):
-for pupdate_time in (0.000100, 0.00050):
-  for gupdate_time in (0.000025, 0.000050):
+
+
+j=0
+for pupdate_time in (0.000080, 0.000064, 0.0001):
+  #if (pupdate_time == 0.000080):
+  #   continue    
+  for gupdate_time in (0.000025, 0.000016, 0.0):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
+    if(gupdate_time != 0.0):
+        continue   
+    i+=1
+    itime=1
     for rtime in (20000, 40000, 60000, 80000):
+        if (rtime != 80000):# or rtime== 60000):  
+            continue
         ptime = rtime
+
         for dt_val in (0.000012, 0.000024):
+            if (dt_val == 0.000024):
+                continue
             for eta_val in (1.0, 10.0):
                 if(eta_val == 1.0):
                     continue
+                j=(j+1)%len(colors)
                 arguments["price_update_time"] = str(pupdate_time)
                 arguments["guardtime"] = str(gupdate_time)
                 arguments["dt_val"] = str(dt_val)
@@ -59,7 +85,32 @@ for pupdate_time in (0.000100, 0.00050):
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
                 #cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
                 #cmd_line = "grep 'maximum' "+prefix_str+"_ct > out "
-		print(cmd_line)
-                subprocess.call(cmd_line, shell="False")
+		#print(cmd_line)
+                #subprocess.call(cmd_line, shell="True")
+                if (plot_only == 0):
+                    cmd_line = "python find_multiple_events.py " + \
+                	    prefix_str + ".out mp 10 >" + prefix_str + "_ct &"
+                    print(cmd_line)
+                    subprocess.call(cmd_line, shell="False")
+                if (plot_only == 1):
+                    plot_right_metric.main(prefix_str, orig_prefix, itime, colors[j])
+                    cmd_line = "grep 'maximum' " + prefix_str + \
+			            "_ct | cut -d ' ' -f 2 > " + prefix_str + "_cdf"
+                    #cmd_line = "grep 'converge_times' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf" 
+                    #print(cmd_line)
+                    #subprocess.call(cmd_line, shell="False")
+                    #plot_cdf_func.main(prefix_str, orig_prefix, i, colors[j] )
+                
+j=(j+1)%len(colors)
+prefix_str="csdgd_0.0001_0.3_10.0_1e-09"
+#cmd_line = "python find_multiple_events.py " + \
+#prefix_str + ".out mp 10 >" + prefix_str + "_ct "
+#subprocess.call(cmd_line, shell="True")
+#print(cmd_line)
+plot_right_metric.main(prefix_str, orig_prefix, itime, colors[j])
+
+               
+plt.draw()
+plt.show()
 f.close()
 
