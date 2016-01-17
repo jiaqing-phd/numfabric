@@ -1166,6 +1166,7 @@ TcpSocketBase::ProcessEstablished (Ptr<Packet> packet, const TcpHeader& tcpHeade
     }
 }
 
+
 /* Process the newly received ACK */
 void
 TcpSocketBase::ReceivedAck (Ptr<Packet> packet, const TcpHeader& tcpHeader)
@@ -1221,6 +1222,7 @@ TcpSocketBase::ProcessListen (Ptr<Packet> packet, const TcpHeader& tcpHeader,
   // Extract the flags. PSH and URG are not honoured.
   uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG);
 
+  current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
   // Fork a socket if received a SYN. Do nothing otherwise.
   // C.f.: the LISTEN part in tcp_v4_do_rcv() in tcp_ipv4.c in Linux kernel
   if (tcpflags != TcpHeader::SYN)
@@ -1250,6 +1252,12 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
 
   // Extract the flags. PSH and URG are not honoured.
   uint8_t tcpflags = tcpHeader.GetFlags () & ~(TcpHeader::PSH | TcpHeader::URG);
+
+  current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
+  double tr = updateDGDTargetRate(current_netw_price);
+  resetCW(tr);
+
+//  std::cout<<Simulator::Now().GetSeconds()<<" Node "<<m_node->GetId()<<" ProcessSynRecvd price "<<current_netw_price<<" target_rate "<<tr<<std::endl;
 
   if (tcpflags == 0)
     { // Bare data, accept it and move to ESTABLISHED state. This is not a normal behaviour. Remove this?
@@ -1300,7 +1308,7 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
     }
 }
 
-void 
+double
 TcpSocketBase::updateDGDTargetRate(double netw_price)
 {
     //this is the source
@@ -1308,8 +1316,8 @@ TcpSocketBase::updateDGDTargetRate(double netw_price)
      ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
      std::string flowkey = ss.str();
      Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
-     ipv4->SetTargetRateDGD(current_netw_price, flowkey);
-
+     double tr = ipv4->SetTargetRateDGD(current_netw_price, flowkey);
+     return tr;
 }
 
 /* Received a packet upon SYN_RCVD */
@@ -1344,8 +1352,6 @@ TcpSocketBase::ProcessSynRcvd (Ptr<Packet> packet, const TcpHeader& tcpHeader,
           m_endPoint6->SetPeer (Inet6SocketAddress::ConvertFrom (fromAddress).GetIpv6 (),
                                 Inet6SocketAddress::ConvertFrom (fromAddress).GetPort ());
         }
-        current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
-      updateDGDTargetRate(current_netw_price);
       // Always respond to first data packet to speed up the connection.
       // Remove to get the behaviour of old NS-3 code.
       m_delAckCount = m_delAckMaxCount;
@@ -1919,7 +1925,7 @@ TcpSocketBase::CompleteFork (Ptr<Packet> p, const TcpHeader& h,
   SetupCallback ();
   // Set the sequence number and send SYN+ACK
   m_rxBuffer.SetNextRxSequence (h.GetSequenceNumber () + SequenceNumber32 (1));
-
+  current_netw_price = h.GetPrice();
   SendEmptyPacket (TcpHeader::SYN | TcpHeader::ACK);
 }
 
@@ -2360,6 +2366,12 @@ TcpSocketBase::processRate(const ns3::TcpHeader &header)
 void
 TcpSocketBase::ProcessECN(const ns3::TcpHeader &header)
 {
+  return;
+}
+
+void
+TcpSocketBase::resetCW(double tr)
+{ 
   return;
 }
 

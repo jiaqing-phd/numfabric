@@ -66,7 +66,7 @@ class TcpSocketBase : public TcpSocket
 public:
   bool need_echo;
   void setFlows(void);
-  void updateDGDTargetRate(double);
+  double updateDGDTargetRate(double);
   Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint made public 12/21 Kanthi:
   /**
    * Get the type ID.
@@ -165,6 +165,7 @@ protected:
 
   virtual void ProcessECN(const TcpHeader &tcpheader);
   virtual void processRate(const TcpHeader &tcpheader);
+  virtual void resetCW(double);
 
   // Helper functions: Connection set up
 

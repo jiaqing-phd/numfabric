@@ -399,6 +399,7 @@ PrioQueue::updateLinkPrice(void)
  //   } 
 //    std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
   } else {
+//    std::cout<<"ERROR !!"<<std::endl;
     if(running_min_prio != MAX_DOUBLE) {
       latest_min_prio = running_min_prio;
     } else {
@@ -452,7 +453,7 @@ PrioQueue::updateLinkPrice(void)
    } else {
      current_price = new_price;
    }
- //  uint32_t currentQSize = GetCurSize();
+   uint32_t currentQSize = GetCurSize();
 //   std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<rate_increase<<" "<<latest_min_prio<<" "<<currentQSize<<std::endl;
 
 //    set  optimal price - testing
@@ -473,6 +474,10 @@ PrioQueue::updateLinkPrice(void)
    update_minimum = false;
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
+  uint32_t currentQSize = GetCurSize();
+ //  if(!xfabric_price) {
+//  std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<0<<" "<<0<<" "<<currentQSize<<std::endl;
+//	}
   m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }

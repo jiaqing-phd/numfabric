@@ -17,7 +17,7 @@ def main(inputfile,inputdir, fignum, colors):
       os.makedirs(inputdir)
     
     data = np.loadtxt(filename)
-    
+    temp= len(data) 
     # Use the histogram function to bin the data
     #counts, bin_edges = np.histogram(data, bins=num_bins, normed=True)
 
@@ -37,6 +37,7 @@ def main(inputfile,inputdir, fignum, colors):
     yvals= (1 + np.arange(len(sorted_data)))/float(len(sorted_data))
     print(yvals) 
     plt.plot(sorted_data,yvals, colors, label=(str(len(data)) +" " + pre))
+    
     plt.xlabel('Convergence Time in seconds')
     plt.ylabel('CDF ')
     #plt.legend(loc='best')

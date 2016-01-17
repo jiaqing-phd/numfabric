@@ -25,6 +25,7 @@ int checkTimes = 0;
 double kvalue = 50000;
 double kvalue_price = 50000;
 double kvalue_rate = 10000;
+double kvalue_measurement = 80000;
 
 std::map<uint32_t, std::vector<uint32_t> > source_flow;
 std::map<uint32_t, std::vector<uint32_t> > dest_flow;
@@ -94,7 +95,7 @@ double fraction_flows_deadline = .5;
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
-double link_delay = 5.0; //in microseconds
+double link_delay = 2.5; //in microseconds
 bool rate_based  = false;
 bool pfabric_util = false;
 bool flow_ecmp = false;
@@ -110,7 +111,7 @@ double ONEG = 1000000000.0;
 double link_rate = ONEG * 10.0;
 
 // data rates and delays for leaf-spine
-std::string fabric_datarate = "40Gbps";
+std::string fabric_datarate = "10Gbps";
 std::string edge_datarate = "10Gbps";
 double fabricdelay=2.5, edgedelay=2.5;
 

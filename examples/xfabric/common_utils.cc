@@ -152,6 +152,7 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;  
+  cmd.AddValue ("measurement_ewma", "measurement_ewma", kvalue_measurement);
   cmd.AddValue ("wfq_testing", "wfq_testing", wfq);
   cmd.AddValue ("fct_alpha", "fctalpha for utility", fct_alpha);
   cmd.AddValue ("nNodes", "Number of nodes", N);
@@ -233,6 +234,8 @@ void dump_config(void)
   std::cout<<"dt "<<dt_val<<std::endl;
   std::cout<<"kvalue_rate "<<kvalue_rate<<std::endl;
   std::cout<<"kvalue_price "<<kvalue_price<<std::endl;
+  std::cout<<"kvalue_measurement "<<kvalue_measurement<<std::endl;
+
   std::cout<<"application_datarate "<<application_datarate<<std::endl;
   std::cout<<"eta_val "<<xfabric_eta<<std::endl;
   std::cout<<"host_compensate "<<host_compensate<<std::endl;
@@ -246,7 +249,7 @@ void dump_config(void)
 
 void common_config(void)
 {
-  double total_rtt = link_delay * 8.0;
+  double total_rtt = link_delay * 8.0 * 2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
@@ -258,7 +261,7 @@ void common_config(void)
 
   std::cout<<"dgd_alpha "<<dgd_alpha<<" dgd_gamma "<<dgd_gamma<<" multiplier "<<multiplier<<std::endl;
 
-  std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<std::endl;  
+  std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<" total_rtt "<<total_rtt<<" link_rate "<<link_rate<<std::endl;  
 
   Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
   Config::SetDefault ("ns3::TcpSocket::SegmentSize", UintegerValue(max_segment_size));
@@ -384,6 +387,7 @@ void setUpMonitoring(void)
 
      StaticCast<Ipv4L3Protocol> (ipv4)->setlong_ewma_const(kvalue_price);
      StaticCast<Ipv4L3Protocol> (ipv4)->setshort_ewma_const(kvalue_rate);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setmeasurement_ewma_const(kvalue_measurement);
      
      //StaticCast<Ipv4L3Protocol> (ipv4)->setEpochUpdate(epoch_update_time);
      StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);
@@ -408,14 +412,15 @@ CheckIpv4Rates (NodeContainer &allNodes)
     {
     
 //     double rate = ipv4->GetStoreDestRate (it->first);
-      double long_rate = ipv4->GetCSFQRate (it->first);
-      double short_rate = ipv4->GetShortTermRate(it->first);
+//      double long_rate = ipv4->GetCSFQRate (it->first);
+//      double short_rate = ipv4->GetShortTermRate(it->first);
+      double measured_rate = ipv4->GetMeasurementRate(it->first);
 
       uint32_t s = it->second;
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << long_rate <<" "<<short_rate<<std::endl;
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<std::endl;
 //       current_rate += rate;
       }
 //    std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
@@ -429,7 +434,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
     }
   }
-  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
+//  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (sampling_interval), &CheckIpv4Rates, allNodes);

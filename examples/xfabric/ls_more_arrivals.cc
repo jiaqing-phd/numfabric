@@ -18,13 +18,13 @@ NS_LOG_COMPONENT_DEFINE ("pfabric");
 
 class MyApp;
 
-const uint32_t max_system_flows = 250;
+const uint32_t max_system_flows = 1000;
 const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 150;
-uint32_t max_flows_allowed = 200;
+uint32_t min_flows_allowed = 300;
+uint32_t max_flows_allowed = 500;
 std::map<uint32_t, std::string> flowkeys;
 
 void dropFlowFromQueues(uint32_t f)
@@ -316,7 +316,7 @@ void startFlowsStatic(void)
 void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_stopped = 0;
-  while (num_flows_stopped < 10) {
+  while (num_flows_stopped < 100) {
     UniformVariable urand;
     uint32_t i = urand.GetInteger(1, max_system_flows);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
@@ -343,7 +343,7 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
 void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_started = 0;
-    while(num_flows_started < 10) 
+    while(num_flows_started < 100) 
     {
      UniformVariable urand;
      uint32_t i = urand.GetInteger(1, max_system_flows-1);
@@ -384,7 +384,8 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.05; //100ms
+  double delay = 0.05;
+//  if(num_flows < 100) {delay=0.0;}
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 }
 

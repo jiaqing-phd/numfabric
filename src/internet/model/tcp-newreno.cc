@@ -256,8 +256,10 @@ TcpNewReno::setxfabric(bool xfabric_value)
 uint32_t
 TcpNewReno::getBytesAcked(const TcpHeader &tcpheader)
 {
-  uint32_t header_corrections = 86;
+  //uint32_t header_corrections = 86;
+  uint32_t header_corrections = 90;
   uint32_t bytes_acked = tcpheader.GetAckNumber() - m_txBuffer.HeadSequence();
+//  std::cout<<"bytes_acked "<<bytes_acked<<std::endl;
   //NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" bytes_acked "<<bytes_acked);
   return bytes_acked + header_corrections;
 } 
@@ -356,14 +358,16 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           <<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "
           ); */
         } else {
+          double line_rate = 10000.0;
           SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
           if(ack_num >= one_rtt) {
-            double old_window = unquantized_window;
-         	  unquantized_window = unquantized_window + burst_size*m_segmentSize;
+            double trate = ipv4->flow_target_rate[flowkey];
+            if(trate > line_rate) { trate = line_rate;}
+            unquantized_window = trate * (m_dt+d0)*1000000.0/8.0 ;
             one_rtt = m_highTxMark + unquantized_window;
-         NS_LOG_LOGIC("Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
-            <<one_rtt<<" cwnd "<<unquantized_window<<" m_highTxMark "<<m_highTxMark<<" old_window "<<old_window<<
-            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<"flowkey "<<flowkey); 
+            std::cout<<"Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
+            <<one_rtt<<" cwnd "<<unquantized_window<<" m_highTxMark "<<m_highTxMark<< 
+            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<"flowkey "<<flowkey<<std::endl; 
           } // no else.. we don't do anything if it's too early
         }
         
@@ -416,7 +420,29 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     // just a debug 
   }
 }
-   
+  
+ 
+void 
+TcpNewReno::resetCW(double target_rate)
+{
+
+    if(!m_xfabric) return;
+
+    double line_rate = 10000.0; // HARD CODED
+    if(target_rate > line_rate) {
+	target_rate = line_rate;
+    }
+    double unquantized_window = target_rate * (1000000.0/8.0) * (d0+m_dt);
+        
+    m_cWnd = (ceil) (unquantized_window/m_segmentSize) * m_segmentSize;
+    if(m_cWnd < 1* m_segmentSize) 
+    {
+      m_cWnd = 1 * m_segmentSize;
+    }
+    std::cout<<"resetCW called with rate "<<target_rate<<" unquantized window "<<unquantized_window<<" window "<<m_cWnd<<" time "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<std::endl;
+    m_ssThresh = m_cWnd;
+}
+
 
 void
 TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
