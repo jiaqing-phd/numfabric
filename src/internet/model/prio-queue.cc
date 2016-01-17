@@ -391,7 +391,7 @@ PrioQueue::updateLinkPrice(void)
     current_price = std::max(current_price, 0.0);
     current_price = std::min(current_price, 1.0);
 
-    std::cout<<" Queue "<<linkid_string<<" current_price "<<current_price<<" "<<Simulator::Now().GetSeconds()<<" rate_term "<<rate_term<<" queue_term "<<queue_term<<" after multi qterm "<<m_alpha*queue_term<<" rterm "<<m_gamma* rate_term<<" gamma "<<m_gamma<<" alpha "<<m_alpha<<std::endl;
+//    std::cout<<" Queue "<<linkid_string<<" current_price "<<current_price<<" "<<Simulator::Now().GetSeconds()<<" rate_term "<<rate_term<<" queue_term "<<queue_term<<" after multi qterm "<<m_alpha*queue_term<<" rterm "<<m_gamma* rate_term<<" gamma "<<m_gamma<<" alpha "<<m_alpha<<std::endl;
 
 
 //    if(m_is_switch) {

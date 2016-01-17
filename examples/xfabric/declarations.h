@@ -161,6 +161,7 @@ extern uint32_t arg_max_flows;
 extern double dt_val;
 extern double kvalue_price;
 extern double kvalue_rate;
+extern double kvalue_measurement;
 
 extern void dump_config(void);
 extern bool price_multiply;

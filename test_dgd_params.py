@@ -28,14 +28,12 @@ for line in f:
 
 #print(arguments)
 orig_prefix=arguments["prefix"]
-for pupdate_time in (0.0001, 0.0004):
-        if(pupdate_time == 0.0004):
-	   continue
-	for dalpha in (0.2, 0.3, 0.1):
-		for dgamma in (1.0, 2.0, 10.0):
+for pupdate_time in (0.0001, 0.00005):
+	if(pupdate_time == 0.00005):
+		continue
+	for dalpha in (0.2, 0.3):
+		for dgamma in (1.0, 10.0):
 			for dgm in (0.0000000001, 0.000000001):
-			        if(dgm == 0.0000000001):
-					continue
                 		arguments["price_update_time"] = str(pupdate_time)
 				arguments["dgd_alpha"] = str(dalpha)
 				arguments["dgd_gamma"] = str(dgamma)
@@ -45,6 +43,12 @@ for pupdate_time in (0.0001, 0.0004):
                 		final_args=""
            			for arg_key in arguments:
                     			final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
+<<<<<<< HEAD
+                		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+#               cmd_line="python plot_qr.py "+prefix_str+"&"
+                #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
+#                		cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
+=======
         #        		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
@@ -52,6 +56,7 @@ for pupdate_time in (0.0001, 0.0004):
 			        cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf" 
                 		cmd_line3 = "python plot_cdf.py "+prefix_str +"&"
 				cmd_line = cmd_line1+"&&"+cmd_line2+"&&"+cmd_line3
+>>>>>>> d40c0dfb5358539f58934a56eb6ca631947dd9dd
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
 				print(cmd_line)
                			subprocess.call(cmd_line, shell="True")
