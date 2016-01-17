@@ -358,14 +358,16 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           <<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "
           ); */
         } else {
+          double line_rate = 10000.0;
           SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
           if(ack_num >= one_rtt) {
-            double old_window = unquantized_window;
-         	  unquantized_window = unquantized_window + burst_size*m_segmentSize;
+            double trate = ipv4->flow_target_rate[flowkey];
+            if(trate > line_rate) { trate = line_rate;}
+            unquantized_window = trate * (m_dt+d0)*1000000.0/8.0 ;
             one_rtt = m_highTxMark + unquantized_window;
-         NS_LOG_LOGIC("Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
-            <<one_rtt<<" cwnd "<<unquantized_window<<" m_highTxMark "<<m_highTxMark<<" old_window "<<old_window<<
-            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<"flowkey "<<flowkey); 
+            std::cout<<"Time now is "<<Simulator::Now().GetNanoSeconds()<<" seconds "<<Simulator::Now().GetSeconds()<<" one_rtt "
+            <<one_rtt<<" cwnd "<<unquantized_window<<" m_highTxMark "<<m_highTxMark<< 
+            " available window "<<AvailableWindow()<<" node number "<<m_node->GetId()<<"flowkey "<<flowkey<<std::endl; 
           } // no else.. we don't do anything if it's too early
         }
         

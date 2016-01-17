@@ -335,6 +335,11 @@ void Ipv4L3Protocol::setKay(double kvalue)
   setshort_ewma_const(10000);
 }
 
+void Ipv4L3Protocol::setmeasurement_ewma_const(double kvalue)
+{
+//  std::cout<<"Setting long_ewma_const to "<<kvalue<<std::endl;
+  measurement_ewma_const = kvalue;
+}
 void Ipv4L3Protocol::setlong_ewma_const(double kvalue)
 {
 //  std::cout<<"Setting long_ewma_const to "<<kvalue<<std::endl;
@@ -1116,6 +1121,11 @@ double Ipv4L3Protocol::GetShortTermRate(std::string fkey)
   return GetRate(fkey, SHORTER);
 }
 
+double Ipv4L3Protocol::GetMeasurementRate(std::string fkey)
+{
+  return GetRate(fkey, MEASUREMENT);
+}
+
 double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
 {
   if(term == LONGER) { 
@@ -1124,7 +1134,9 @@ double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
   if(term == SHORTER) {
     return short_term_ewma_rate[fkey];
   }
-
+  if(term == MEASUREMENT) {
+    return measurement_rate[fkey];
+  }
   return -1;
     
 }
@@ -1413,6 +1425,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<std::endl;
     long_term_ewma_rate[flowkey] = pkt_rate;
     short_term_ewma_rate[flowkey] = pkt_rate;
+    measurement_rate[flowkey] = pkt_rate;
     return;
   }
     
@@ -1421,6 +1434,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<" inter_arrival "<<inter_arrival<<std::endl;
     long_term_ewma_rate[flowkey] = pkt_rate;
     short_term_ewma_rate[flowkey] = pkt_rate;
+    measurement_rate[flowkey] = pkt_rate;
     return;
   }
 
@@ -1445,6 +1459,10 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   second_term = epower * short_term_ewma_rate[flowkey];
   short_term_ewma_rate[flowkey] = first_term + second_term;
 
+  epower = exp((-1.0*inter_arrival)/measurement_ewma_const);
+  first_term = (1.0 - epower)*pkt_rate;
+  second_term = epower * measurement_rate[flowkey];
+  measurement_rate[flowkey] = first_term + second_term;
 }
 
 

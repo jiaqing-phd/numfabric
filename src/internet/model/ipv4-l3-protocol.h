@@ -108,7 +108,8 @@ public:
   enum Term
   {
     LONGER = 1,
-    SHORTER = 2
+    SHORTER = 2,
+    MEASUREMENT=3
   };
 
   double SetTargetRateDGD(double current_netw_price, std::string flowkey);
@@ -128,7 +129,7 @@ public:
   void removeFromDropList(uint32_t id);
   std::map<uint32_t, uint32_t> drop_list;
 
-  double long_ewma_const, short_ewma_const;
+  double long_ewma_const, short_ewma_const, measurement_ewma_const;
   std::map<std::string, EventId> m_sendEvent;
 //  EventId m_sendEvent;
   
@@ -139,6 +140,7 @@ public:
   void setAlpha(double alpha);
   void setlong_ewma_const(double kvalue);
   void setshort_ewma_const(double kvalue);
+  void setmeasurement_ewma_const(double kvalue);
 
   void setKay(double kvalue);
   void updateAverages(std::string flowkey, double inter_arrival, double pktsize);
@@ -149,6 +151,7 @@ public:
   double GetStoreDestPrio(std::string fkey);
   double GetCSFQRate(std::string fkey);
   double GetShortRate(std::string fkey);
+  double GetMeasurementRate(std::string fkey);
   void setFlow(std::string flow, uint32_t fid, double size=0.0, uint32_t weight = 1.0);
   void setPriceValid(std::string);
   void setNumHops(std::string, uint32_t h);
@@ -581,6 +584,7 @@ private:
   std::map<std::string, double> long_term_ewma_rate;
   std::map<std::string, double> short_term_ewma_rate;
   std::map<std::string, double>instant_rate_store;
+  std::map<std::string, double> measurement_rate;
 
 
   double QUERY_TIME;
