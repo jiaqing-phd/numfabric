@@ -6,7 +6,7 @@ import os
 import pickle
 import operator
 
-max_time=1.95
+max_time=1.249
 
 def ewma(values, g=1.0/8):
     ret = []
@@ -62,8 +62,9 @@ def SecondTerm(prices, utils, eta=10.0):
     return ret
 
 def main(filename , folder, base_val, color):
-    base_val= 10* int(base_val) 
-    optfile=open(filename+ ".out.npz","r")
+    base_val= 10* int(base_val)
+    print(filename)
+    optfile=open(filename+ ".out.npz","rb")
     f = open(filename+".out")
     pre = filename
     savefilename=filename+ "_timeseries_data.npz"
@@ -396,5 +397,6 @@ def main(filename , folder, base_val, color):
     f.close()
    
 if __name__=='__main__':
-    sys.exit(main(sys.argv[1], sys.argv[2],sys.argv[3],sys.argv[4]))
-
+    main(sys.argv[1], sys.argv[2],sys.argv[3],sys.argv[4])
+    plt.draw()
+    plt.show()

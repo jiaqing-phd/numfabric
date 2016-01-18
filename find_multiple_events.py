@@ -4,7 +4,6 @@ import os
 import scipy.io as sio
 import pickle
 import numpy as np
-import scipy.io as sio
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
 
@@ -145,6 +144,9 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 if (event_time > max_sim_time):
+                    savefile= open((log_file + ".npz"), 'wb')
+                    #print(" length %d time %f" %( len(opt_rates) ,event_time))
+                    pickle.dump(OptRates,savefile)  
                     return
                 next_event_time = event_time+ event_epoch;
                 
@@ -152,9 +154,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 #print(opt_rates)
                 OptRates[event_time]=opt_rates
                 #FlowId[event_time]=realId  
-                savefile= open((log_file + ".npz"), 'w')
-                #print(" length %d time %f" %( len(opt_rates) ,event_time))
-                pickle.dump(OptRates,savefile)  
+
 		#(converge_times, con_flows) = plot_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
                 """ 
                 (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
