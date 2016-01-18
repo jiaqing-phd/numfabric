@@ -95,7 +95,7 @@ double fraction_flows_deadline = .5;
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
-double link_delay = 2.5; //in microseconds
+double link_delay = 20; //in microseconds
 bool rate_based  = false;
 bool pfabric_util = false;
 bool flow_ecmp = false;
@@ -113,7 +113,7 @@ double link_rate = ONEG * 10.0;
 // data rates and delays for leaf-spine
 std::string fabric_datarate = "10Gbps";
 std::string edge_datarate = "10Gbps";
-double fabricdelay=2.5, edgedelay=2.5;
+double fabricdelay=20, edgedelay=20;
 
 // number of nodes for leaf-spine
 //uint32_t num_spines = 4, num_leafs = 9, num_hosts_per_leaf = 16;
