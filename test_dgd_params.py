@@ -3,13 +3,15 @@ import sys
 import os
 import subprocess
 from subprocess import Popen, PIPE
+import plot_right_metric
 
 arguments = {}
 
 if(len(sys.argv) < 2):
   print("Usage : python run_config.py <executable> <config_file> <plot or not>")
   sys.exit()
-
+sim_only=0
+plot_only=1
 plot_script="plot_qr.py"
 
 f=open(sys.argv[2], 'r')
@@ -26,14 +28,20 @@ for line in f:
     continue;
   arguments[arg_key] = arg_val
 
+colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef' ]#\
+
+j=0
 #print(arguments)
 orig_prefix=arguments["prefix"]
 for pupdate_time in (0.0001, 0.00005):
+	fig_series=-1
+	fig_series+=1
 	if(pupdate_time == 0.00005):
 		continue
 	for dalpha in (0.2, 0.3):
 		for dgamma in (1.0, 10.0):
 			for dgm in (0.0000000001, 0.000000001):
+				
                 		arguments["price_update_time"] = str(pupdate_time)
 				arguments["dgd_alpha"] = str(dalpha)
 				arguments["dgd_gamma"] = str(dgamma)
@@ -46,7 +54,20 @@ for pupdate_time in (0.0001, 0.00005):
                 		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
-#                		cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
+                		cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 100 >"+prefix_str+"_ct &"
+                		j=(j+1)%len(colors)
+                		if (sim_only==1):
+                		    #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
+				    cmd_line=cmd_line +"&&"+ cmd_line1  
+				    #cmd_line= cmd_line1  
+				    print(cmd_line)
+                		    subprocess.call(cmd_line, shell="False")
+                		
+                		if (plot_only == 1):
+                		    plot_right_metric.main(prefix_str, orig_prefix, fig_series, colors[j])
+                		    cmd_line = "grep 'maximum' " + prefix_str + \
+					            "_ct | cut -d ' ' -f 2 > " + prefix_str + "_cdf"
+                		    #cmd_line = "grep 'converge_times' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf" 
         #        		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
@@ -55,7 +76,7 @@ for pupdate_time in (0.0001, 0.00005):
                 		#cmd_line3 = "python plot_cdf.py "+prefix_str +"&"
 				#cmd_line = cmd_line1+"&&"+cmd_line2+"&&"+cmd_line3
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
-				print(cmd_line)
-               			subprocess.call(cmd_line, shell="True")
+				#print(cmd_line)
+               			#subprocess.call(cmd_line, shell="True")
 f.close()
 

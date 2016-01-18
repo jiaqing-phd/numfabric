@@ -52,7 +52,7 @@ for line in f:
     flow_id=int(xy[2])
     t1 = float(xy[3])
     rate=float(xy[4])
-    if( t1 > 2.2): 
+    if( t1 > 1.3): 
         break
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
