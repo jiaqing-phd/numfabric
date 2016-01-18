@@ -49,7 +49,7 @@ double dgd_alpha = 0.3;
 
 
 double dt_val = 0.000012;  // should be in seconds
-double target_queue = 15000.0; // DGD parameter
+double target_queue = 150000.0; // DGD parameter
 
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
