@@ -318,7 +318,8 @@ PrioQueue::getRateDifference(Time time_interval)
 {
     double link_incoming_rate = (8.0 * incoming_bytes) /(1000000.0 * time_interval.GetSeconds());
 
-    double available_capacity = (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
+    //double available_capacity = 0.98* (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
+    double available_capacity = m_bps.GetBitRate() / 1000000.0; // units -Megabits per Second
     double rate_difference = link_incoming_rate - available_capacity;
 
     incoming_bytes = 0.0;
@@ -386,6 +387,7 @@ PrioQueue::updateLinkPrice(void)
     double queue_term = current_queue - m_target_queue;
     
     double price_hike = m_gamma * rate_term + m_alpha * queue_term;
+    //double price_hike = m_gamma * rate_term + m_alpha * queue_term;
     current_price = current_price + price_hike;
     // cap it to positive value
     current_price = std::max(current_price, 0.0);

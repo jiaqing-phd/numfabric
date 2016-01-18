@@ -43,6 +43,7 @@ for pupdate_time in (0.0001, 0.00005):
                 		final_args=""
            			for arg_key in arguments:
                     			final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
+                #		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
                 		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
@@ -50,6 +51,10 @@ for pupdate_time in (0.0001, 0.00005):
         #        		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
+                		cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 100  >"+prefix_str+"_ct "
+			        cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf" 
+                		cmd_line3 = "python plot_cdf.py "+prefix_str +"&"
+				cmd_line = cmd_line1+"&&"+cmd_line2+"&&"+cmd_line3
                 		#cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct "
 			        #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf" 
                 		#cmd_line3 = "python plot_cdf.py "+prefix_str +"&"
