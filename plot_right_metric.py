@@ -398,5 +398,6 @@ def main(filename , folder, base_val, color):
    
 if __name__=='__main__':
     main(sys.argv[1], sys.argv[2],sys.argv[3],sys.argv[4])
+    main(sys.argv[5], sys.argv[2],sys.argv[3],sys.argv[6])
     plt.draw()
     plt.show()

@@ -60,21 +60,15 @@ fig_series=-1
 #    for rtime in (20000, 40000, 60000, 80000):
 #        if (rtime != 80000):# or rtime== 60000):  
 #            continue
-for pupdate_time in (0.000100, 0.00050):
-  if(pupdate_time == 0.00050):
+for pupdate_time in (0.000160, 0.00032):
+  if(pupdate_time == 0.00032):
 	continue
-  for gupdate_time in (0.000025, 0.0):
-    if(float(pupdate_time) <= float(gupdate_time)):
-        continue
+  for gupdate_time in (0.0, 0.00008):
     for rtime in ( 60000, 80000):
         ptime = rtime
         fig_series+=1 
-        for dt_val in (0.000012, 0.000024):
-            if (dt_val == 0.000024):
-                continue
-            for eta_val in (1.0, 10.0):
-                if(eta_val == 1.0):
-                    continue
+        for dt_val in (0.000030, 0.00006):
+            for eta_val in (10.0, 20.0):
                 j=(j+1)%len(colors)
                 arguments["price_update_time"] = str(pupdate_time)
                 arguments["guardtime"] = str(gupdate_time)
@@ -99,7 +93,6 @@ for pupdate_time in (0.000100, 0.00050):
                 if (sim_only==1):
                     #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
 		    cmd_line=cmd_line +"&&"+ cmd_line1  
-		    cmd_line= cmd_line1  
 		    print(cmd_line)
                     subprocess.call(cmd_line, shell="False")
                 
