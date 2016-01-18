@@ -24,7 +24,7 @@ uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
 uint32_t min_flows_allowed = 300;
-uint32_t max_flows_allowed = 700;
+uint32_t max_flows_allowed = 500;
 std::map<uint32_t, std::string> flowkeys;
 
 void dropFlowFromQueues(uint32_t f)
