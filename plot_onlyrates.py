@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import sys
 import os
+import pickle
 
 f = open(sys.argv[1]+".out")
 pre = sys.argv[1];

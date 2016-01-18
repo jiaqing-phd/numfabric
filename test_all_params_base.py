@@ -17,8 +17,7 @@ if(len(sys.argv) < 2):
 
 colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef' ]#\
 #,'#ababab','#badaff','#deadbe','#bedead','#afafaf','#8eba42','#e5e5e5','#6d904f']
-
-sim_only = 1       
+       
 plot_only = 1
 plot_script = "plot_qr.py"
 
@@ -46,29 +45,21 @@ orig_prefix=arguments["prefix"]
 
 
 j=0
-fig_series=-1
-#for pupdate_time in (0.000080, 0.000064, 0.0001):
-#  #if (pupdate_time == 0.000080):
-#  #   continue    
-#  for gupdate_time in (0.000025, 0.000016, 0.0):
-#    if(float(pupdate_time) <= float(gupdate_time)):
-#        continue
-#    if(gupdate_time != 0.0):
-#        continue   
-#    i+=1
-#    fig_series+=1
-#    for rtime in (20000, 40000, 60000, 80000):
-#        if (rtime != 80000):# or rtime== 60000):  
-#            continue
-for pupdate_time in (0.000100, 0.00050):
-  if(pupdate_time == 0.00050):
-	continue
-  for gupdate_time in (0.000025, 0.0):
+for pupdate_time in (0.000080, 0.000064, 0.0001):
+  #if (pupdate_time == 0.000080):
+  #   continue    
+  for gupdate_time in (0.000025, 0.000016, 0.0):
     if(float(pupdate_time) <= float(gupdate_time)):
         continue
-    for rtime in ( 60000, 80000):
+    if(gupdate_time != 0.0):
+        continue   
+    i+=1
+    itime=1
+    for rtime in (20000, 40000, 60000, 80000):
+        if (rtime != 80000):# or rtime== 60000):  
+            continue
         ptime = rtime
-        fig_series+=1 
+
         for dt_val in (0.000012, 0.000024):
             if (dt_val == 0.000024):
                 continue
@@ -87,23 +78,22 @@ for pupdate_time in (0.000100, 0.00050):
                 final_args=""
                 for arg_key in arguments:
                     final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
-                cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err "
+                cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
-                cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 10 0.0001 >"+prefix_str+"_ct &"
+                #cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 10 >"+prefix_str+"_ct &"
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
                 #cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
                 #cmd_line = "grep 'maximum' "+prefix_str+"_ct > out "
 		#print(cmd_line)
                 #subprocess.call(cmd_line, shell="True")
-                if (sim_only==1):
-                    #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
-		    cmd_line=cmd_line +"&&"+ cmd_line1  
-		    print(cmd_line)
-                    #subprocess.call(cmd_line, shell="False")
-                
+                if (plot_only == 0):
+                    cmd_line = "python find_multiple_events.py " + \
+                	    prefix_str + ".out mp 10 >" + prefix_str + "_ct &"
+                    print(cmd_line)
+                    subprocess.call(cmd_line, shell="False")
                 if (plot_only == 1):
-                    plot_right_metric.main(prefix_str, orig_prefix, fig_series, colors[j])
+                    plot_right_metric.main(prefix_str, orig_prefix, itime, colors[j])
                     cmd_line = "grep 'maximum' " + prefix_str + \
 			            "_ct | cut -d ' ' -f 2 > " + prefix_str + "_cdf"
                     #cmd_line = "grep 'converge_times' "+prefix_str+"_ct | cut -d ' ' -f 2 > " + prefix_str+"_cdf" 
@@ -111,5 +101,16 @@ for pupdate_time in (0.000100, 0.00050):
                     #subprocess.call(cmd_line, shell="False")
                     #plot_cdf_func.main(prefix_str, orig_prefix, i, colors[j] )
                 
+j=(j+1)%len(colors)
+prefix_str="csdgd_0.0001_0.3_10.0_1e-09"
+#cmd_line = "python find_multiple_events.py " + \
+#prefix_str + ".out mp 10 >" + prefix_str + "_ct "
+#subprocess.call(cmd_line, shell="True")
+#print(cmd_line)
+plot_right_metric.main(prefix_str, orig_prefix, itime, colors[j])
+
+               
+plt.draw()
+plt.show()
 f.close()
 

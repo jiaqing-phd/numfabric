@@ -1,8 +1,9 @@
 #!/usr/bin/python
 import sys
 import os
-import numpy as np
 import scipy.io as sio
+import pickle
+import numpy as np
 import mpsolver_convergence_times as solver
 #['flow_start', '1', 'start_time', '1000000000', 'flow_size', '0', '5', '23', '1', '12440']
 
@@ -17,7 +18,7 @@ weight_index=8
 ecmp_hash_index=9
 event_epoch=0.05
 
-max_sim_time=2.5
+max_sim_time=1.299
 num_flow_index = 1
 num_port_index = 1
 
@@ -30,12 +31,15 @@ capacity=10000
 iter_value=0.0001
 
 averaged = {}
+OptRates={}
+
 
 def close_enough(rate1, rate2):
   diff = (rate1 - rate2)/rate2
-  if(abs(diff) < (0.2)):
+  if(abs(diff) < (0.1)):
     return True
   return False
+
 
 def find_converge_time(ret_rates, fname, start_time, stop_time, g):
   print("looking for an convergence between %f and %f in file %s" %(start_time, stop_time, fname))
@@ -140,14 +144,17 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 if (event_time > max_sim_time):
-                    return
+                    break
                 next_event_time = event_time+ event_epoch;
                 
-                opt_rates = sim.startSim() #these are optimal rates
+                (opt_rates,realId) = sim.startSim() #these are optimal rates
                 #print(opt_rates)
-                print(" length %d time %f" %( len(opt_rates) ,event_time))
+                OptRates[event_time]=opt_rates
+                #FlowId[event_time]=realId  
+
+		#(converge_times, con_flows) = plot_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
+                """ 
                 (converge_times, con_flows) = find_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
-                
                 con = 1
                 max_conv=0.0
                 print("##########################################")
@@ -165,6 +172,8 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                   print("converge_times_maximum %f" %max_conv)
 		  
                 print("##########################################")
-            
-
+                """
+        savefile= open((log_file + ".npz"), 'wb')
+        #print(" length %d time %f" %( len(opt_rates) ,event_time))
+        pickle.dump(OptRates,savefile)  
 get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, int(sys.argv[3]))

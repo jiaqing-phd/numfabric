@@ -665,8 +665,6 @@ class Simulation:
          real_flow_id = int(self.real_id[idx])
          return_rates[real_flow_id] = rate #rates[idx]
          idx +=1
-    print("returning....... ")
-    print(return_rates)
-    return return_rates	
-    #return (return_rates,real_flow_id,self.umax_mp) 
-
+    #print("returning....... ")
+    #print(return_rates)
+    return (return_rates, self.real_id) 

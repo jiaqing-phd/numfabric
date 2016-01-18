@@ -425,6 +425,9 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 void 
 TcpNewReno::resetCW(double target_rate)
 {
+
+    if(!m_xfabric) return;
+
     double line_rate = 10000.0; // HARD CODED
     if(target_rate > line_rate) {
 	target_rate = line_rate;
