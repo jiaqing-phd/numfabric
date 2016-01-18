@@ -18,7 +18,7 @@ weight_index=8
 ecmp_hash_index=9
 event_epoch=0.05
 
-max_sim_time=1.499
+max_sim_time=1.299
 num_flow_index = 1
 num_port_index = 1
 
@@ -144,10 +144,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 num_events_parsed=0
                 event_time = flow_arrival/1000000000.0;
                 if (event_time > max_sim_time):
-                    savefile= open((log_file + ".npz"), 'wb')
-                    #print(" length %d time %f" %( len(opt_rates) ,event_time))
-                    pickle.dump(OptRates,savefile)  
-                    return
+                    break
                 next_event_time = event_time+ event_epoch;
                 
                 (opt_rates,realId) = sim.startSim() #these are optimal rates
@@ -176,5 +173,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
 		  
                 print("##########################################")
                 """
-
+        savefile= open((log_file + ".npz"), 'wb')
+        #print(" length %d time %f" %( len(opt_rates) ,event_time))
+        pickle.dump(OptRates,savefile)  
 get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, int(sys.argv[3]))
