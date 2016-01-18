@@ -49,7 +49,7 @@ double dgd_alpha = 0.3;
 
 
 double dt_val = 0.000012;  // should be in seconds
-double target_queue = 15000.0; // DGD parameter
+double target_queue = 150000.0; // DGD parameter
 
 double measurement_starttime = 1.2;
 double rate_update_time = 0.0005;
@@ -95,7 +95,7 @@ double fraction_flows_deadline = .5;
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
-double link_delay = 2.5; //in microseconds
+double link_delay = 20; //in microseconds
 bool rate_based  = false;
 bool pfabric_util = false;
 bool flow_ecmp = false;
@@ -113,7 +113,7 @@ double link_rate = ONEG * 10.0;
 // data rates and delays for leaf-spine
 std::string fabric_datarate = "10Gbps";
 std::string edge_datarate = "10Gbps";
-double fabricdelay=2.5, edgedelay=2.5;
+double fabricdelay=20, edgedelay=20;
 
 // number of nodes for leaf-spine
 //uint32_t num_spines = 4, num_leafs = 9, num_hosts_per_leaf = 16;
