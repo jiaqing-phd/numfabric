@@ -377,6 +377,7 @@ void start_a_flow(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkn
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
+  std::cout<<" startflowwrapper "<<Simulator::Now().GetSeconds()<<" called "<<std::endl;
   if(num_flows > max_flows_allowed) {
     stop_a_flow(sourcenodes, sinknodes);
   } else if(num_flows < min_flows_allowed) {
@@ -390,9 +391,11 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_a_flow(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.1;
+  double delay = 0.01;
   //if(num_flows < number_flows) { delay = 0.0;}
-  Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
+  epoch_number++;
+  ninety_fifth = 0;
+  next_epoch_event = Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
 }
 
 void setUpTraffic()
@@ -400,9 +403,9 @@ void setUpTraffic()
   splitHosts();
   Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
 
-  std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
+ /* std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
   std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
-
+*/
   std::cout<<" generating random source and destination pairs "<<std::endl;
   /* Generate max_system_flows number of random source destination pairs */
   for(uint32_t flow_idx=1; flow_idx<max_system_flows+1; flow_idx++) {
@@ -436,7 +439,6 @@ main(int argc, char *argv[])
   std::cout<<*argv<<std::endl;
   std::cout<<"set prefix to "<<prefix<<std::endl;
   
-  LogComponentEnable("TcpSocketBase", LOG_LEVEL_ALL);
  // initAll();
 
   if(deadline_mode){

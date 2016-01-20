@@ -15,8 +15,16 @@
 #include "ns3/prio-queue.h"
 
 #include "ns3/tracker.h"
+#include "declarations.h"
 
 using namespace ns3;
+
+typedef struct OptDataRate_ {
+  uint32_t flowid;
+  double datarate;
+  //OptDataRate(uint32_t f, double d) {flowid = f; datarate = d;}
+} OptDataRate;
+
 
 Ptr<Tracker> flowTracker;
 
@@ -125,6 +133,11 @@ std::string empirical_dist_file_DCTCP_heavy="DCTCP_CDF_HEAVY";
 std::string empirical_dist_file_DCTCP_light="DCTCP_CDF_LIGHT";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 std::string empirical_dist_file="DCTCP_CDF";
+std::string opt_rates_file="opt_rates_series";
+
+//std::map<uint32_t, std::vector<OptDataRate> > opt_drates;
+std::map<uint32_t, std::map<uint32_t, double> > opt_drates;
+EventId next_epoch_event;
 
 std::string link_twice_string = "20Gbps";
 
@@ -162,6 +175,10 @@ bool price_multiply = false;
 
 uint32_t number_flows = 100;
 bool desynchronize = false;
+uint32_t epoch_number = 0;
+std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
+std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
+uint32_t ninety_fifth;
 
 
 #endif 

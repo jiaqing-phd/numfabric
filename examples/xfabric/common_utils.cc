@@ -1,5 +1,8 @@
 #include "declarations.h"
 #include <string>
+#include <iostream>
+#include <fstream>
+
 using namespace ns3;
 
 void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
@@ -337,6 +340,21 @@ void common_config(void)
   flowTracker = new Tracker();
   flowTracker->register_callback(scheduler_wrapper);
 
+  std::ifstream ORfile (opt_rates_file.c_str(), std::ifstream::in);
+  if(ORfile.is_open()) {
+    int epoch, flowid;
+    double datarate;
+    while( ORfile >> epoch >> flowid >> datarate)
+    {
+      //OptDataRate dRate;
+      //dRate.flowid = flowid;
+      //dRate.datarate = datarate;
+      opt_drates[epoch][flowid]= datarate;
+      std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
+    }
+  }
+      
+
   return;
 
 }
@@ -399,10 +417,27 @@ void setUpMonitoring(void)
   Simulator::Schedule (Seconds (1.0), &CheckIpv4Rates, allNodes);
 }
 
+
+uint32_t getEpochNumber()
+{
+  return epoch_number;
+}
+
+void move_to_next()
+{
+ if(next_epoch_event.IsRunning()) {
+    next_epoch_event.Cancel();
+ }
+ next_epoch_event = Simulator::ScheduleNow(startflowwrapper, sourcenodes, sinknodes);
+}  
+
 void
 CheckIpv4Rates (NodeContainer &allNodes)
 {
   double current_rate = 0.0;
+  std::vector<double> error_vector;
+  std::vector<double> nonerror_vector;
+
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
   {
@@ -421,7 +456,16 @@ CheckIpv4Rates (NodeContainer &allNodes)
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<std::endl;
-//       current_rate += rate;
+         int epoch_number = getEpochNumber();
+         // ideal rates vector
+         double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
+         std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<std::endl;
+         double error = abs(ideal_rate - measured_rate)/ideal_rate;
+         if(error < 0.1) {
+           error_vector.push_back(error);
+         } else {
+           nonerror_vector.push_back(error);
+         } 
       }
 //    std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
 //    if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
@@ -433,6 +477,19 @@ CheckIpv4Rates (NodeContainer &allNodes)
   //    }
 
     }
+  }
+  uint32_t total_flows = error_vector.size() + nonerror_vector.size();
+  if(error_vector.size() >= 0.95 * total_flows) {
+    // 95th percentile reached.. how many epochs since 95th percentile reached?
+    std::cout<<" 95th percentil flows match "<<ninety_fifth<<std::endl;
+    ninety_fifth++;
+  } else {
+    ninety_fifth = 0;
+  }
+
+  if(ninety_fifth >= 1) {
+    std::cout<<" More than 10 iterations of goodness.. moving on"<<std::endl;
+    move_to_next();
   }
 //  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   

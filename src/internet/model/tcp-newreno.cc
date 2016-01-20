@@ -318,7 +318,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
 
 
     double window_spread_factor = 10.0;
-    double dmin=0.00004;
+    double dmin=0.00000;
     //double instant_rate = bytes_acked * 1.0 * 8.0 /(inter_arrival * 1.0e-9 * 1.0e+6);
     double target_cwnd = 0;
     uint32_t burst_size = 4;
