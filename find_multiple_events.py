@@ -88,6 +88,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
         #print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
+output = open("opt_rates_series", "w")
 
 def get_optimal_rates(log_file, method, alpha, g, num_events): 
 
@@ -96,22 +97,24 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
 
         num_events_parsed=0
         print("num_events %d" %num_events)
+        num_epoch = 1
 
         for line in fh:
           l1 = line.rstrip();
           elems = l1.split(' ')
     	  if(elems[0] == "topo_info"):
-      		numleaf = int(elems[1])
-      		numspines = int(elems[2])
-      		numPortsPerLeaf = int(elems[3])
-      		numports=numleaf*numPortsPerLeaf
-      		#edgeCapacity=2 #int(elems[4])
-      		#fabricCapacity=2#int(elems[5])
-      		edgeCapacity=int(elems[4])
-      		fabricCapacity=int(elems[5])
-      		sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
+      		  numleaf = int(elems[1])
+      		  numspines = int(elems[2])
+      		  numPortsPerLeaf = int(elems[3])
+      		  numports=numleaf*numPortsPerLeaf
+      		  #edgeCapacity=2 #int(elems[4])
+      		  #fabricCapacity=2#int(elems[5])
+      		  edgeCapacity=int(elems[4])
+      		  fabricCapacity=int(elems[5])
+      		  sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
 
           if((elems[0] == "flow_start") or (elems[0] == "flow_stop")):
+            print(elems)
             num_events_parsed += 1
             if(elems[0] == "flow_start"):
                 # new flow, we need to insert into our matrix 
@@ -148,8 +151,12 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 next_event_time = event_time+ event_epoch;
                 
                 (opt_rates,realId) = sim.startSim() #these are optimal rates
-                #print(opt_rates)
+                print("opt_rates at time %d" %num_epoch)
+                print(opt_rates)
                 OptRates[event_time]=opt_rates
+                for key in opt_rates:
+                  output.write("%d %d %f\n" %(num_epoch, key, opt_rates[key]))
+                num_epoch = num_epoch+1
                 #FlowId[event_time]=realId  
 
 		#(converge_times, con_flows) = plot_converge_time(opt_rates, log_file, event_time, next_event_time, g) 
@@ -176,4 +183,5 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
         savefile= open((log_file + ".npz"), 'wb')
         #print(" length %d time %f" %( len(opt_rates) ,event_time))
         pickle.dump(OptRates,savefile)  
+        output.close()
 get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, int(sys.argv[3]))

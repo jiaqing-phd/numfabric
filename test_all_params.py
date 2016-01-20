@@ -84,7 +84,7 @@ for pupdate_time in (0.000160, 0.00032):
                 cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err "
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
-                cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 10 0.0001 >"+prefix_str+"_ct &"
+                cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 100 0.0001 >"+prefix_str+"_ct &"
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
                 #cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
                 #cmd_line = "grep 'maximum' "+prefix_str+"_ct > out "
@@ -94,7 +94,7 @@ for pupdate_time in (0.000160, 0.00032):
                     #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
 		    cmd_line=cmd_line +"&&"+ cmd_line1  
 		    print(cmd_line)
-                    subprocess.call(cmd_line, shell="True")
+                    subprocess.call(cmd_line, shell="False")
                 
                 if (plot_only == 1):
                     plot_right_metric.main(prefix_str, orig_prefix, fig_series, colors[j])
