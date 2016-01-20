@@ -4,6 +4,7 @@
 #include <fstream>
 
 using namespace ns3;
+double LastEventTime;
 
 void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
 {
@@ -256,7 +257,7 @@ void common_config(void)
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
-
+  double LastEventTime = 1.0;
   pkt_tag = xfabric; 
   
   dgd_gamma = dgd_gamma*multiplier;
@@ -487,8 +488,11 @@ CheckIpv4Rates (NodeContainer &allNodes)
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth >= 1) {
-    std::cout<<" More than 10 iterations of goodness.. moving on"<<std::endl;
+  if(ninety_fifth >= 5) {
+    std::cout<<" More than 5 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval;
+    std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
+    LastEventTime = Simulator::Now().GetSeconds();
     move_to_next();
   }
 //  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
