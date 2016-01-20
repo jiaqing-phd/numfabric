@@ -70,14 +70,13 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   m_weight = weight;
 
   //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
-  //m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this); bug fix 1/14
-  StartApplication();
+  m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this); //bug fix 1/14
 }
 
 void
 MyApp::StartApplication (void)
 {
-/*
+
   if(Simulator::Now().GetNanoSeconds() < Time(Seconds(m_startTime)).GetNanoSeconds()) {
     std::cout<<"Time "<<Simulator::Now().GetNanoSeconds()<<" spurious call flowid "<<m_fid<<" returning before start_time "<<  Time(Seconds(m_startTime)).GetNanoSeconds()<<std::endl;
     if(Simulator::IsExpired(m_startEvent)) {
@@ -89,7 +88,7 @@ MyApp::StartApplication (void)
       
     return;
 
-  } */
+  } 
 
   std::cout<<"StartApplication for fid "<<m_fid<<" called at "<<Simulator::Now().GetSeconds()<<std::endl; 
   m_running = true;

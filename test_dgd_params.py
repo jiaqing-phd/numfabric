@@ -10,8 +10,8 @@ arguments = {}
 if(len(sys.argv) < 2):
   print("Usage : python run_config.py <executable> <config_file> <plot or not>")
   sys.exit()
-sim_only=0
-plot_only=1
+sim_only=1
+plot_only=0
 plot_script="plot_qr.py"
 
 f=open(sys.argv[2], 'r')
@@ -33,11 +33,9 @@ colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef' ]#\
 j=0
 #print(arguments)
 orig_prefix=arguments["prefix"]
-for pupdate_time in (0.0001, 0.00005):
+for pupdate_time in (0.00016, 0.00032):
 	fig_series=-1
 	fig_series+=1
-	if(pupdate_time == 0.00005):
-		continue
 	for dalpha in (0.2, 0.3):
 		for dgamma in (1.0, 10.0):
 			for dgm in (0.0000000001, 0.000000001):
@@ -52,17 +50,17 @@ for pupdate_time in (0.0001, 0.00005):
            			for arg_key in arguments:
                     			final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
                 #		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
-                		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+                		#cmd_line1="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err "
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
-                		cmd_line = "python find_multiple_events.py "+prefix_str+".out mp 100 >"+prefix_str+"_ct &"
+                		cmd_line2 = "python find_multiple_events.py "+prefix_str+".out mp 100 >"+prefix_str+"_ct &"
                 		j=(j+1)%len(colors)
                 		if (sim_only==1):
                 		    #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
-				    cmd_line=cmd_line +"&&"+ cmd_line1  
+				    #cmd_line=cmd_line1 +"&&"+ cmd_line2  
 				    #cmd_line= cmd_line1  
-				    print(cmd_line)
-                		    subprocess.call(cmd_line, shell="False")
+				    print(cmd_line2)
+                		    subprocess.call(cmd_line2, shell="True")
                 		
                 		if (plot_only == 1):
                 		    plot_right_metric.main(prefix_str, orig_prefix, fig_series, colors[j])
