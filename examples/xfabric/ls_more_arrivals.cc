@@ -386,16 +386,17 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
   }
   double delay = 0.1;
 //  if(num_flows < 100) {delay=0.0;}
-  Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
+  next_epoch_event = Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
+  //if(num_flows < number_flows) { delay = 0.0;}
+  epoch_number++;
+  ninety_fifth = 0;
+
 }
 
 void setUpTraffic()
 {
   splitHosts();
   Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-
-  std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
-  std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
 
   std::cout<<" generating random source and destination pairs "<<std::endl;
   /* Generate max_system_flows number of random source destination pairs */

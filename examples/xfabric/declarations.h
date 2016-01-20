@@ -168,4 +168,22 @@ extern bool price_multiply;
 extern uint32_t number_flows;
 extern bool desynchronize;
 extern double multiplier;
+extern std::string opt_rates_file;
+typedef struct OptDataRate_ {
+  uint32_t flowid;
+  double datarate;
+  //OptDataRate(uint32_t f, double d) {flowid = f; datarate = d;}
+} OptDataRate;
+
+
+//extern std::map<uint32_t, std::vector< OptDataRate> > opt_drates;
+extern std::map<uint32_t, std::map<uint32_t, double> > opt_drates;
+extern uint32_t epoch_number;
+extern EventId next_epoch_event;
+void startflowwrapper(std::vector<uint32_t>, std::vector<uint32_t>);
+extern std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
+extern std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
+extern uint32_t ninety_fifth;
+
+
 #endif 
