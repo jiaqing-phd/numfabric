@@ -345,18 +345,13 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     //else if(scheme2 || scheme3) 
     else 
     {
-    
+   /* 
       //ecn_highest = m_highTxMark;
       if(lastRtt_copy.GetNanoSeconds()  < ((d0+dmin)*1000000000.0)) {
 
         if(scheme2) {
           unquantized_window = 10*1000000000.0/8.0 * (m_dt+d0);
           NS_LOG_LOGIC("scheme2 is true ");
-/*          NS_LOG_LOGIC("processRate instantaneous_rate "<<instant_rate<<" flow "<<flowkey
-          <<" node "<<m_node->GetId()<<" d0+dt "<<d0+dt<<" unquantized_window "<<unquantized_window
-          <<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "
-          <<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" target_cwnd "<<target_cwnd<<" inhere "
-          ); */
         } else {
           double line_rate = 10000.0;
           SequenceNumber32 ack_num = tcpHeader.GetAckNumber();
@@ -372,7 +367,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
         }
         
       } else { // for usable RTT
-
+*/
         if(scheme2 || scheme3) {
 
           // send the inter-arrival to update averages 
@@ -405,7 +400,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
       
           // our old xfabric scheme
         }
-      } // usable RTT end
+ //     } // usable RTT end
     } // fixed window else end
 
     // common stuff
