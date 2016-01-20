@@ -253,11 +253,11 @@ void dump_config(void)
 
 void common_config(void)
 {
-  double total_rtt = link_delay * 8.0 * 4.0; //KANTHI _ ERROR _ FIX _ THIS _ 
+  double total_rtt = link_delay * 8.0 * 2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
-  double LastEventTime = 1.0;
+  LastEventTime = 1.0;
   pkt_tag = xfabric; 
   
   dgd_gamma = dgd_gamma*multiplier;
@@ -458,6 +458,11 @@ CheckIpv4Rates (NodeContainer &allNodes)
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<std::endl;
          int epoch_number = getEpochNumber();
+	 if(epoch_number == 51) 
+	 { 
+	    std::cout<<" LAST EPOCH "<<Simulator::Now().GetSeconds()<<std::endl; 
+	    Simulator::Stop();
+	 }
          // ideal rates vector
          double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
          std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<std::endl;
@@ -490,7 +495,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
   if(ninety_fifth >= 5) {
     std::cout<<" More than 5 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
     LastEventTime = Simulator::Now().GetSeconds();
     move_to_next();

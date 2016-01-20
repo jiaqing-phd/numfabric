@@ -262,10 +262,10 @@ PrioQueue::dropFlowPackets(std::string arg_flowkey)
 
         std::string flowkey = GetFlowKey(*pp);
         if(flowkey == arg_flowkey) {
-            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" erasing packet of flow "<<flowkey<<std::endl;
+ //           std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" erasing packet of flow "<<flowkey<<std::endl;
             pp = m_packets.erase(pp);
         } else {
-            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" NOTerasing packet of flow "<<flowkey<<std::endl;
+//            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" NOTerasing packet of flow "<<flowkey<<std::endl;
             ++pp;
         }
     }
