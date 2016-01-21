@@ -466,7 +466,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
          double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
          std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
          double error = abs(ideal_rate - measured_rate)/ideal_rate;
-         if(error < 0.2) {
+         if(error < 0.1) {
            error_vector.push_back(error);
          } else {
            nonerror_vector.push_back(error);
