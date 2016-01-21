@@ -9,6 +9,7 @@
 *_convergence_times
 *_cdf
 *_ct
+*.npz
 
 *.0_ct
 
