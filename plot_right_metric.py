@@ -102,7 +102,7 @@ def main(filename , folder, base_val, color):
     
     sumDiffRates={}
     sumPercentDiffRates={}
-    optRates=pickle.load(optfile)
+    #optRates=pickle.load(optfile)
         
     if not os.path.isfile(savefilename):
         savefile= open(savefilename,"wb")

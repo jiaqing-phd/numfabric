@@ -88,7 +88,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
         #print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
-output = open("opt_rates_series", "w")
+#output = open("opt_rates_series", "w")
 
 def get_optimal_rates(log_file, method, alpha, g, num_events): 
 
@@ -154,8 +154,8 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 print("opt_rates at time %d" %num_epoch)
                 print(opt_rates)
                 OptRates[event_time]=opt_rates
-                for key in opt_rates:
-                  output.write("%d %d %f\n" %(num_epoch, key, opt_rates[key]))
+                #for key in opt_rates:
+                  #output.write("%d %d %f\n" %(num_epoch, key, opt_rates[key]))
                 num_epoch = num_epoch+1
                 #FlowId[event_time]=realId  
 
@@ -183,5 +183,5 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
         savefile= open((log_file + ".npz"), 'wb')
         #print(" length %d time %f" %( len(opt_rates) ,event_time))
         pickle.dump(OptRates,savefile)  
-        output.close()
+        #output.close()
 get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, int(sys.argv[3]))

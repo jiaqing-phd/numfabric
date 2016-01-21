@@ -179,6 +179,7 @@ uint32_t epoch_number = 0;
 std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
 std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
 uint32_t ninety_fifth;
+double LastEventTime;
 
 
 #endif 

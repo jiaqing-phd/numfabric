@@ -4,7 +4,6 @@
 #include <fstream>
 
 using namespace ns3;
-double LastEventTime;
 
 void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
 {
@@ -465,9 +464,9 @@ CheckIpv4Rates (NodeContainer &allNodes)
 	 }
          // ideal rates vector
          double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
-         std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<std::endl;
+         std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
          double error = abs(ideal_rate - measured_rate)/ideal_rate;
-         if(error < 0.1) {
+         if(error < 0.2) {
            error_vector.push_back(error);
          } else {
            nonerror_vector.push_back(error);
@@ -495,9 +494,8 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
   if(ninety_fifth >= 5) {
     std::cout<<" More than 5 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
-    LastEventTime = Simulator::Now().GetSeconds();
     move_to_next();
   }
 //  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;

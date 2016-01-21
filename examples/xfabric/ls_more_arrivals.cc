@@ -384,12 +384,17 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
+  if(Simulator::Now().GetSeconds() - LastEventTime >= 0.09999999) { 
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<epoch_number<<std::endl;
+   }
   double delay = 0.1;
 //  if(num_flows < 100) {delay=0.0;}
   next_epoch_event = Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
   //if(num_flows < number_flows) { delay = 0.0;}
+  // if we
   epoch_number++;
   ninety_fifth = 0;
+  LastEventTime = Simulator::Now().GetSeconds();
 
 }
 
