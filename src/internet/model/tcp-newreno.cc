@@ -73,6 +73,11 @@ TcpNewReno::GetTypeId (void)
                   DoubleValue(0.000024),
                   MakeDoubleAccessor (&TcpNewReno::m_dt),
                   MakeDoubleChecker <double> ())
+	  .AddAttribute("line_rate",
+                  "line_rate",
+                  DoubleValue(10000.0),
+                  MakeDoubleAccessor (&TcpNewReno::line_rate),
+                  MakeDoubleChecker <double> ())
  ;
   return tid;
 }
@@ -423,7 +428,7 @@ TcpNewReno::resetCW(double target_rate)
 
     if(!m_xfabric) return;
 
-    double line_rate = 10000.0; // HARD CODED
+//    double line_rate = 10000.0; // HARD CODED
     if(target_rate > line_rate) {
 	target_rate = line_rate;
     }
@@ -434,7 +439,7 @@ TcpNewReno::resetCW(double target_rate)
     {
       m_cWnd = 1 * m_segmentSize;
     }
-    std::cout<<"resetCW called with rate "<<target_rate<<" unquantized window "<<unquantized_window<<" window "<<m_cWnd<<" time "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<std::endl;
+    std::cout<<"resetCW called with rate "<<target_rate<<" unquantized window "<<unquantized_window<<" window "<<m_cWnd<<" time "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" line_rate "<<line_rate<<std::endl;
     m_ssThresh = m_cWnd;
 }
 

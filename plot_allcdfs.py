@@ -26,7 +26,7 @@ f = []
 for i in range (1, len(sys.argv)-1):
   print ("opening file %s" %sys.argv[i])
   l1=sys.argv[i].split('_')
-  labels.append(l1[0])
+  labels.append(sys.argv[i])
   f.append(open(sys.argv[i]))
 
 xy = []

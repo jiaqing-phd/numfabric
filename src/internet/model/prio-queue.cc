@@ -480,6 +480,7 @@ PrioQueue::updateLinkPrice(void)
  //  if(!xfabric_price) {
 //  std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<0<<" "<<0<<" "<<currentQSize<<std::endl;
 //	}
+
   m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }

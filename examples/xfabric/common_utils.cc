@@ -5,6 +5,19 @@
 
 using namespace ns3;
 
+std::string get_datarate(std::string s)
+{
+  std::string::size_type pos = s.find('G');
+    if (pos != std::string::npos)
+    {
+        return s.substr(0, pos);
+    }
+    else
+    {
+        return s;
+    }
+}
+
 void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
 {
   // Create a packet sink on the star "hub" to receive these packets
@@ -214,18 +227,6 @@ CommandLine addCmdOptions(void)
 }
 
 
-std::string get_datarate(std::string s)
-{
-  std::string::size_type pos = s.find('G');
-    if (pos != std::string::npos)
-    {
-        return s.substr(0, pos);
-    }
-    else
-    {
-        return s;
-    }
-}
 
 void dump_config(void)
 {
@@ -252,6 +253,9 @@ void dump_config(void)
 
 void common_config(void)
 {
+
+  // get link rate from edge_datarate string
+  link_rate = ONEG * atof(get_datarate(edge_datarate).c_str());
   double total_rtt = link_delay * 8.0 * 2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
@@ -282,6 +286,7 @@ void common_config(void)
   Config::SetDefault("ns3::PacketSink::StartMeasurement",TimeValue(Seconds(measurement_starttime)));
   Config::SetDefault("ns3::TcpNewReno::strawman", BooleanValue(strawmancc));
   Config::SetDefault("ns3::TcpNewReno::dt_value", DoubleValue(dt_val));
+  Config::SetDefault("ns3::TcpNewReno::line_rate", DoubleValue(link_rate));
 
   if(!xfabric) {
     Config::SetDefault("ns3::PrioQueue::m_pkt_tag",BooleanValue(false));
@@ -350,7 +355,7 @@ void common_config(void)
       //dRate.flowid = flowid;
       //dRate.datarate = datarate;
       opt_drates[epoch][flowid]= datarate;
-      std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
+      //std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
     }
   }
       
@@ -402,6 +407,8 @@ void setUpMonitoring(void)
      //StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(rate_update_time);
      StaticCast<Ipv4L3Protocol> (ipv4)->setQueryTime(sampling_interval);
      StaticCast<Ipv4L3Protocol> (ipv4)->setAlpha(1.0);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setLineRate(link_rate);
+     
 
      StaticCast<Ipv4L3Protocol> (ipv4)->setlong_ewma_const(kvalue_price);
      StaticCast<Ipv4L3Protocol> (ipv4)->setshort_ewma_const(kvalue_rate);
@@ -455,15 +462,15 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<std::endl;
          int epoch_number = getEpochNumber();
-	 if(epoch_number == 51) 
+	 if(epoch_number == 50) 
 	 { 
 	    std::cout<<" LAST EPOCH "<<Simulator::Now().GetSeconds()<<std::endl; 
 	    Simulator::Stop();
 	 }
          // ideal rates vector
          double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<" "<<ideal_rate<<std::endl;
          std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
          double error = abs(ideal_rate - measured_rate)/ideal_rate;
          if(error < 0.1) {

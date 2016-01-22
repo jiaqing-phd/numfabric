@@ -10,6 +10,7 @@
 *_cdf
 *_ct
 *.npz
+*.npy
 
 *.0_ct
 
