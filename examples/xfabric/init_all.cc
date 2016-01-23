@@ -133,7 +133,8 @@ std::string empirical_dist_file_DCTCP_heavy="DCTCP_CDF_HEAVY";
 std::string empirical_dist_file_DCTCP_light="DCTCP_CDF_LIGHT";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 std::string empirical_dist_file="DCTCP_CDF";
-std::string opt_rates_file="opt_rates_small";
+//std::string opt_rates_file="opt_rates_small_highspeed";
+std::string opt_rates_file="opt_rates_waste";
 
 //std::map<uint32_t, std::vector<OptDataRate> > opt_drates;
 std::map<uint32_t, std::map<uint32_t, double> > opt_drates;

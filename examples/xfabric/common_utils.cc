@@ -355,7 +355,7 @@ void common_config(void)
       //dRate.flowid = flowid;
       //dRate.datarate = datarate;
       opt_drates[epoch][flowid]= datarate;
-      //std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
+      std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
     }
   }
       
@@ -469,9 +469,8 @@ CheckIpv4Rates (NodeContainer &allNodes)
 	    Simulator::Stop();
 	 }
          // ideal rates vector
-         double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
-         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<" "<<ideal_rate<<std::endl;
-         std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
+         double ideal_rate = opt_drates[epoch_number][s] * 10000.0; //in Mbps
+         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<" "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
          double error = abs(ideal_rate - measured_rate)/ideal_rate;
          if(error < 0.1) {
            error_vector.push_back(error);

@@ -39,7 +39,7 @@ for pupdate_time in (0.0001, 0.00006):
 	for dalpha in (0.2, 0.3):
 		for dgamma in (1.0, 10.0):
 			for dgm in (0.0000000001, 0.000000001):
-			        if (dgm == 0.0000000001):
+			        if (dgm == 0.000000001):
 				   continue   
                 		arguments["price_update_time"] = str(pupdate_time)
 				arguments["dgd_alpha"] = str(dalpha)

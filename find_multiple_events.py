@@ -88,7 +88,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
         #print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
-output = open("opt_rates_small", "w")
+output = open("opt_rates_fixed", "w")
 
 def get_optimal_rates(log_file, method, alpha, g, num_events): 
 
@@ -110,7 +110,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
       		  #edgeCapacity=2 #int(elems[4])
       		  #fabricCapacity=2#int(elems[5])
       		  edgeCapacity=int(elems[4])
-      		  fabricCapacity=int(elems[5])
+      		  fabricCapacity=float(elems[5])
       		  sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
 
           if((elems[0] == "flow_start") or (elems[0] == "flow_stop")):
