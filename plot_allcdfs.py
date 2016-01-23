@@ -26,7 +26,7 @@ f = []
 for i in range (1, len(sys.argv)-1):
   print ("opening file %s" %sys.argv[i])
   l1=sys.argv[i].split('_')
-  labels.append(l1[0])
+  labels.append(sys.argv[i])
   f.append(open(sys.argv[i]))
 
 xy = []
@@ -37,9 +37,9 @@ for i in range(0, (len(sys.argv)-2)):
   x = []
   for line in f[i]:
     l1 = line.rstrip();
-    #xy = l1.split(' ');
-    #x.append(float(xy[0]));
-    x.append(float(l1));
+    xy = l1.split(' ');
+    x.append(float(xy[4]));
+#    x.append(float(l1));
   listoflists.append(x)
 
 
@@ -72,6 +72,6 @@ for i in range(0, (len(sys.argv)-2)):
 #plt.xlabel('Time in seconds')
 #plt.ylabel('%s' %sys.argv[3])
 #plt.savefig('%s.jpg' %sys.argv[2])
-
+plt.savefig('%s.png' %(sys.argv[len(sys.argv)-1]))
+plt.draw()
 plt.show()
-plt.savefig('%s.jpg' %(sys.argv[len(sys.argv)-1]))

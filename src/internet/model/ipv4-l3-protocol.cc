@@ -179,7 +179,7 @@ Ipv4L3Protocol::updateAllRates(void)
   {
     updateRate(it->first);
   }
-  //Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
+  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
 
 
@@ -1410,6 +1410,13 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
 //    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<std::endl;
     return;
   }
+//    std::cout<<Simulator::Now().GetSeconds()<<" updating average node "<<m_node->GetId()<<" flowkey "<<flowkey<<" inter_arrival "<<inter_arrival<<std::endl;
+
+  if(inter_arrival == 0.0) {
+//    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<" flowkey "<<flowkey<<std::endl;
+   inter_arrival = 0.0000000001; //shouldn't happen - fixing something I don't understand
+   return;
+  }
 
   // else calculate instant rate
   if(inter_arrival > 0.000000000001) { // bug fix - verify later
@@ -1475,6 +1482,10 @@ void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
       inter_arr = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
   }
 
+/* if(inter_arr == 0.0) {
+  std::cout<<"Inter_arrival is zer "<<flowkey<<" node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+  }*/
+
   /* debug info */
   if(inter_arr == -1.0) {
     std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" inter_arr -1"<<std::endl;
@@ -1494,7 +1505,11 @@ void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
 
 double Ipv4L3Protocol::getInterArrival(std::string fkey)
 {
-  return inter_arrival[fkey];
+  if(last_arrival.find(fkey) != last_arrival.end()) {
+	  return inter_arrival[fkey];
+  }
+  // did not find any packet - so return -1
+  return -1; 
 }
   
 

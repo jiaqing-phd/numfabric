@@ -1,10 +1,10 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 def build(bld):
-    obj = bld.create_ns3_program('static_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['static_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('static_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['static_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('leaf_spine', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['leaf_spine.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('leaf_spine', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['leaf_spine.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
     obj = bld.create_ns3_program('ls_arrivals', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['ls_arrivals.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
@@ -18,37 +18,37 @@ def build(bld):
     obj = bld.create_ns3_program('ls_less_arrivals', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['ls_less_arrivals.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('random_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['random_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+#   obj = bld.create_ns3_program('random_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#   obj.source = ['random_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('AARNET', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['AARNET.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('AARNET', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['AARNET.cc', 'init_all.cc']
     
-    obj = bld.create_ns3_program('abilene', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['abilene.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('abilene', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['abilene.cc', 'init_all.cc']
     
-    obj = bld.create_ns3_program('abilene_startstop', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['abilene_startstop.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('abilene_startstop', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['abilene_startstop.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('abilene_complex', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['abilene_complex.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('abilene_complex', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['abilene_complex.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('stop_flow', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['stop_flow.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('stop_flow', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['stop_flow.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('random_weights', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['random_weights.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('random_weights', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['random_weights.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('bt_traffic_test', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['bt_traffic_test.cc', 'init_all.cc', 'common_utils.cc','sending_app.cc']
+#    obj = bld.create_ns3_program('bt_traffic_test', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['bt_traffic_test.cc', 'init_all.cc', 'common_utils.cc','sending_app.cc']
 
-    obj = bld.create_ns3_program('single_link', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['single_link.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('single_link', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['single_link.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
-    obj = bld.create_ns3_program('startstopflow', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['startstopflow.cc', 'init_all.cc', 'common_utils.cc', 'sending_app.cc']
+#    obj = bld.create_ns3_program('startstopflow', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['startstopflow.cc', 'init_all.cc', 'common_utils.cc', 'sending_app.cc']
     
-    obj = bld.create_ns3_program('AARNET_startstop', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
-    obj.source = ['AARNET_startstop.cc', 'init_all.cc']
+#    obj = bld.create_ns3_program('AARNET_startstop', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+#    obj.source = ['AARNET_startstop.cc', 'init_all.cc']
     
 
