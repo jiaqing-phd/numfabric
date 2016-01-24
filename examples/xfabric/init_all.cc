@@ -103,7 +103,7 @@ double fraction_flows_deadline = .5;
 /* IP related variables */
 std::map<std::string, uint32_t> flowids;
 std::vector<Ptr<Queue > > AllQueues;
-double link_delay = 7.0; //in microseconds
+double link_delay = 2.5; //in microseconds
 bool rate_based  = false;
 bool pfabric_util = false;
 bool flow_ecmp = false;
@@ -121,7 +121,7 @@ double link_rate = ONEG * 10.0;
 // data rates and delays for leaf-spine
 std::string fabric_datarate = "10Gbps";
 std::string edge_datarate = "10Gbps";
-double fabricdelay=7.0, edgedelay=7.0;
+double fabricdelay=2.5, edgedelay=2.5;
 
 // number of nodes for leaf-spine
 //uint32_t num_spines = 4, num_leafs = 9, num_hosts_per_leaf = 16;
@@ -134,13 +134,13 @@ std::string empirical_dist_file_DCTCP_light="DCTCP_CDF_LIGHT";
 Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname);
 std::string empirical_dist_file="DCTCP_CDF";
 //std::string opt_rates_file="opt_rates_small_highspeed";
-std::string opt_rates_file="opt_rates_waste";
+std::string opt_rates_file="opt_rates_highs";
 
 //std::map<uint32_t, std::vector<OptDataRate> > opt_drates;
 std::map<uint32_t, std::map<uint32_t, double> > opt_drates;
 EventId next_epoch_event;
 
-std::string link_twice_string = "20Gbps";
+std::string link_twice_string = "40Gbps";
 
 NodeContainer bottleNeckNode;
 NodeContainer allNodes;

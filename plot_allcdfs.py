@@ -6,7 +6,7 @@ import scipy
 from scipy.stats import cumfreq
 import numpy as np
 
-num_bins =  1000000
+num_bins =  100
 labels = []
 
 def cyret1(b):

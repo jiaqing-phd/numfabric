@@ -9,4 +9,4 @@ with open(sys.argv[1]) as f:
     numbers.sort()
 
 median = numbers[len(numbers)/2]
-print(median)
+print("%f %d\n" %(median, len(numbers)))

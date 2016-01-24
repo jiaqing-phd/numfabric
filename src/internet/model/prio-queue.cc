@@ -180,7 +180,7 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeBooleanChecker ())
 	 .AddAttribute("target_queue",
                   "Target Queue",
-                  DoubleValue(30000.0),
+                  DoubleValue(10000.0),
                   MakeDoubleAccessor (&PrioQueue::m_target_queue),
                   MakeDoubleChecker <double> ())
 
@@ -393,7 +393,7 @@ PrioQueue::updateLinkPrice(void)
     current_price = std::max(current_price, 0.0);
     current_price = std::min(current_price, 1.0);
 
-//    std::cout<<" Queue "<<linkid_string<<" current_price "<<current_price<<" "<<Simulator::Now().GetSeconds()<<" rate_term "<<rate_term<<" queue_term "<<queue_term<<" after multi qterm "<<m_alpha*queue_term<<" rterm "<<m_gamma* rate_term<<" gamma "<<m_gamma<<" alpha "<<m_alpha<<std::endl;
+    //std::cout<<" Queue "<<linkid_string<<" current_price "<<current_price<<" "<<Simulator::Now().GetSeconds()<<" rate_term "<<rate_term<<" queue_term "<<queue_term<<" after multi qterm "<<m_alpha*queue_term<<" rterm "<<m_gamma* rate_term<<" gamma "<<m_gamma<<" alpha "<<m_alpha<<" datarate "<<m_bps.GetBitRate() / 1000000.0<<" target_queue "<<m_target_queue<<std::endl;
 
 
 //    if(m_is_switch) {

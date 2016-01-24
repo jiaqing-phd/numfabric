@@ -233,6 +233,7 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
 {
 
     if(our_packets[flowkey].empty()) {
+//      std::cout<<"Node "<<m_node->GetId()<<" IP Q empty flow "<<flowkey<<" "<<Simulator::Now().GetSeconds()<<std::endl;
       return;
     }
     Ptr<Packet> p = (our_packets[flowkey]).front();
@@ -265,8 +266,6 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
         //std::cout<<"control packet - godspeed"<<std::endl;
         trate = line_rate;
     }
-
-//    std::cout<<" setting_timer_dgd "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" target_rate "<<trate<<" flow "<<flowkey<<std::endl;
     
     if(trate == 0.0) {
       /* should not happen.. a known flow must have a rate assigned */
@@ -278,6 +277,8 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
    
     Time tNext (NanoSeconds (pkt_dur));
+
+    //std::cout<<" setting_timer_dgd "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" target_rate "<<trate<<" pkt_dur "<<pkt_dur<<std::endl;
 
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }

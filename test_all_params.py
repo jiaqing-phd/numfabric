@@ -60,14 +60,16 @@ fig_series=-1
 #    for rtime in (20000, 40000, 60000, 80000):
 #        if (rtime != 80000):# or rtime== 60000):  
 #            continue
-for pupdate_time in (0.000240, 0.000120):
-  if(pupdate_time == 0.000240):
+for pupdate_time in (0.0001, 0.00008):
+  for gupdate_time in (0.000064, 0.000032):
+    if(float(gupdate_time) == 0.000064):
 	continue
-  for gupdate_time in (0.0, 0.000060):
-    for rtime in ( 60000, 80000):
+    for rtime in ( 20000, 40000):
         ptime = rtime
         fig_series+=1 
-        for dt_val in (0.000030, 0.000015):
+        for dt_val in (0.000015, 0.000030):
+	    if(dt_val == 0.000030):
+		continue
             for eta_val in (5.0, 10.0):
 		if(eta_val == 10.0):
 			continue
