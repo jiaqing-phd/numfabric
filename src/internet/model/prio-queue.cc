@@ -262,10 +262,10 @@ PrioQueue::dropFlowPackets(std::string arg_flowkey)
 
         std::string flowkey = GetFlowKey(*pp);
         if(flowkey == arg_flowkey) {
-            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" erasing packet of flow "<<flowkey<<std::endl;
+ //           std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" erasing packet of flow "<<flowkey<<std::endl;
             pp = m_packets.erase(pp);
         } else {
-            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" NOTerasing packet of flow "<<flowkey<<std::endl;
+//            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" NOTerasing packet of flow "<<flowkey<<std::endl;
             ++pp;
         }
     }
@@ -480,6 +480,7 @@ PrioQueue::updateLinkPrice(void)
  //  if(!xfabric_price) {
 //  std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<0<<" "<<0<<" "<<currentQSize<<std::endl;
 //	}
+
   m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
 }

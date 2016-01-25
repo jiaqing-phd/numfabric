@@ -16,9 +16,13 @@ fstart_index = 3
 fsize_index = 5
 weight_index=8
 ecmp_hash_index=9
-event_epoch=0.05
+event_epoch=0.1
 
+<<<<<<< HEAD
 max_sim_time=1.51
+=======
+max_sim_time=1.199
+>>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
 num_flow_index = 1
 num_port_index = 1
 
@@ -88,7 +92,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
         #print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
-output = open("opt_rates_series", "w")
+output = open("opt_rates_fixed", "w")
 
 def get_optimal_rates(log_file, method, alpha, g, num_events): 
 
@@ -110,7 +114,7 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
       		  #edgeCapacity=2 #int(elems[4])
       		  #fabricCapacity=2#int(elems[5])
       		  edgeCapacity=int(elems[4])
-      		  fabricCapacity=int(elems[5])
+      		  fabricCapacity=float(elems[5])
       		  sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
 
           if((elems[0] == "flow_start") or (elems[0] == "flow_stop")):
@@ -151,9 +155,9 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
                 next_event_time = event_time+ event_epoch;
                 
                 (opt_rates,realId) = sim.startSim() #these are optimal rates
-                print("opt_rates at time %d" %num_epoch)
-                print(opt_rates)
-                OptRates[event_time]=opt_rates
+                #print("opt_rates at time %d" %num_epoch)
+                #print(opt_rates)
+                #OptRates[event_time]=opt_rates
                 for key in opt_rates:
                   output.write("%d %d %f\n" %(num_epoch, key, opt_rates[key]))
                 num_epoch = num_epoch+1
@@ -180,8 +184,8 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
 		  
                 print("##########################################")
                 """
-        savefile= open((log_file + ".npz"), 'wb')
+        #savefile= open((log_file + ".npz"), 'wb')
         #print(" length %d time %f" %( len(opt_rates) ,event_time))
-        pickle.dump(OptRates,savefile)  
-        output.close()
+        #pickle.dump(OptRates,savefile)  
+        #output.close()
 get_optimal_rates(sys.argv[1], sys.argv[2], 1.0, 0.0, int(sys.argv[3]))

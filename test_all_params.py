@@ -60,6 +60,7 @@ fig_series=-1
 #    for rtime in (20000, 40000, 60000, 80000):
 #        if (rtime != 80000):# or rtime== 60000):  
 #            continue
+<<<<<<< HEAD
 #for pupdate_time in (0.000160, 0.00032):
 for pupdate_time in (0.00064, 0.00032):
   if(pupdate_time == 0.00064):
@@ -72,6 +73,19 @@ for pupdate_time in (0.00064, 0.00032):
 	    if(dt_val == 0.0001):
 		continue
             for eta_val in (1.0, 10.0, 20.0):
+=======
+for pupdate_time in (0.000240, 0.000120):
+  if(pupdate_time == 0.000240):
+	continue
+  for gupdate_time in (0.0, 0.000060):
+    for rtime in ( 60000, 80000):
+        ptime = rtime
+        fig_series+=1 
+        for dt_val in (0.000030, 0.000015):
+            for eta_val in (5.0, 10.0):
+		if(eta_val == 10.0):
+			continue
+>>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
                 j=(j+1)%len(colors)
                 arguments["price_update_time"] = str(pupdate_time)
                 arguments["guardtime"] = str(gupdate_time)
@@ -84,10 +98,10 @@ for pupdate_time in (0.00064, 0.00032):
                 final_args=""
                 for arg_key in arguments:
                     final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
-                cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err "
+                cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
-                cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 100 0.0001 >"+prefix_str+"_ct &"
+#                cmd_line1 = "python find_multiple_events.py "+prefix_str+".out mp 100 0.0001 >"+prefix_str+"_ct &"
                 #cmd_line="python plot_onlyrates_all.py "+prefix_str+"&"
                 #cmd_line = "python find_multiple_events_new.py "+prefix_str+".out mp >"+prefix_str+"_ct &"
                 #cmd_line = "grep 'maximum' "+prefix_str+"_ct > out "
@@ -95,9 +109,10 @@ for pupdate_time in (0.00064, 0.00032):
                 #subprocess.call(cmd_line, shell="True")
                 if (sim_only==1):
                     #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
-		    cmd_line=cmd_line +"&&"+ cmd_line1  
+#		    cmd_line=cmd_line +"&&"+ cmd_line1  
+#		    cmd_line=cmd_line1  
 		    print(cmd_line)
-                    subprocess.call(cmd_line, shell="False")
+                    subprocess.call(cmd_line, shell="True")
                 
                 if (plot_only == 1):
                     plot_right_metric.main(prefix_str, orig_prefix, fig_series, colors[j])

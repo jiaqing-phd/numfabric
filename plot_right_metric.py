@@ -6,7 +6,7 @@ import os
 import pickle
 import operator
 
-max_time=1.249
+max_time=1.199
 
 def ewma(values, g=1.0/8):
     ret = []
@@ -102,7 +102,7 @@ def main(filename , folder, base_val, color):
     
     sumDiffRates={}
     sumPercentDiffRates={}
-    optRates=pickle.load(optfile)
+    #optRates=pickle.load(optfile)
         
     if not os.path.isfile(savefilename):
         savefile= open(savefilename,"wb")
@@ -401,3 +401,4 @@ if __name__=='__main__':
     main(sys.argv[5], sys.argv[2],sys.argv[3],sys.argv[6])
     plt.draw()
     plt.show()
+

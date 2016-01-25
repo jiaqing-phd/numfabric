@@ -483,11 +483,13 @@ class Simulation:
     new_row[0, f.srcid] = 1
     new_row[0, f.dstid] = 1
     leafSrcid= np.floor(f.srcid/self.numPortsPerLeaf);
-    new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     leafDstid= np.floor(f.dstid/self.numPortsPerLeaf);
-    new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
+    if not (leafDstid==leafSrcid):
+    	new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
+    	new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
+    print("Putting 1 in %d %d %d %d for flowid %f ecmp_hash %d" %(f.srcid, f.dstid, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) , self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines), f.flowid, f.ecmp_hash))
 
     #print("addFlow new row ")
     #print(new_row)

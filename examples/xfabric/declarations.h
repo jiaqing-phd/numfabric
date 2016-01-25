@@ -185,5 +185,6 @@ extern std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
 extern std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
 extern uint32_t ninety_fifth;
 
+extern double LastEventTime;
 
 #endif 

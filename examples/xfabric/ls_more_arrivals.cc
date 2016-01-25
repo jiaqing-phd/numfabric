@@ -1,3 +1,4 @@
+#include <fstream>
 #include "declarations.h"
 #include "sending_app.h"
 #include <ctime>
@@ -12,6 +13,8 @@
 #include "ns3/ipv4-nix-vector-helper.h"
 #include "ns3/topology-read-module.h"
 #include <list>
+#include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/ipv4-routing-table-entry.h"
 
 
 NS_LOG_COMPONENT_DEFINE ("pfabric");
@@ -384,12 +387,17 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
+  if(Simulator::Now().GetSeconds() - LastEventTime >= 0.09999999) { 
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<epoch_number<<std::endl;
+   }
   double delay = 0.1;
 //  if(num_flows < 100) {delay=0.0;}
   next_epoch_event = Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
   //if(num_flows < number_flows) { delay = 0.0;}
+  // if we
   epoch_number++;
   ninety_fifth = 0;
+  LastEventTime = Simulator::Now().GetSeconds();
 
 }
 
@@ -450,6 +458,11 @@ main(int argc, char *argv[])
   createTopology();
   setUpTraffic();
   setUpMonitoring();
+
+
+  Ipv4GlobalRoutingHelper g;
+  Ptr<OutputStreamWrapper> routingStream = Create<OutputStreamWrapper> ("global-routing.routes", std::ios::out);
+   g.PrintRoutingTableAllAt (Seconds (1.0), routingStream);
 
 
 //  if(weight_change) {

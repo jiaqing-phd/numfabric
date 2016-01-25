@@ -33,13 +33,18 @@ colors = ['r','b','g', 'm', 'c', 'y','k','#fedcba','#abcdef' ]#\
 j=0
 #print(arguments)
 orig_prefix=arguments["prefix"]
+<<<<<<< HEAD
 for pupdate_time in (0.00016, 0.00032):
+=======
+for pupdate_time in (0.0001, 0.00006):
+>>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
 	fig_series=-1
 	fig_series+=1
 	for dalpha in (0.2, 0.3):
 		for dgamma in (1.0, 10.0):
 			for dgm in (0.0000000001, 0.000000001):
-				
+			        if (dgm == 0.000000001):
+				   continue   
                 		arguments["price_update_time"] = str(pupdate_time)
 				arguments["dgd_alpha"] = str(dalpha)
 				arguments["dgd_gamma"] = str(dgamma)
@@ -50,6 +55,7 @@ for pupdate_time in (0.00016, 0.00032):
            			for arg_key in arguments:
                     			final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
                 #		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+<<<<<<< HEAD
                 		#cmd_line1="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err "
 #               cmd_line="python plot_qr.py "+prefix_str+"&"
                 #cmd_line="python plot_onlyrates.py "+prefix_str+"&"
@@ -58,6 +64,12 @@ for pupdate_time in (0.00016, 0.00032):
                 		if (sim_only==1):
                 		    #cmd_line2 = "grep 'maximum' "+prefix_str+"_ct | cut -f2 -d" " > "+prefix_str+"_cdf&"
 				    #cmd_line=cmd_line1 +"&&"+ cmd_line2  
+=======
+                		cmd_line="nohup ./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+                		j=(j+1)%len(colors)
+                		if (sim_only==1):
+				    cmd_line=cmd_line 
+>>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
 				    #cmd_line= cmd_line1  
 				    print(cmd_line2)
                 		    subprocess.call(cmd_line2, shell="True")

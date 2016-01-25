@@ -352,6 +352,12 @@ void Ipv4L3Protocol::setshort_ewma_const(double kvalue)
   short_ewma_const = kvalue;
 }
 
+void Ipv4L3Protocol::setLineRate(double d)
+{
+  line_rate = d;
+  std::cout<<"Setlinerate to "<<d<<" node "<<m_node->GetId()<<std::endl;
+}
+
 void Ipv4L3Protocol::setAlpha(double qtime)
 {
   alpha = qtime;

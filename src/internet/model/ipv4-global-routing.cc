@@ -316,7 +316,7 @@ Ipv4GlobalRouting::LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipP
    //      ipPayload->PeekHeader (tcpHeader);
   //       uint16_t dest_port = tcpHeader.GetDestinationPort();
  //        uint16_t src_port = tcpHeader.GetSourcePort();
-//         std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" interface "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<" srcport "<<src_port<<" dstport "<<dest_port<<std::endl;
+         //std::cout<<"Node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" Destination "<<header.GetDestination()<<" routeIndex "<<selectIndex<<" src "<<header.GetSource()<<" dst "<<header.GetDestination()<<" srcport "<<src_port<<" dstport "<<dest_port<<std::endl;
           // debug information end 
 
         }
@@ -335,6 +335,7 @@ Ipv4GlobalRouting::LookupGlobal (const Ipv4Header &header, Ptr<const Packet> ipP
       rtentry->SetSource (m_ipv4->GetAddress (route->GetInterface (), 0).GetLocal ());
       rtentry->SetGateway (route->GetGateway ());
       uint32_t interfaceIdx = route->GetInterface ();
+//      std::cout<<"routeIndex "<<selectIndex<<" interface "<<interfaceIdx<<" at node "<<(StaticCast<Ipv4L3Protocol>(m_ipv4)->GetNode())->GetId()<<" ecmp hash "<<GetTupleValue(header, ipPayload)<<std::endl;
       rtentry->SetOutputDevice (m_ipv4->GetNetDevice (interfaceIdx));
       return rtentry;
     }

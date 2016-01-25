@@ -141,6 +141,7 @@ public:
   void setlong_ewma_const(double kvalue);
   void setshort_ewma_const(double kvalue);
   void setmeasurement_ewma_const(double kvalue);
+  void setLineRate(double d);
 
   void setKay(double kvalue);
   void updateAverages(std::string flowkey, double inter_arrival, double pktsize);
