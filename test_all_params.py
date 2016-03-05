@@ -60,7 +60,6 @@ fig_series=-1
 #    for rtime in (20000, 40000, 60000, 80000):
 #        if (rtime != 80000):# or rtime== 60000):  
 #            continue
-<<<<<<< HEAD
 #for pupdate_time in (0.000160, 0.00032):
 for pupdate_time in (0.00064, 0.00032):
   if(pupdate_time == 0.00064):
@@ -73,19 +72,6 @@ for pupdate_time in (0.00064, 0.00032):
 	    if(dt_val == 0.0001):
 		continue
             for eta_val in (1.0, 10.0, 20.0):
-=======
-for pupdate_time in (0.000240, 0.000120):
-  if(pupdate_time == 0.000240):
-	continue
-  for gupdate_time in (0.0, 0.000060):
-    for rtime in ( 60000, 80000):
-        ptime = rtime
-        fig_series+=1 
-        for dt_val in (0.000030, 0.000015):
-            for eta_val in (5.0, 10.0):
-		if(eta_val == 10.0):
-			continue
->>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
                 j=(j+1)%len(colors)
                 arguments["price_update_time"] = str(pupdate_time)
                 arguments["guardtime"] = str(gupdate_time)

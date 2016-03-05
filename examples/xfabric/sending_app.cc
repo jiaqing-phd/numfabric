@@ -78,11 +78,11 @@ MyApp::StartApplication (void)
 {
 
   if(Simulator::Now().GetNanoSeconds() < Time(Seconds(m_startTime)).GetNanoSeconds()) {
-    std::cout<<"Time "<<Simulator::Now().GetNanoSeconds()<<" spurious call flowid "<<m_fid<<" returning before start_time "<<  Time(Seconds(m_startTime)).GetNanoSeconds()<<std::endl;
+//    std::cout<<"Time "<<Simulator::Now().GetNanoSeconds()<<" spurious call flowid "<<m_fid<<" returning before start_time "<<  Time(Seconds(m_startTime)).GetNanoSeconds()<<std::endl;
     if(Simulator::IsExpired(m_startEvent)) {
       Time tNext = Time(Seconds(m_startTime));
       m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this);
-      std::cout<<"Time "<<Simulator::Now().GetSeconds()<<" spurious call flowid "<<m_fid<<" rescheduling at  "<<tNext.GetSeconds()<<std::endl;
+ //     std::cout<<"Time "<<Simulator::Now().GetSeconds()<<" spurious call flowid "<<m_fid<<" rescheduling at  "<<tNext.GetSeconds()<<std::endl;
       
     }
       
@@ -90,7 +90,7 @@ MyApp::StartApplication (void)
 
   } 
 
-  std::cout<<"StartApplication for fid "<<m_fid<<" called at "<<Simulator::Now().GetSeconds()<<std::endl; 
+//  std::cout<<"StartApplication for fid "<<m_fid<<" called at "<<Simulator::Now().GetSeconds()<<std::endl; 
   m_running = true;
   m_packetsSent = 0;
   m_totBytes = 0;

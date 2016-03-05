@@ -200,6 +200,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
   cmd.AddValue ("xfabric_eta", "xfabric_eta", xfabric_eta);
+  cmd.AddValue ("xfabric_beta", "xfabric_beta", xfabric_beta);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
@@ -242,6 +243,7 @@ void dump_config(void)
 
   std::cout<<"application_datarate "<<application_datarate<<std::endl;
   std::cout<<"eta_val "<<xfabric_eta<<std::endl;
+  std::cout<<"beta_val "<<xfabric_beta<<std::endl;
   std::cout<<"host_compensate "<<host_compensate<<std::endl;
 
   std::string::size_type sz;
@@ -256,7 +258,7 @@ void common_config(void)
 
   // get link rate from edge_datarate string
   link_rate = ONEG * atof(get_datarate(edge_datarate).c_str());
-  double total_rtt = link_delay * 8.0 * 2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
+  double total_rtt = link_delay * 8.0 *2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
@@ -308,6 +310,7 @@ void common_config(void)
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
   Config::SetDefault("ns3::PrioQueue::gamma1",DoubleValue(xfabric_eta));
+  Config::SetDefault("ns3::PrioQueue::xfabric_beta",DoubleValue(xfabric_beta));
   Config::SetDefault("ns3::PrioQueue::price_multiply",BooleanValue(price_multiply));
 
 
@@ -462,10 +465,6 @@ CheckIpv4Rates (NodeContainer &allNodes)
 
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
-<<<<<<< HEAD
-//         std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<std::endl;
-=======
->>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
          int epoch_number = getEpochNumber();
 	 if(epoch_number == 50) 
 	 { 
@@ -473,13 +472,9 @@ CheckIpv4Rates (NodeContainer &allNodes)
 	    Simulator::Stop();
 	 }
          // ideal rates vector
-<<<<<<< HEAD
          double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
 //         std::cout<<" flow "<<s<<" rate "<<measured_rate<<" ideal_rate "<<ideal_rate<<std::endl;
-=======
-         double ideal_rate = opt_drates[epoch_number][s] * 10000.0; //in Mbps
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<" "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
->>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
          double error = abs(ideal_rate - measured_rate)/ideal_rate;
          if(error < 0.1) {
            error_vector.push_back(error);
@@ -507,9 +502,9 @@ CheckIpv4Rates (NodeContainer &allNodes)
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth >= 5) {
+  if(ninety_fifth > 10) {
     std::cout<<" More than 5 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-10.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
     move_to_next();
   }

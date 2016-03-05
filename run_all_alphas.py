@@ -25,11 +25,13 @@ for line in f:
   arguments[arg_key] = arg_val
 
 orig_prefix=arguments["prefix"]
-for fct_alpha in (0.1, 0.125,4.0, 8.0):
+for fct_alpha in (0.2, 0.3, 0.4, 0.5):
+  for beta_ in (0.5, 0.75, 0.8):
 
     arguments["fct_alpha"] = str(fct_alpha)
+    arguments["xfabric_beta"] = str(beta_)
     prefix_str=orig_prefix
-    prefix_str=prefix_str+"_"+arguments["fct_alpha"]
+    prefix_str=prefix_str+"_"+arguments["fct_alpha"]+"_"+arguments["xfabric_beta"]
     arguments["prefix"] = prefix_str
 
     final_args=""

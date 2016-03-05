@@ -2,21 +2,14 @@ dctcp=false
 xfabric=false
 strawmancc=true
 queuetype=WFQ
-<<<<<<< HEAD
-prefix=160rtt_dgd
-ecn_thresh=30000
 load=0.8
-sim_time=2.0
-=======
-prefix=dgd_small_test
+prefix=dgd_vl2_long
 ecn_thresh=30000
-load=0.8
-sim_time=5.0
->>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
+sim_time=8.0
 flows_tcp=1
 pfabric_util=false
-price_update_time=0.0001
-guardtime=0.00005
+price_update_time=0.00006
+guardtime=0.0000
 util_method=1
 num_spines=4
 num_leafs=8
@@ -34,7 +27,8 @@ wfq_testing=false
 xfabric_eta=10.0
 price_multiply=true
 host_compensate=false
-sampling_interval=0.0001
+sampling_interval=1.0
 dgd_alpha=0.3
 dgd_gamma=10.0
 dgd_m=0.0000000001
+cdf_file=VL2_CDF

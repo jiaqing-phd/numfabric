@@ -92,7 +92,7 @@ def find_converge_time(ret_rates, fname, start_time, stop_time, g):
         #print("converged point for flow %d %f optimal rate %f at %f time_to_converge %f %f %f %f"%(flowid, averaged[flowid], ret_rates[flowid], times[flowid],converged_time[flowid],iter_value,start_time,time))
   return(converged_time, flow_converged)
 
-output = open("opt_rates_fixed", "w")
+output = open("opt_rates_highs", "w")
 
 def get_optimal_rates(log_file, method, alpha, g, num_events): 
 

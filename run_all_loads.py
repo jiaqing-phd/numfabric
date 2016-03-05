@@ -28,6 +28,8 @@ orig_prefix=arguments["prefix"]
 #for load_val in (0.6, 0.8):
 for load_val in (0.2, 0.4, 0.6, 0.8):
     arguments["load"] = str(load_val)
+    arguments["fct_alpha"]="0.2"
+    arguments["xfabric_beta"]="0.5"
     prefix_str=orig_prefix
     prefix_str=prefix_str+"_"+arguments["load"]
     arguments["prefix"] = prefix_str
