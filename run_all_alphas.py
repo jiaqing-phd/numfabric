@@ -25,20 +25,24 @@ for line in f:
   arguments[arg_key] = arg_val
 
 orig_prefix=arguments["prefix"]
-for fct_alpha in (0.1, 0.125,4.0, 8.0):
+for fct_alpha in (0.5, 0.8):
+    if(fct_alpha == 0.8):
+	continue
+    for beta_ in (0.8, 0.5):
+    	arguments["fct_alpha"] = str(fct_alpha)
+	arguments["xfabric_beta"] = str(beta_)
+    	arguments["opt_rates_file"]="opt_rates_1_4.0_"+str(fct_alpha)+"test"
+    	prefix_str=orig_prefix
+    	prefix_str=prefix_str+"_"+arguments["fct_alpha"]+arguments["xfabric_beta"]
+    	arguments["prefix"] = prefix_str
 
-    arguments["fct_alpha"] = str(fct_alpha)
-    prefix_str=orig_prefix
-    prefix_str=prefix_str+"_"+arguments["fct_alpha"]
-    arguments["prefix"] = prefix_str
+    	final_args=""
+    	for arg_key in arguments:
+     		final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
 
-    final_args=""
-    for arg_key in arguments:
-     final_args = final_args+" --"+arg_key+"=\""+arguments[arg_key]+"\""
-
-    cmd_line="./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
-    print(cmd_line)
-    subprocess.call(cmd_line, shell="False")
+    	cmd_line="./waf --run \""+sys.argv[1]+final_args+"\""+" > "+prefix_str+".out "+" 2> "+prefix_str+".err &"
+    	print(cmd_line)
+    	subprocess.call(cmd_line, shell="False")
 
 #cmd_line="python "+plot_script+" "+prefix_str
 #print(cmd_line)

@@ -180,7 +180,7 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeBooleanChecker ())
 	 .AddAttribute("target_queue",
                   "Target Queue",
-                  DoubleValue(10000.0),
+                  DoubleValue(15000.0),
                   MakeDoubleAccessor (&PrioQueue::m_target_queue),
                   MakeDoubleChecker <double> ())
 
@@ -210,6 +210,11 @@ TypeId PrioQueue::GetTypeId (void)
                    TimeValue(Seconds(0.005)),
                    MakeTimeAccessor (&PrioQueue::m_guardTime),
                    MakeTimeChecker())
+    .AddAttribute ("xfabric_beta", 
+                   "Value of beta for xfabric",
+                   DoubleValue(0.5),
+                   MakeDoubleAccessor (&PrioQueue::xfabric_beta),
+                   MakeDoubleChecker <double>())
 	
 ;
   return tid;
@@ -451,7 +456,7 @@ PrioQueue::updateLinkPrice(void)
    //current_price = new_price;
    //
    if(!host_compensate) {
-     current_price = 0.5*new_price + 0.5*current_price;
+     current_price = (1-xfabric_beta)*new_price + xfabric_beta*current_price;
    } else {
      current_price = new_price;
    }
@@ -1092,7 +1097,6 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
           min_pp->AddHeader(min_ipheader);
           min_pp->AddHeader(pheader);
           min_pp->AddHeader(ppp);
-
           
         } 
           
@@ -1166,8 +1170,8 @@ PrioQueue::DoDequeue (void)
 
 //    std::cout<<" pfabricdequeue "<<std::endl;
     typedef std::list<Ptr<Packet> >::iterator PacketQueueI;
-	  double highest_wfq_weight_;
-	  PacketQueueI pItr = m_packets.begin();
+    double highest_wfq_weight_;
+    PacketQueueI pItr = m_packets.begin();
     Ipv4Header h;
     PrioHeader pheader;
     Ipv4Address highSource, highDest;
@@ -1198,16 +1202,15 @@ PrioQueue::DoDequeue (void)
     {
       pheader = GetPrioHeader(*pp);
       h = GetIPHeader(*pp);
-
-	    double  cur_wfq_weight = (pheader.GetData()).wfq_weight;
-		  //deque from the head
-		  if (cur_wfq_weight < highest_wfq_weight_) {
-			  pItr = pp;
-				highest_wfq_weight_ = cur_wfq_weight;
+      double  cur_wfq_weight = (pheader.GetData()).wfq_weight;
+       //deque from the head
+       if (cur_wfq_weight < highest_wfq_weight_) {
+	 pItr = pp;
+	highest_wfq_weight_ = cur_wfq_weight;
         highSource = h.GetSource();
         highDest = h.GetDestination();
-		  }
-	  }
+       }
+    }
     //if(nodeid == 0) {
 //    NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<nodeid<<" prio "<<highest_prio_<<" flowkey "<<GetFlowKey(p)<<"linkid "<<linkid<<" DEQUEUED ");
     //}

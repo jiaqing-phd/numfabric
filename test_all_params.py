@@ -60,11 +60,11 @@ fig_series=-1
 #    for rtime in (20000, 40000, 60000, 80000):
 #        if (rtime != 80000):# or rtime== 60000):  
 #            continue
-for pupdate_time in (0.0001, 0.00008):
-  for gupdate_time in (0.000064, 0.000032):
+for pupdate_time in (0.00064, 0.00048):
+  for gupdate_time in (0.000016, 0.000064):
     if(float(gupdate_time) == 0.000064):
 	continue
-    for rtime in ( 20000, 40000):
+    for rtime in ( 10000, 20000):
         ptime = rtime
         fig_series+=1 
         for dt_val in (0.000015, 0.000030):
