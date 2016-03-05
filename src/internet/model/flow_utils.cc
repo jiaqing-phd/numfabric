@@ -120,8 +120,14 @@ FlowUtil::getFCTUtilDerivative(uint32_t fid, double price)
   if(price == 0) {
     price = 0.0000000000000001;
   }
-  double p = pow(price, 7.0/8.0);
-  double derivative = 1.0/(8.0 * flow_size * p);
+  
+/*  double p2 = pow(price, 1.0/8.0);
+  double derivative2 = 7.0/(8.0 * flow_size * p2); */
+  
+  double p = pow(price, fct_alpha);
+  double derivative = (1-fct_alpha)/(flow_size * p);
+
+
   return derivative;
 }
 
@@ -135,8 +141,14 @@ FlowUtil::getFCTUtilDerivativeInverse(uint32_t fid, double price)
   if(price == 0) {
     price = 0.0000000000000001;
   }
-  double denom = (8.0 * flow_size * price);
-  double inverse = 1.0/pow(denom, 8.0/7.0);
+ /* 
+  double denom2 = (8.0 * flow_size * price);
+  double inverse2 = pow(7.0/denom2, 8.0);  */
+
+  double denom = (price * flow_size);
+  double numerator = (1-fct_alpha);
+  double inverse = pow((numerator/denom), 1/fct_alpha);
+
   return inverse;
 }
 

@@ -179,7 +179,7 @@ Ipv4L3Protocol::updateAllRates(void)
   {
     updateRate(it->first);
   }
-  //Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
+  Simulator::Schedule(Seconds (QUERY_TIME), &ns3::Ipv4L3Protocol::updateAllRates, this);
 }
 
 
@@ -233,6 +233,7 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
 {
 
     if(our_packets[flowkey].empty()) {
+//      std::cout<<"Node "<<m_node->GetId()<<" IP Q empty flow "<<flowkey<<" "<<Simulator::Now().GetSeconds()<<std::endl;
       return;
     }
     Ptr<Packet> p = (our_packets[flowkey]).front();
@@ -265,8 +266,6 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
         //std::cout<<"control packet - godspeed"<<std::endl;
         trate = line_rate;
     }
-
-//    std::cout<<" setting_timer_dgd "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" target_rate "<<trate<<" flow "<<flowkey<<std::endl;
     
     if(trate == 0.0) {
       /* should not happen.. a known flow must have a rate assigned */
@@ -278,6 +277,8 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
    
     Time tNext (NanoSeconds (pkt_dur));
+
+    //std::cout<<" setting_timer_dgd "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" target_rate "<<trate<<" pkt_dur "<<pkt_dur<<std::endl;
 
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
@@ -1289,7 +1290,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
    double link_rate = line_rate;
-   double limit_tr = 1.0;
+   double limit_tr = 10.0;
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
       if(m_method == 1) {
@@ -1353,7 +1354,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
 
 
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
-   	double current_deadline = pkt_dur; 
+    double current_deadline = pkt_dur; 
     uint32_t tcphsize = tcph.GetSerializedSize();
     if((packet->GetSize() - tcphsize) == 0) {
         // it's an ack
@@ -1362,6 +1363,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     }
     if(m_pfabric) {
       current_deadline = getflowsize(flowkey);
+      std::cout<<"pfabric true - flowid "<<flowids[flowkey]<<" flowsize "<<current_deadline<<std::endl;
     }
 
     last_deadline = current_deadline;
@@ -1415,6 +1417,13 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   if(inter_arrival == -1) {  //invalid
 //    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<std::endl;
     return;
+  }
+//    std::cout<<Simulator::Now().GetSeconds()<<" updating average node "<<m_node->GetId()<<" flowkey "<<flowkey<<" inter_arrival "<<inter_arrival<<std::endl;
+
+  if(inter_arrival == 0.0) {
+//    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<" flowkey "<<flowkey<<std::endl;
+   inter_arrival = 0.0000000001; //shouldn't happen - fixing something I don't understand
+   return;
   }
 
   // else calculate instant rate
@@ -1481,9 +1490,13 @@ void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
       inter_arr = Simulator::Now().GetNanoSeconds() - last_arrival[flowkey];
   }
 
+/* if(inter_arr == 0.0) {
+  std::cout<<"Inter_arrival is zer "<<flowkey<<" node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+  }*/
+
   /* debug info */
   if(inter_arr == -1.0) {
-    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" inter_arr -1"<<std::endl;
+  //  std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" inter_arr -1"<<std::endl;
   }
     
 /*  if ((last_arrival.find(flowkey) == last_arrival.end()) || ((Simulator::Now().GetNanoSeconds() - last_arrival[flowkey]) > 1000000000))  {
@@ -1500,7 +1513,11 @@ void Ipv4L3Protocol::updateInterArrival(std::string flowkey)
 
 double Ipv4L3Protocol::getInterArrival(std::string fkey)
 {
-  return inter_arrival[fkey];
+  if(last_arrival.find(fkey) != last_arrival.end()) {
+	  return inter_arrival[fkey];
+  }
+  // did not find any packet - so return -1
+  return -1; 
 }
   
 

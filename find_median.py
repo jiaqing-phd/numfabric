@@ -8,5 +8,6 @@ with open(sys.argv[1]) as f:
         numbers.append(float(line))
     numbers.sort()
 
-median = numbers[len(numbers)/2]
-print(median)
+if(len(numbers) > 0):
+	median = numbers[len(numbers)/2]
+	print("%f %d\n" %(median, len(numbers)))

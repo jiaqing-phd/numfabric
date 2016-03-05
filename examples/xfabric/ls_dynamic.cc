@@ -458,6 +458,9 @@ void startRandomFlows()
       {
         // flow size 
         uint32_t flow_size = empirical_rand->GetValue(); 
+	while(flow_size == 0) {
+		flow_size = empirical_rand->GetValue(); 
+	}
         double inter_arrival = exp->GetValue();
         flow_start_time = time_now + inter_arrival;
         std::cout<<"next arrival after "<<inter_arrival<<" flow_start_time "<<flow_start_time<<" flow size "<<flow_size<<std::endl;

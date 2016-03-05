@@ -21,7 +21,7 @@ def medium_flow(flow_size):
         return true
     return false
 
-error_correction = 0.016
+error_correction = 0.016 + 0.008  #SYN-SYNACK + 1/2 RTT PROPAGATION
 
 prefix=sys.argv[1]
 ns3_log=prefix+".out"
@@ -51,10 +51,10 @@ for line in f1:
     fstops[fid] = fstop
 
 # get ideal fcts first
-ideal_rate_cmd = "python extract_graph_pfabric.py "+ns3_log+" mp > "+ideal_fcts
-proc = subprocess.Popen(ideal_rate_cmd, shell="False")
-proc.wait()
-time.sleep(5)
+#ideal_rate_cmd = "python extract_graph_pfabric.py "+ns3_log+" mp > "+ideal_fcts
+#proc = subprocess.Popen(ideal_rate_cmd, shell="False")
+#proc.wait()
+#time.sleep(5)
 
 # make sure the file is written by sleeping 
 
@@ -64,7 +64,7 @@ for line in f:
   elems = (line.rstrip()).split(' ')
   if(elems[0] == "removing"):
     fid = int(elems[6])
-    time_taken = (float(elems[11]) + 0.016)/1000  # get it in seconds
+    time_taken = (float(elems[11]) + error_correction)/1000  # get it in seconds
     flow_size = int(elems[13])
     print("flow %d fct %f" %(fid,time_taken))
     ideal_rates[fid] = flow_size/(1000000000.0*time_taken) # GBps

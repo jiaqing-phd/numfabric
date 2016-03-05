@@ -27,7 +27,7 @@ double flw_rem_size, double flw_deadline, double flw_deadline_delta, bool deadli
 
   flow_deadline_bound = deadline_bound;
 
-  std::cout<<"DEBUG PARAMS FlowData "<<source<<" "<<dest<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<flow_tcp<<" "<<flow_known<<" "<<flow_rem_size<<std::endl;
+//  std::cout<<"DEBUG PARAMS FlowData "<<source<<" "<<dest<<" "<<flow_start<<" "<<flow_size<<" "<<flow_id<<" "<<flow_weight<<" "<<flow_tcp<<" "<<flow_known<<" "<<flow_rem_size<<std::endl;
 }
 
 
@@ -46,7 +46,7 @@ void Tracker::registerEvent(uint32_t eventtype, FlowData fd)
 {
     
   if(eventtype == FLOW_START) {
-    std::cout<<"FLOW_START event "<<std::endl;
+//    std::cout<<"FLOW_START event "<<std::endl;
     // a new flow started - add it to set of flows
     if(fd.flow_deadline_bound) {
       deadline_flows_set.push_back(fd);
@@ -57,7 +57,7 @@ void Tracker::registerEvent(uint32_t eventtype, FlowData fd)
   } else {
     //flows_set is a list..search for the right fid to remove
     bool flow_erased = false;
-    std::cout<<"FLOW_STOP event fid "<<fd.flow_id<<std::endl;
+ //   std::cout<<"FLOW_STOP event fid "<<fd.flow_id<<std::endl;
     std::list<FlowData>::iterator itr;
     itr = flows_set.begin();  
     for(; itr != flows_set.end(); itr++) 
@@ -83,7 +83,7 @@ void Tracker::registerEvent(uint32_t eventtype, FlowData fd)
     }  
 
     if(flow_erased == false) {
-      std::cout<<" ERROR ! FLOW TO BE ERASED NOT FOUND "<<std::endl;
+//      std::cout<<" ERROR ! FLOW TO BE ERASED NOT FOUND "<<std::endl;
     }
     // 
     registered_callback(fd.flow_id);  

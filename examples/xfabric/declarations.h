@@ -37,6 +37,7 @@ extern double sim_time;
 extern double measurement_starttime ;
 extern double prio_q_min_update_time ;
 extern double gamma1_value ;
+extern double xfabric_beta;
 extern uint32_t flows_per_host;
 extern std::string application_datarate;
 extern bool delay_mark_value;
@@ -50,6 +51,7 @@ extern uint32_t hostflows;
 
 extern double price_update_time ;
 extern double xfabric_eta;
+extern double xfabric_beta;
 extern double guard_time;
 extern double rate_update_time ;
 extern double dgd_gamma;

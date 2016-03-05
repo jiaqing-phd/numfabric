@@ -371,8 +371,8 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           } // no else.. we don't do anything if it's too early
         }
         
-      } else { // for usable RTT
-*/
+      } else { // for usable RTT */
+
         if(scheme2 || scheme3) {
 
           // send the inter-arrival to update averages 

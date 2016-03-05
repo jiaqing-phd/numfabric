@@ -7,7 +7,7 @@ import math
 
 flow_start = "flow_start"
 log_file = sys.argv[1]
-method = sys.argv[2]
+method = "mp"
 fid_index = 1
 src_index = 6
 dst_index = 7
@@ -52,7 +52,7 @@ for line in fh:
       # add header sizes to this flow_size
       num_packets = math.ceil(flow_size*1.0/data_size)
       headers_total = num_packets * (pkt_size - data_size)
-#      print("flow_size %d num_packets %d headers_total %d" %(flow_size,num_packets,headers_total))
+      #print("flow_size %d num_packets %d headers_total %d" %(flow_size,num_packets,headers_total))
       flow_size = flow_size + headers_total
 
       if(flow_size == 0):

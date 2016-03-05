@@ -200,11 +200,13 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("price_update_time", "price_update_time", price_update_time);
   cmd.AddValue ("xfabric_eta", "xfabric_eta", xfabric_eta);
+  cmd.AddValue ("xfabric_beta", "xfabric_beta", xfabric_beta);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
   cmd.AddValue ("dgd_alpha", "dgd_alpha", dgd_alpha);
   cmd.AddValue ("dgd_gamma", "dgd_gamma", dgd_gamma);
+  cmd.AddValue ("target_queue", "target_queue", target_queue);
   cmd.AddValue ("guardtime", "guardtime", guard_time);
   cmd.AddValue ("pfabric_util", "pfabric_util",pfabric_util);
   cmd.AddValue ("num_spines", "num_spines", num_spines);
@@ -221,6 +223,7 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("num_flows", "num_flows", number_flows); 
   cmd.AddValue ("desynchronize", "desynchronize", desynchronize);
   cmd.AddValue ("dgd_m", "dgd_m", multiplier);
+  cmd.AddValue ("opt_rates_file", "opt_rates_file", opt_rates_file);
   std::cout<<"desync is "<<desynchronize<<std::endl;
 
   return cmd;
@@ -239,9 +242,13 @@ void dump_config(void)
   std::cout<<"kvalue_rate "<<kvalue_rate<<std::endl;
   std::cout<<"kvalue_price "<<kvalue_price<<std::endl;
   std::cout<<"kvalue_measurement "<<kvalue_measurement<<std::endl;
+  std::cout<<"opt_rates_file "<<opt_rates_file<<std::endl;
+  std::cout<<"util_method "<<util_method<<std::endl;
+  std::cout<<"fct_alpha "<<fct_alpha<<std::endl;
 
   std::cout<<"application_datarate "<<application_datarate<<std::endl;
   std::cout<<"eta_val "<<xfabric_eta<<std::endl;
+  std::cout<<"beta_val "<<xfabric_beta<<std::endl;
   std::cout<<"host_compensate "<<host_compensate<<std::endl;
 
   std::string::size_type sz;
@@ -256,7 +263,7 @@ void common_config(void)
 
   // get link rate from edge_datarate string
   link_rate = ONEG * atof(get_datarate(edge_datarate).c_str());
-  double total_rtt = link_delay * 8.0 * 2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
+  double total_rtt = link_delay * 8.0 *2.0; //KANTHI _ ERROR _ FIX _ THIS _ 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
@@ -305,9 +312,11 @@ void common_config(void)
   Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric));
   Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
   Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
+  Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
   Config::SetDefault("ns3::PrioQueue::gamma1",DoubleValue(xfabric_eta));
+  Config::SetDefault("ns3::PrioQueue::xfabric_beta",DoubleValue(xfabric_beta));
   Config::SetDefault("ns3::PrioQueue::price_multiply",BooleanValue(price_multiply));
 
 
@@ -453,7 +462,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
     {
     
-//     double rate = ipv4->GetStoreDestRate (it->first);
+     double rate = ipv4->GetStoreDestRate (it->first);
 //      double long_rate = ipv4->GetCSFQRate (it->first);
 //      double short_rate = ipv4->GetShortTermRate(it->first);
       double measured_rate = ipv4->GetMeasurementRate(it->first);
@@ -469,7 +478,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
 	    Simulator::Stop();
 	 }
          // ideal rates vector
-         double ideal_rate = opt_drates[epoch_number][s] * 10000.0; //in Mbps
+         double ideal_rate = opt_drates[epoch_number][s] * 10000.0;
          std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << measured_rate <<" "<<ideal_rate<<" epoch "<<epoch_number<<std::endl;
          double error = abs(ideal_rate - measured_rate)/ideal_rate;
          if(error < 0.1) {
@@ -479,17 +488,18 @@ CheckIpv4Rates (NodeContainer &allNodes)
          } 
       }
 //    std::cout<<"finding flow "<<s<<" in destination node "<<nid<<std::endl;
-//    if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
+    if (std::find((dest_flow[nid]).begin(), (dest_flow[nid]).end(), s)!=(dest_flow[nid]).end()) {
        //
 /*       std::cout<<"DestRate flowid "<<it->second<<" "<<Simulator::Now ().GetSeconds () << " " << destRate <<" "<<csfq_rate<<" "<< nid << " " << N << " " << short_rate << std::endl; */
       
- //       current_rate += rate;
+        current_rate += rate;
 
-  //    }
+      }
 
     }
   }
   uint32_t total_flows = error_vector.size() + nonerror_vector.size();
+  std::cout<<" error_vector size "<<error_vector.size()<<std::endl;
   if(error_vector.size() >= 0.95 * total_flows) {
     // 95th percentile reached.. how many epochs since 95th percentile reached?
     std::cout<<" 95th percentil flows match "<<ninety_fifth<<std::endl;
@@ -498,13 +508,13 @@ CheckIpv4Rates (NodeContainer &allNodes)
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth >= 5) {
+  if(ninety_fifth > 10) {
     std::cout<<" More than 5 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-4*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-10.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
     move_to_next();
   }
-//  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
+  std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   
   // check queue size every 1/1000 of a second
   Simulator::Schedule (Seconds (sampling_interval), &CheckIpv4Rates, allNodes);

@@ -6,8 +6,8 @@ import numpy as np
 import scipy.io as sio
 ###################### Global constants ########################
 num_instances = 1
-max_iterations = 20000
-max_capacity = 10.0
+max_iterations = 10000
+max_capacity = 100.0
 gamma = 0.01
 smoothing = 0.0
 tol = 1e-3
@@ -231,7 +231,7 @@ class UtilMax:
     def updateRates(self):
         self.converged = False
         converg_it = 0
-        max_iterations = 1000
+        max_iterations = 10000
         good = 0
         conseq_good = 50
         if(self.method == "mp" and len(self.x)>0):
@@ -372,9 +372,10 @@ class Simulation:
     new_row[0, f.srcid] = 1
     new_row[0, f.dstid] = 1
     leafSrcid= np.floor(f.srcid/self.numPortsPerLeaf);
-    new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     leafDstid= np.floor(f.dstid/self.numPortsPerLeaf);
-    new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
+    if not (leafDstid==leafSrcid):
+    	new_row[0, self.numports + self.numspines * leafSrcid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
+    	new_row[0, self.numports + self.numspines * leafDstid  + np.mod(f.ecmp_hash, self.numspines) ]= 1
     self.add_row(new_row, f.flowsize, f.flowid, f.weight)
     f.added = True
     #print("addFlow new row ")

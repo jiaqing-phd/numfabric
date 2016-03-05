@@ -2190,7 +2190,7 @@ TcpSocketBase::ReceivedData (Ptr<Packet> p, const TcpHeader& tcpHeader)
    // std::cout<<"tcp node "<<m_node->GetId()<<" time "<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<" num_hops "<<num_hops<<std::endl;
 
   /* process ECN first */
-  TcpHeader::Flags_t ce_flag;
+  TcpHeader::Flags_t ce_flag = TcpHeader::NONE;
   if(need_echo == true) {
     /* set the CE flag in the ACK */
     ce_flag = TcpHeader::ECE;

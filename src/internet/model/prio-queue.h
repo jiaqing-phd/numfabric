@@ -99,6 +99,7 @@ public:
   Time m_updateMinPrioTime;
   Time m_updatePriceTime;
   Time m_guardTime;
+  double xfabric_beta;
   double latest_avg_prio, running_avg_prio;
   int total_samples;
   double latest_min_prio, running_min_prio;
@@ -118,6 +119,7 @@ public:
   std::map<uint32_t, double>flow_weights;
   bool init_reset;
   double m_gamma, m_gamma1, m_alpha; // TBD - initialize these
+  double xfabric_beta;
   double m_target_queue;
 
   bool update_minimum;
