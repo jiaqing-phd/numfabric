@@ -1354,7 +1354,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
 
 
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
-   	double current_deadline = pkt_dur; 
+    double current_deadline = pkt_dur; 
     uint32_t tcphsize = tcph.GetSerializedSize();
     if((packet->GetSize() - tcphsize) == 0) {
         // it's an ack
@@ -1363,6 +1363,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     }
     if(m_pfabric) {
       current_deadline = getflowsize(flowkey);
+      std::cout<<"pfabric true - flowid "<<flowids[flowkey]<<" flowsize "<<current_deadline<<std::endl;
     }
 
     last_deadline = current_deadline;

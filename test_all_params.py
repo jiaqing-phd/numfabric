@@ -66,6 +66,13 @@ for pupdate_time in (0.00064, 0.00032):
 	continue
   for gupdate_time in (0.0, 0.00016):
     for rtime in ( 40000, 60000, 80000):
+=======
+for pupdate_time in (0.00064, 0.00048):
+  for gupdate_time in (0.000016, 0.000064):
+    if(float(gupdate_time) == 0.000064):
+	continue
+    for rtime in ( 10000, 20000):
+>>>>>>> cb542f54c349dfc31cf4e86f7e68a4a13e6e93f2
         ptime = rtime
         fig_series+=1 
         for dt_val in (0.00003, 0.000100):

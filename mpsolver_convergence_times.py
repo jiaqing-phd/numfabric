@@ -7,7 +7,7 @@ import numpy as np
 ###################### Global constants ########################
 num_instances = 1
 max_iterations = 10000
-max_capacity = 100.0
+max_capacity = 1000.0
 gamma = 0.01
 smoothing = 0.0
 tol = 1e-3
@@ -171,10 +171,22 @@ class UtilMax:
                                             
         self.pr = beta*self.pr + (1-beta)*new_pr
 
+
+
+
+
+
+
     def update_prices2(self, x, beta=0.0):
         new_pr = np.zeros((self.num_links,1))
         #error = self.Udiff(self.x) - self.routes.dot(self.pr)
-        error = self.Udiff(self.x) - np.dot(self.routes, self.pr)
+
+	error = self.Udiff(self.x) - self.routes.dot(self.pr) 
+        #error = self.Udiff(self.x) - self.Udiff(self.Udiff_inv(self.routes.dot(self.pr)))          
+        nlinks = np.reshape(np.sum(self.routes, axis=1), (self.num_flows,1))
+        #error = np.where(error>0, error/nlinks, error)
+        error = error/nlinks
+
         marginals = self.Udiff(self.x)
         #y = self.routes.T.dot(self.x)
         y = np.dot(self.routes.T, self.x)
@@ -236,7 +248,7 @@ class UtilMax:
     def updateRates(self): 
         self.converged = False
         converg_it = 0
-        max_iterations = 1000
+        max_iterations = 100000
         good = 0
         conseq_good = 50 
         print("updateRates.... ")
@@ -248,7 +260,7 @@ class UtilMax:
             #  print(self.routes)
             #  print(self.pr)
               self.update_rates(np.dot(self.routes, self.pr), beta=0.0)
-              self.update_prices2(self.x, beta=0.5)
+              self.update_prices2(self.x, beta=0.9)
               primal_opt = np.sum(self.U(self.x))
               dualopt_x = self.Udiff_inv(np.dot(self.routes,self.pr))
               dual_opt = np.dot(self.c.T,self.pr) + np.sum(self.U(dualopt_x)-np.dot(self.routes,self.pr)*dualopt_x)
@@ -264,6 +276,7 @@ class UtilMax:
               converg_it+=1
               #print("Trying for the rates to converge.. iteration %d gap %f" %(converg_it, self.opt_gap))
        ## print rates
+        print("converged at iteration %d" %converg_it)
         return self.x
         if(self.method == "maxmin"):
             self.update_rates_maxmin()
@@ -304,7 +317,7 @@ class UtilMax:
             
             while(self.converged == False and converg_it < max_iterations):
               self.update_rates(np.dot(self.routes, self.pr), beta=0.0)
-              self.update_prices2(self.x, beta=0.5)
+              self.update_prices2(self.x, beta=0.9)
               primal_opt = np.sum(self.U(self.x))
               dualopt_x = self.Udiff_inv(np.dot(self.routes,self.pr))
               dual_opt = np.dot(self.c.T,self.pr) + np.sum(self.U(dualopt_x)-np.dot(self.routes,self.pr)*dualopt_x)
@@ -415,7 +428,7 @@ def gen_A_from_B(B):
  
 class Simulation:
 
-  def init_custom(self, nports, meth, numleaf, numPortsPerLeaf, numspines,edgeCapacity,fabricCapacity):
+  def init_custom(self, nports, meth, numleaf, numPortsPerLeaf, numspines,edgeCapacity,fabricCapacity, alpha):
     self.Flows = []
     self.events = []
 
@@ -426,7 +439,7 @@ class Simulation:
     self.num_links= nports + numleaf * numspines
     self.c = np.concatenate(( edgeCapacity*np.ones((nports,1)), fabricCapacity* np.ones((numleaf*numspines,1))),axis=0)
     if(meth == "mp"):
-        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=1.0)
+        self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=float(alpha))
     elif(meth ==  "alpha_dif"):
         self.umax_mp = UtilMax(self.num_links,self.c, method=meth, alpha=0.25)
     else:
@@ -654,19 +667,23 @@ class Simulation:
     conseq_good = 100
     tol = 1e-10
     max_it = 100
-    #return_rates = {} 
+    num_events=0;
+    return_rates = {} 
     while(self.event_pending()):
        #self.it += 1
        #self.umax_mp.step()
        self.execute_next_event()
-       rates = self.update_rates_wrapper()
-       
-       idx = 0
-       return_rates = {}
-       for rate in rates:
-         real_flow_id = int(self.real_id[idx])
-         return_rates[real_flow_id] = rate #rates[idx]
-         idx +=1
+       num_events+=1
+       print( "num events taken %d" %(num_events))
+       if (num_events==100):
+         num_events=0
+         rates = self.update_rates_wrapper()
+         idx = 0
+         return_rates = {}
+         for rate in rates:
+           real_flow_id = int(self.real_id[idx])
+           return_rates[real_flow_id] = rate #rates[idx]
+           idx +=1
     #print("returning....... ")
     #print(return_rates)
     return (return_rates, self.real_id) 

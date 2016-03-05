@@ -53,16 +53,18 @@ for line in f:
     t1 = float(xy[3])
     rate=float(xy[4])
     ideal=float(xy[5])
-    if( t1 > 1.3): 
+    if( t1 > 2.0): 
         break
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
 
     dtimes[flow_id].append(t1)
-    if((rate-ideal)/ideal > 0.5):
-	print("flow id %d error %.2f" %(flow_id, (rate-ideal)/ideal))
-    drates[flow_id].append((rate-ideal)/ideal)
+    drates[flow_id].append(rate)
+#    if((rate-ideal)/ideal > 0.5):
+#	print("flow id %d error %.2f" %(flow_id, (rate-ideal)/ideal))
+#    drates[flow_id].append((rate-ideal)/ideal)
+    
 
 colors = ['r','b','g', 'm', 'c', 'y','k']
 
