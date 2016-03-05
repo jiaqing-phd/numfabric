@@ -337,7 +337,7 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
     std::cout<<"rtt_rate "<<Simulator::Now().GetSeconds()<<" "<<fid<<" "<<rtt_rate<<" "<<" "<<lastRtt_copy.GetNanoSeconds()<<" "<<m_cWnd*8.0<<std::endl;*/
 
     if(lastRtt_copy.GetNanoSeconds() / ONENANO < d0) {
-      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
+//      std::cout<<"updating d0 from "<<d0<<" to "<<lastRtt_copy.GetNanoSeconds()/ONENANO <<" node "<<m_node->GetId()<<" at time "<<Simulator::Now().GetSeconds()<<std::endl;
       d0 = lastRtt_copy.GetNanoSeconds() / ONENANO;
     }
 
@@ -439,7 +439,7 @@ TcpNewReno::resetCW(double target_rate)
     {
       m_cWnd = 1 * m_segmentSize;
     }
-    std::cout<<"resetCW called with rate "<<target_rate<<" unquantized window "<<unquantized_window<<" window "<<m_cWnd<<" time "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" line_rate "<<line_rate<<std::endl;
+//    std::cout<<"resetCW called with rate "<<target_rate<<" unquantized window "<<unquantized_window<<" window "<<m_cWnd<<" time "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" line_rate "<<line_rate<<std::endl;
     m_ssThresh = m_cWnd;
 }
 
