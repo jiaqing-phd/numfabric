@@ -43,7 +43,8 @@ for line in fh:
       edgeCapacity=int(elems[4])
       fabricCapacity=int(elems[5])
       sim.init_custom(numports, method, numleaf,numPortsPerLeaf, numspines, edgeCapacity,fabricCapacity )
-    if(elems[0] == "flow_start"):
+    if(elems[0] == "flow_start" and len(elems) > 9):
+      print(elems)
       # new flow, we need to insert into our matrix
       flow_id = int(elems[fid_index])
       src_id = int(elems[src_index])

@@ -40,7 +40,7 @@ for i in range(0, (len(sys.argv)-2)):
   for line in f[i]:
     l1 = line.rstrip();
     xy = l1.split(' ');
-    x.append(float(xy[4]));
+    x.append(float(xy[0]));
 #    x.append(float(l1));
   listoflists.append(x)
 
@@ -73,6 +73,7 @@ for i in range(0, (len(sys.argv)-2)):
 #plt.xlabel('Time in seconds')
 #plt.ylabel('%s' %sys.argv[3])
 #plt.savefig('%s.jpg' %sys.argv[2])
-plt.savefig('%s.png' %(sys.argv[len(sys.argv)-1]))
+print("Drawing the plot.... ")
 plt.draw()
-plt.show()
+plt.savefig('%s.png' %(sys.argv[len(sys.argv)-1]))
+#plt.show()

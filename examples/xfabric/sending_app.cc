@@ -70,7 +70,13 @@ MyApp::Setup (Address address, uint32_t packetSize, DataRate dataRate, uint32_t 
   m_weight = weight;
 
   //NS_LOG_UNCOND("Scheduling start of flow "<<fid<<" at time "<<Time(tNext).GetSeconds());
-  m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this); //bug fix 1/14
+  //m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this); //bug fix 1/14
+  if(m_maxBytes == 0) {
+    // static case
+    StartApplication();
+  }  else {
+    m_startEvent = Simulator::Schedule (tNext, &MyApp::StartApplication, this); //bug fix 1/14
+  }
 }
 
 void

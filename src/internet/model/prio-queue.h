@@ -119,7 +119,6 @@ public:
   std::map<uint32_t, double>flow_weights;
   bool init_reset;
   double m_gamma, m_gamma1, m_alpha; // TBD - initialize these
-  double xfabric_beta;
   double m_target_queue;
 
   bool update_minimum;

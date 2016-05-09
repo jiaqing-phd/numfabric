@@ -448,13 +448,13 @@ class Simulation:
       if(datasent[fidx] >= self.umax_mp.maxdata[fidx]):
       # this flow will finish .. but exactly when?
         data_remaining = self.umax_mp.maxdata[fidx] - self.umax_mp.data_sent[fidx]
-        #print("data_remaining %d maxdata %d data_sent %d" %(data_remaining, self.umax_mp.maxdata[fidx],self.umax_mp.data_sent[fidx]))
-        #print("rate = %f" %frate)
+        print("data_remaining %d maxdata %d data_sent %d" %(data_remaining, self.umax_mp.maxdata[fidx],self.umax_mp.data_sent[fidx]))
+        print("rate = %f" %frate)
         time_to_send = data_remaining * 8.0 * ONEMILLION/ (frate * capacity)
         if(min_finish_time > time_to_send):
           min_finish_time = time_to_send
           min_finish_fid = fidx
-    #print("the flow that'll finish fastest %d %d "%(min_finish_time, min_finish_fid))
+    print("the flow that'll finish fastest %d %d "%(min_finish_time, min_finish_fid))
     return (min_finish_time, min_finish_fid)
 
   def get_shortest_remaining_flow(self):
@@ -480,8 +480,8 @@ class Simulation:
     for_time /= ONEMILLION * 1.0
     for frate in self.umax_mp.x:
       f = self.getFlowWithIndex(idx)
-      #print("time %f flow %d datarate %f" %(time/ONEMILLION, self.real_id[idx],frate))
-      #print("capacity %f for_time %f" %(capacity, for_time))
+      print("time %f flow %d datarate %f" %(time/ONEMILLION, self.real_id[idx],frate))
+      print("capacity %f for_time %f" %(capacity, for_time))
       self.umax_mp.data_sent[idx] = 1.0*self.umax_mp.data_sent[idx] + (frate * for_time * capacity/8.0);
       idx +=1
 

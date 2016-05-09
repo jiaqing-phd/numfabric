@@ -18,11 +18,7 @@ weight_index=8
 ecmp_hash_index=9
 event_epoch=0.1
 
-<<<<<<< HEAD
-max_sim_time=1.51
-=======
 max_sim_time=1.199
->>>>>>> be7acbdf9d6b9c90ab6365e6331acddda0595f98
 num_flow_index = 1
 num_port_index = 1
 
@@ -189,4 +185,6 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
         #print(" length %d time %f" %( len(opt_rates) ,event_time))
         #pickle.dump(OptRates,savefile)  
         #output.close()
+## log_file, 
 get_optimal_rates(sys.argv[1], "mp", sys.argv[2], 0.0, int(sys.argv[3]))
+#def get_optimal_rates(log_file, method, alpha, g, num_events): 
