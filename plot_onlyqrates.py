@@ -74,7 +74,7 @@ for line in f:
 
 
   if(xy[0] == "QueueStats"):
-    queue_id = int(xy[1])
+    queue_id = xy[1]
     qtime = float(xy[2])
     qsize = float(xy[3])
     qprice = float(xy[4])

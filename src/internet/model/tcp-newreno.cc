@@ -107,6 +107,7 @@ TcpNewReno::init_values(void)
   xfabric_reacted = false;
   utilize_link = true;
   one_rtt = 0;
+  ecn_is_one = false;
   
 }
   
@@ -193,7 +194,7 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     }
   }
 
-  if(!m_xfabric && !m_strawmancc) {
+  if(!m_xfabric && !m_strawmancc && !ecn_is_one) {
   // Increase of cwnd based on current phase (slow start or congestion avoidance)
   if (m_cWnd < m_ssThresh)
     { // Slow start mode, add one segSize to cWnd. Default m_ssThresh is 65535. (RFC2001, sec.1)
@@ -203,13 +204,19 @@ TcpNewReno::NewAck (const SequenceNumber32& seq)
     }
   else
     {
+        std::stringstream ss;
+        ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
+        std::string flowkey = ss.str();
 //        std::cout<<" adjusting window -- dctcp xfabric "<<m_xfabric<<" strawman "<<m_strawmancc<<std::endl; 
         // Congestion avoidance mode, increase by (segSize*segSize)/cwnd. (RFC2581, sec.3.1)
         // To increase cwnd for one segSize per RTT, it should be (ackBytes*segSize)/cwnd
         double adder = static_cast<double> (m_segmentSize * m_segmentSize) / m_cWnd.Get ();
         adder = std::max (1.0, adder);
+      //  std::cout<<"adding to cwnd "<<adder<<" flow "<<flowkey<<std::endl;
         m_cWnd += static_cast<uint32_t> (adder);
     }
+  } else if(m_dctcp && ecn_is_one) {
+      //std::cout<<" ecn_is_one.. not modifying window node "<<m_node->GetId()<<std::endl;
   }
   TcpSocketBase::NewAck (seq);
 }
@@ -471,6 +478,9 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
 
   if(tcpHeader.GetECN() == 1) {
     bytes_with_ecn += num_bytes_acked;
+    ecn_is_one = true;
+  } else {
+    ecn_is_one = false;
   }
   //if(total_bytes_acked > (int)m_cWnd) {
   if(ack_num >= last_outstanding_num) {
@@ -479,9 +489,9 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
        dctcp_alpha = (1.0 - beta)*dctcp_alpha + beta* new_alpha;
        total_bytes_acked = 0;
        bytes_with_ecn = 0; 
-       //NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<" ssthresh "<<m_ssThresh<<" initcwnd "<<m_initialCWnd);
+       //std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" DCTCP_DEBUG new_alpha "<<new_alpha<<" DCTCP_ALPHA "<<dctcp_alpha<<" "<<flowkey<<" fid "<<getFlowId(flowkey)<<" ECN "<<tcpHeader.GetECN()<<" ssthresh "<<m_ssThresh<<" initcwnd "<<m_initialCWnd<<" lastoutstanding "<<last_outstanding_num<<" ack_num "<<ack_num<<" hightxmark "<<m_highTxMark<<std::endl;
        last_outstanding_num = m_highTxMark;
-     }
+     } 
    }
   
   
@@ -508,10 +518,11 @@ TcpNewReno::ProcessECN(const TcpHeader &tcpHeader)
           ecn_highest = m_highTxMark;
           //bytes_with_ecn = 0.0;
           //total_bytes_acked = 0.0;
-//          std::cout<<" m_dctcp -- processing ECN "<<std::endl;
+          //std::cout<<Simulator::Now().GetMicroSeconds()<<" m_dctcp -- processing ECN ack_num "<<ack_num<<" ecn_highest now "<<ecn_highest<<" "<<flowkey<<std::endl;
         
       } else {
-  //      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());
+          //std::cout<<Simulator::Now().GetMicroSeconds()<<" m_dctcp -- not processing ECN ack_num "<<ack_num<<" ecn_highest "<<ecn_highest<<" "<<flowkey<<std::endl;
+//      NS_LOG_INFO("Notreacting "<<Simulator::Now().GetSeconds());
         // no reaction 
       }
 

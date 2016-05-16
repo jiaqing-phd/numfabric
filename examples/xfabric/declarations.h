@@ -124,7 +124,7 @@ extern uint16_t *ports;
 
 extern std::map<uint32_t, double> flowweights;
 
-extern void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp);
+extern Ptr<PacketSink> sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp);
 extern void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp);
 
 
@@ -188,5 +188,10 @@ extern std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
 extern uint32_t ninety_fifth;
 
 extern double LastEventTime;
+extern std::vector<Ptr<PacketSink> >sink_objects;
+extern std::list<uint32_t> flows_to_start;
+extern std::list<uint32_t> flows_to_stop;
+extern std::list<uint32_t> event_list;
+
 
 #endif 

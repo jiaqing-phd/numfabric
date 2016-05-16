@@ -113,11 +113,12 @@ uint32_t PacketSink::GetTotalRx ()
   if(!flow_finished) {
 
     std::cout<<"flow_stop "<<m_flowID<<" stop_time "<<Simulator::Now().GetNanoSeconds()<<" "<<m_peerNodeID<<" "<<m_ownNodeID<<" flow_started "<<flow_start_time.GetSeconds()<<" numBytes "<<m_totalRx<<std::endl; 
-
+/*
     if(flowTracker) {
       FlowData fd(m_flowID);
       flowTracker->registerEvent(2, fd);
     } 
+    */
 
     flow_finished = true;
   }
@@ -210,7 +211,8 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
   NS_LOG_FUNCTION (this << socket);
   Ptr<Packet> packet;
   Address from;
-  while ((packet = socket->RecvFrom (from)) && !flow_finished)
+  //while ((packet = socket->RecvFrom (from)) && !flow_finished)
+  while ((packet = socket->RecvFrom (from)))
     {
       if (packet->GetSize () == 0)
         { //EOF
@@ -224,6 +226,8 @@ void PacketSink::HandleRead (Ptr<Socket> socket)
           flow_start_time = Simulator::Now();
         }
         m_totalRx += packet->GetSize ();
+        m_totalRx += 90;
+
         //std::cout<<Simulator::Now().GetSeconds()<<" pkt recvd at "<<m_flowID<<" totalbytes so far "<<m_totalRx<<" m_numBytes "<<m_numBytes<<std::endl;
 //      }
 

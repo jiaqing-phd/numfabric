@@ -23,8 +23,8 @@ const uint32_t maxx = max_system_flows+1;
 uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
-uint32_t min_flows_allowed = 150;
-uint32_t max_flows_allowed = 200;
+uint32_t min_flows_allowed = 2;
+uint32_t max_flows_allowed = 4;
 std::map<uint32_t, std::string> flowkeys;
 
 void dropFlowFromQueues(uint32_t f)
@@ -198,12 +198,12 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
     Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
     // Socket at the source
     //sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, clientNodes);
-    sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, 1);
-
+    Ptr<PacketSink> sink_obj = sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, 1);
+    sink_objects.push_back(sink_obj); 
 
     Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
     SendingApp->Setup (remoteAddress, pkt_size, DataRate (application_datarate), flow_size, flow_start, sourceAddress, sourceNodes.Get(sourceN), flow_id, sinkNodes.Get(sinkN), rand_weight);
-    (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
+//    (sourceNodes.Get(sourceN))->AddApplication(SendingApp);
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((sourceNodes.Get(sourceN))->GetObject<Ipv4> ()); // Get Ipv4 instance of the node
     Ipv4Address addr = ipv4->GetAddress (1, 0).GetLocal();
 
@@ -314,7 +314,7 @@ void startFlowsStatic(void)
 void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_stopped = 0;
-  while (num_flows_stopped < 10) {
+  while (num_flows_stopped < 2) {
     UniformVariable urand;
     uint32_t i = urand.GetInteger(1, max_system_flows);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
@@ -333,6 +333,18 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
       sink_node_ipv4->removeFlow(i);
       src_node_ipv4->removeFlow(i);
       dropFlowFromQueues(i);
+      // drop the sinkapp object
+      std::vector<Ptr<PacketSink> >::iterator it=sink_objects.begin(); 
+      while(it != sink_objects.end()) { 
+          UintegerValue fid;
+          (*it)->GetAttribute("flowid", fid);
+          if(fid.Get() == i) {
+              std::cout<<"flowstopped.. item erased"<<std::endl;
+              it = sink_objects.erase(it);
+          } else {
+              ++it;
+          }
+      }
       num_flows_stopped++;
     }
   }
@@ -341,7 +353,7 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
 void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_started = 0;
-    while(num_flows_started < 10) 
+    while(num_flows_started < 2) 
     {
      UniformVariable urand;
      uint32_t i = urand.GetInteger(1, max_system_flows-1);
@@ -381,8 +393,11 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.05; //100ms
+  double delay = 0.1; //100ms
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
+  epoch_number++;
+  ninety_fifth = 0;
+  LastEventTime = Simulator::Now().GetSeconds();
 
 }
 

@@ -1068,7 +1068,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
                 min_pp = *pp;
               }
             }
-          } /*else if(m_pkt_tagged && !m_pfabricdequeue && !delay_mark) { 
+          } 
+                 /*else if(m_pkt_tagged && !m_pfabricdequeue && !delay_mark) { 
             // determine the packet id with the highest tag 
             struct tag_elem elem = get_highest_tagid(); //get the lowest deadline pkt and remove it
             uint64_t highest_tag_id = elem.pktid;
@@ -1085,8 +1086,10 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
         Ipv4Header min_ipheader;
         PrioHeader pheader;
         PppHeader ppp;
+        Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+        double rand_num = uv->GetValue(0.0, 1.0);
 
-        if(min_pp)
+        if(min_pp && rand_num > 0.5)
         {
           min_pp->RemoveHeader(ppp);
           min_pp->RemoveHeader(pheader);
@@ -1097,6 +1100,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
           min_pp->AddHeader(min_ipheader);
           min_pp->AddHeader(pheader);
           min_pp->AddHeader(ppp);
+//          std::cout<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" marking pkt from flow "<<GetFlowKey(min_pp)<<"Queue size "<<m_bytesInQueue<<std::endl;
           
         } 
           
@@ -1236,7 +1240,7 @@ PrioQueue::DoDequeue (void)
     //NS_LOG_LOGIC("virtualtime at switch "<<nodeid<<" "<<Simulator::Now().GetSeconds()<<" "<<current_virtualtime);  
     
   } else {
-  //  std::cout<<" plain dequeue "<<std::endl;
+//    std::cout<<" plain dequeue "<<std::endl;
   }
  
 

@@ -463,4 +463,34 @@ plt.draw()
 #plt.ylabel('Number of Packets')
 #plt.savefig('%s/%s.%s.jpg' %(pre,pre,"flow_queue_occupancy_switch1"))
 #plt.draw()
+cwndx = {}
+cwndy = {}
+for fid in range(0,num_flows):
+  cwnd1 = sys.argv[1]+".cwnd."+`fid`
+  print("opening file %s" %cwnd1)
+  if(os.path.exists(cwnd1)):
+    f1 = open(cwnd1)
+    for line in f1:
+      L = line.rstrip();
+      xy1 = L.split('\t');
+      if(fid not in cwndx):
+        cwndx[fid] = []
+        cwndy[fid] = []
+      cwndx[fid].append(xy1[0])
+      cwndy[fid].append(xy1[1])
+plt.figure(8)
+plt.title("Congestion Windows")
+
+i=0
+for key in cwndx:
+  print("plotting flow id %d"%key)
+  plt.plot(cwndx[key], cwndy[key], colors[i], label=`key`)
+  i = (i+1)%len(colors)
+plt.xlabel('Time in seconds')
+plt.ylabel('Congestion windows')
+plt.legend(loc='lower right')
+plt.savefig('%s/%s.%s.jpg' %(pre,pre,"cwnd"))
+
+plt.draw()
+
 plt.show()

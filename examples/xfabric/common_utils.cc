@@ -52,7 +52,7 @@ void sinkInstallNodeEvent(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint3
   NS_LOG_UNCOND("sink attributed set : numbytes "<<nb.Get()<<" flowid "<<fid.Get()<<" nodeid "<<n1.Get()<<" source nodeid "<<n2.Get());
   
 }
-void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
+Ptr<PacketSink> sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes, uint32_t tcp)
 {
   // Create a packet sink on the star "hub" to receive these packets
   Address anyAddress = InetSocketAddress (Ipv4Address::GetAny (), port);
@@ -84,6 +84,8 @@ void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t f
   pSink->GetAttribute("nodeid", n1);
   pSink->GetAttribute("peernodeid", n2);
   NS_LOG_UNCOND("sink attributed set : numbytes "<<nb.Get()<<" flowid "<<fid.Get()<<" nodeid "<<n1.Get()<<" source nodeid "<<n2.Get());
+
+  return pSink;
   
 }
 
@@ -368,7 +370,40 @@ void common_config(void)
     }
   }
       
+  std::ifstream FAFile ("flow_arrivals", std::ifstream::in);
+  if(FAFile.is_open()) {
+    int flowid;
+    while( FAFile >> flowid)
+    {
+      flows_to_start.push_back(flowid);
+    }
+  }
 
+  std::ifstream FDFile ("flow_departures", std::ifstream::in);
+  if(FDFile.is_open()) {
+    int flowid;
+    while( FDFile >> flowid)
+    {
+      flows_to_stop.push_back(flowid);
+    }
+  }
+
+  std::ifstream EventFile ("events_list", std::ifstream::in);
+  if(EventFile.is_open()) {
+    std::string event_type;
+    std::string start_str="start_flows";
+    while( EventFile >> event_type)
+    {
+      std::cout<<"event_type "<<event_type<<std::endl;
+      if(event_type.compare(start_str)) {
+          event_list.push_back(0);
+          std::cout<<"pushing 1"<<std::endl;
+      } else {
+          event_list.push_back(1);
+          std::cout<<"pushing 0"<<std::endl;
+      }
+    }
+  }
   return;
 
 }
@@ -454,9 +489,19 @@ CheckIpv4Rates (NodeContainer &allNodes)
   std::vector<double> error_vector;
   std::vector<double> nonerror_vector;
 
+  // iterate over all the sinkapp objects
+  for(unsigned int i=0; i<sink_objects.size(); i++) {
+      Ptr<PacketSink> sobj = sink_objects[i];
+      uint32_t epoch_num = getEpochNumber();
+      double ideal_rate = opt_drates[epoch_number][sobj->m_flowID] * 10000.0;
+      std::cout<<"sinkdata "<<Simulator::Now().GetSeconds()<<" flowid "<<sobj->m_flowID<<" totalRx "<<sobj->GetTotalRx()*8<<" epoch "<<epoch_num<<" ideal_rate "<<ideal_rate<<std::endl;
+  }
+
+
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
   {
+
     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol> ((allNodes.Get(nid))->GetObject<Ipv4> ());
     std::map<std::string,uint32_t>::iterator it;
     for (std::map<std::string,uint32_t>::iterator it=ipv4->flowids.begin(); it!=ipv4->flowids.end(); ++it)
@@ -513,7 +558,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
     std::cout<<" More than 10 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-10.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
-    move_to_next();
+    //move_to_next();
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   

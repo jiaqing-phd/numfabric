@@ -115,6 +115,7 @@ protected:
   double		 line_rate;
   bool                   m_strawmancc;
   bool                   utilize_link;   //enable xfabric like behavior
+  bool                   ecn_is_one;
   SequenceNumber32       one_rtt;
   double utilInverse(std::string, double lp);
    

@@ -80,6 +80,7 @@ public:
 
   virtual ~PacketSink ();
 
+  uint32_t        m_flowID;
   /**
    * \return the total bytes received in this sink app
    */
@@ -141,7 +142,6 @@ private:
   uint32_t        m_ownNodeID;
   uint32_t        m_peerNodeID;
   uint32_t        m_numBytes;
-  uint32_t        m_flowID;
   Time            flow_start_time;
 //  bool            m_lastflow; // kn - not used and removing to get rid of warning
 

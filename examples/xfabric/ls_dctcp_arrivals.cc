@@ -203,7 +203,8 @@ Ptr<MyApp> startFlow(uint32_t sourceN, uint32_t sinkN, double flow_start, uint32
     Address sourceAddress = (InetSocketAddress (sourceIp, ports[sinkN]));
     // Socket at the source
     //sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, clientNodes);
-    sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, 1);
+    Ptr<PacketSink> sink_obj = sinkInstallNode(sourceN, sinkN, ports[sinkN], flow_id, flow_start, flow_size, 1);
+    sink_objects.push_back(sink_obj);
 
 
     Ptr<MyApp> SendingApp = CreateObject<MyApp> ();
@@ -316,12 +317,27 @@ void startFlowsStatic(void)
 }
 */
 
+uint32_t getNextFlowToStop(void)
+{
+    uint32_t fid = flows_to_stop.front();
+    flows_to_stop.pop_front();
+    return fid;
+}
+
+uint32_t getNextFlowToStart(void)
+{
+    uint32_t fid = flows_to_start.front();
+    flows_to_start.pop_front();
+    return fid;
+}
+
 void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_stopped = 0;
   while (num_flows_stopped < 100) {
     UniformVariable urand;
-    uint32_t i = urand.GetInteger(1, max_system_flows);
+//    uint32_t i = urand.GetInteger(1, max_system_flows);
+    uint32_t i = getNextFlowToStop();
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
     if(flow_started[i] == 1) {
       // stop the application
@@ -338,6 +354,19 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
       sink_node_ipv4->removeFlow(i);
       src_node_ipv4->removeFlow(i);
       dropFlowFromQueues(i);
+
+      // drop the sinkapp object
+      std::vector<Ptr<PacketSink> >::iterator it=sink_objects.begin(); 
+      while(it != sink_objects.end()) { 
+          UintegerValue fid;
+          (*it)->GetAttribute("flowid", fid);
+          if(fid.Get() == i) {
+              std::cout<<"flowstopped.. item erased"<<std::endl;
+              it = sink_objects.erase(it);
+          } else {
+              ++it;
+          }
+      }
       num_flows_stopped++;
     }
   }
@@ -349,7 +378,8 @@ void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
     while(num_flows_started < 100) 
     {
      UniformVariable urand;
-     uint32_t i = urand.GetInteger(1, max_system_flows-1);
+//     uint32_t i = urand.GetInteger(1, max_system_flows-1);
+     uint32_t i = getNextFlowToStart();
      std::cout<<Simulator::Now()<<" start_a_flow "<<i<<" max_system_flows "<<max_system_flows<<std::endl;
      if(flow_started[i] == 0) { 
 
@@ -369,28 +399,21 @@ void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinkno
 
 void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
-  std::cout<<" startflowwrapper "<<Simulator::Now().GetSeconds()<<" called "<<std::endl;
-  if(num_flows >= max_flows_allowed) {
+  std::cout<<" startflowwrapper "<<Simulator::Now().GetSeconds()<<" called event_list length "<<event_list.size()<<std::endl;
+  uint32_t next_event = event_list.front();
+  event_list.pop_front();
+  std::cout<<"next_event is "<<next_event<<std::endl;
+  if(next_event == 0) {
     std::cout<<Simulator::Now().GetSeconds()<<" stop_flows because excess"<<std::endl;
     stop_flows(sourcenodes, sinknodes);
-  } else if(num_flows <= min_flows_allowed) {
+  } else if(next_event == 1) {
     std::cout<<Simulator::Now().GetSeconds()<<" start_flows because less"<<std::endl;
     start_flows(sourcenodes, sinknodes);
-  } else {
-     Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-     double rand_num = uv->GetValue(0.0, 1.0);
-     if(rand_num < 0.5) {
-        std::cout<<Simulator::Now().GetSeconds()<<" start_flows random"<<std::endl;
-        start_flows(sourcenodes, sinknodes);
-      } else {
-        std::cout<<Simulator::Now().GetSeconds()<<" stop_flows random"<<std::endl;
-        stop_flows(sourcenodes, sinknodes);
-      }
-  }
+  } 
   if(Simulator::Now().GetSeconds() - LastEventTime >= 0.09999999) { 
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<epoch_number<<std::endl;
    }
-  double delay = 0.001;
+  double delay = 0.1;
   next_epoch_event = Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
   epoch_number++;
   ninety_fifth = 0;

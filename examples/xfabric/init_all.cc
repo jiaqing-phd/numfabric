@@ -38,6 +38,7 @@ double kvalue_measurement = 80000;
 std::map<uint32_t, std::vector<uint32_t> > source_flow;
 std::map<uint32_t, std::vector<uint32_t> > dest_flow;
 ApplicationContainer sinkApps;
+std::vector<Ptr<PacketSink> >sink_objects;
 
 std::map<uint32_t, double> flowweights;
 double sim_time = 1.3;
@@ -164,7 +165,7 @@ uint16_t *ports;
 
 bool wfq;
 
-void sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes);
+Ptr<PacketSink> sinkInstallNode(uint32_t sourceN, uint32_t sinkN, uint16_t port, uint32_t flow_id, double startTime, uint32_t numBytes);
 CommandLine addCmdOptions(CommandLine cmd);
 void common_config(void);
 void setUpMonitoring(void);
@@ -181,6 +182,9 @@ std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
 std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
 uint32_t ninety_fifth;
 double LastEventTime;
+std::list<uint32_t> flows_to_start;
+std::list<uint32_t> flows_to_stop;
+std::list<uint32_t> event_list;
 
 
 #endif 
