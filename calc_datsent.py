@@ -16,9 +16,7 @@ if not os.path.exists(dir):
 
 epoch_time = 0.1 #50 ms
 sample_time = 0.0001
-flow_diff_times = {}
-flow_diffs = {}
-window = 10
+window = 100
 
 xy = []
 
@@ -98,6 +96,8 @@ def get_epoch_data(epoch_num):
     total_sent = {}
     ideal_sent = {}
     alg_sent = {}
+    flow_diff_times = {}
+    flow_diffs = {}
     # get flow start times before this epoch
     f = open(sys.argv[1]+".out")
     flow_start_times = get_flow_start_times(epoch_num)
@@ -180,25 +180,29 @@ def get_epoch_data(epoch_num):
     return (flow_diff_times, flow_diffs)
 
 
-#dead_flow_sizes = get_deadflows(sys.argv[1])
+
+#### START ####
 ninety_fifths = []
 
-for epochs in range(1, 35):
+for epochs in range(1, 100):
     (flow_diff_times, flow_diffs) = get_epoch_data(epochs)
 
     # when did 95% of them come down to 10% and stay there for 10 instances
     below_10_data = []
     for key in flow_diffs:
-        plt.plot(flow_diff_times[key], flow_diffs[key])
+        #plt.plot(flow_diff_times[key], flow_diffs[key])
         t = below_10(flow_diffs[key], key)
         print("epoch %d flow %d converged at %f" %(epochs, key, t))
         below_10_data.append(t)
 
     ninety_fifth = np.percentile(below_10_data, 95)
+    median = np.percentile(below_10_data, 50)
     ninety_fifth = ninety_fifth * sample_time
+    median = median * sample_time
+
     print("epoch %d all values:" %epochs)
     print below_10_data
-    print("epoch %d ninety_fifth %f" %(epochs, ninety_fifth))
+    print("epoch %d ninety_fifth %f median %f" %(epochs, ninety_fifth, median))
     ninety_fifths.append(ninety_fifth)
 
 print ninety_fifths

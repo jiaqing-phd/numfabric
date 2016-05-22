@@ -5,7 +5,8 @@ import sys
 with open(sys.argv[1]) as f:
     numbers = []
     for line in f:
-        numbers.append(float(line))
+        if(line != ""):
+            numbers.append(float(line))
     numbers.sort()
 
 if(len(numbers) > 0):

@@ -15,7 +15,7 @@ if not os.path.exists(dir):
 #sinkdata 1.03755 flowid 131 totalRx 117654864 epoch 1 ideal_rate 3127.76
 
 epoch_time = 0.1 #50 ms
-sample_time = 0.00005
+sample_time = 0.0001
 window = 10
 
 xy = []
@@ -234,6 +234,8 @@ for epochs in range(1, 35):
 
     ninety_fifth = np.percentile(below_10_data, 95)
     ninety_fifth = ninety_fifth * sample_time
-    print("epoch %d ninety_fifth %f" %(epochs, ninety_fifth))
+    median = np.percentile(below_10_data, 50)
+    median = median * sample_time
+    print("epoch %d ninety_fifth %f median %f" %(epochs, ninety_fifth, median))
     ninety_fifths.append(ninety_fifth)
 

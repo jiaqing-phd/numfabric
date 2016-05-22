@@ -84,7 +84,7 @@ public:
   /**
    * \return the total bytes received in this sink app
    */
-  uint32_t GetTotalRx () ;
+  uint64_t GetTotalRx () ;
 
   Ptr<Tracker> flowTracker;
 
@@ -136,12 +136,12 @@ private:
   std::list<Ptr<Socket> > m_socketList; //!< the accepted sockets
 
   Address         m_local;        //!< Local address to bind to
-  uint32_t        m_totalRx;      //!< Total bytes received
+  uint64_t        m_totalRx;      //!< Total bytes received
   TypeId          m_tid;          //!< Protocol TypeId
   Time            m_startMeasurement;
   uint32_t        m_ownNodeID;
   uint32_t        m_peerNodeID;
-  uint32_t        m_numBytes;
+  uint64_t        m_numBytes;
   Time            flow_start_time;
 //  bool            m_lastflow; // kn - not used and removing to get rid of warning
 

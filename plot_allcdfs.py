@@ -7,13 +7,13 @@ import scipy
 from scipy.stats import cumfreq
 import numpy as np
 
-mp.rcParams.update({"font.size":22})
-num_bins =  100
+#mp.rcParams.update({"font.size":22})
 labels = []
-
+num_bins = 100000
 def cyret1(b):
   a = np.asarray(b)
   #print(a)
+  #num_bins =  len(b)/2.0
   counts, bin_edges = np.histogram(a, bins=num_bins, normed=True)
 #  counts, bin_edges = np.histogram(a, bins=num_bins, density=True)
   cdf = np.cumsum(counts)
@@ -40,23 +40,30 @@ for i in range(0, (len(sys.argv)-2)):
   for line in f[i]:
     l1 = line.rstrip();
     xy = l1.split(' ');
-    x.append(float(xy[0]));
+    print ("%s" %xy[0])
+    val = float(xy[0])
+    if(val >= 0.0):
+    #    print ("appending %f" %val)
+        x.append(val);
+    #else:
+    #    print ("discarding 0")
 #    x.append(float(l1));
   listoflists.append(x)
 
 
 plt.figure(1)
-plt.title("CDF of convergence times")
+plt.title("CDF of bytes transferred by convergence")
 
 for i in range(0, (len(sys.argv)-2)):
    y = cyret1(listoflists[i])
-   #X1  = np.linspace(min(listoflists[i]),max(listoflists[i]),num_bins)
    X1  = np.linspace(min(listoflists[i]),max(listoflists[i]),num_bins)
-   #print (X1)
-   #print (y)
-   #plt.xlim(0,0.1)
+   print (X1)
+   print (y)
+   #plt.xlim(0,10000000.0)
+   #plt.semilogx(X1, y, label=labels[i], linewidth=2)
    plt.plot(X1, y, label=labels[i], linewidth=2)
-   plt.xlabel('Time in seconds')
+   plt.xlabel('Data transferred in bytes')
+   #plt.xlabel('Time in seconds')
    plt.ylabel('Probability')
 
 #  a = numpy.asarray(listoflists[i])

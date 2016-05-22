@@ -554,7 +554,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth > 10) {
+  if(ninety_fifth > 500) {
     std::cout<<" More than 10 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-10.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
