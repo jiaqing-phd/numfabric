@@ -63,6 +63,11 @@ Ipv4L3Protocol::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::Ipv4L3Protocol")
     .SetParent<Ipv4> ()
     .AddConstructor<Ipv4L3Protocol> ()
+    .AddAttribute("alpha_fair_rcp",
+                  "Enable or disable alpha fair based like behavior",
+                  BooleanValue(true),
+                  MakeBooleanAccessor (&Ipv4L3Protocol::alpha_fair_rcp),
+                  MakeBooleanChecker ())
     .AddAttribute("rate_based",
                   "Enable or disable rate based like behavior",
                   BooleanValue(false),
@@ -141,11 +146,25 @@ double Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string f
         target_rate = utilInverse(flowkey, current_netw_price, ALPHA1UTILITY);
       }
     }
-    
-//    std::cout<<" Node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" target_rate_dgd = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+  
   flow_target_rate[flowkey] = target_rate;
+  if(alpha_fair_rcp) {
+	  flow_target_rate[flowkey] = 1.0/current_netw_price;
+	  //flow_target_rate[flowkey] = current_netw_price;
+      if(flow_target_rate[flowkey]*1000000.0 > line_rate) {
+		flow_target_rate[flowkey] = line_rate/1000000.0;
+	  }
+//  std::cout<<" Node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" target_rate_dgd = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
+   }
   return target_rate;
 }
+
+double Ipv4L3Protocol::SetFlowRtt(double rtt, std::string fkey)
+{
+	flow_rtt[fkey] = rtt;
+	//std::cout<<" RTTUPDATE Node "<<m_node->GetId()<<" flow "<<fkey<<" time "<<Simulator::Now().GetSeconds()<<" rtt "<<rtt<<std::endl;
+}
+
 
 void Ipv4L3Protocol::updateRate(std::string fkey)
 {
@@ -277,9 +296,6 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     double pkt_dur = ((p->GetSize() + 46) * 8.0 * 1000.0) /trate;  //in us since target_rate is in bps
    
     Time tNext (NanoSeconds (pkt_dur));
-
-    //std::cout<<" setting_timer_dgd "<<Simulator::Now().GetSeconds()<<" "<<flowkey<<" target_rate "<<trate<<" pkt_dur "<<pkt_dur<<std::endl;
-
     m_sendEvent[flowkey] = Simulator::Schedule (tNext, &Ipv4L3Protocol::CheckToSend, this, flowkey);
 }
   
@@ -314,7 +330,8 @@ Ipv4L3Protocol::QueueWithUs (Ptr<Packet> packet,
   if(m_sendEvent[flowkey].IsRunning()) {
     /* nothing to do.. it will send when it can */
   } else {
-    Simulator::ScheduleNow(&Ipv4L3Protocol::CheckToSend, this, flowkey);
+    //Simulator::ScheduleNow(&Ipv4L3Protocol::CheckToSend, this, flowkey); kanthi testing alpha_fair
+    CheckToSend(flowkey);
   }
   deq_bytes += packet->GetSize() + 46;
   
@@ -928,10 +945,8 @@ Ipv4L3Protocol::Send (Ptr<Packet> packet,
 
 
   if(rate_based && issource(source)) {
- //   std::cout<<" flow "<<flowkey<<" known .. Queue with us Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     QueueWithUs(packet, source, destination, protocol, route);
   } else {
-//    std::cout<<" flow "<<flowkey<<" unknown .. Send straight ahead Node "<<m_node->GetId()<<" "<<packet->GetSize()<<" packetid "<<packet->GetUid()<<std::endl;
     DoSend(packet, source, destination, protocol, route);
   }
   return;
@@ -1554,6 +1569,10 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
    double wfqw = 1.0;
    double virtual_pkt_length = 0.0; //current deadline
    double netw_price_init = 0.0;
+
+   //if(alpha_fair_rcp) {
+//		netw_price_init = 10000.0;
+//	}
    PriHeader priheader = PriHeader(wfqw, virtual_pkt_length, netw_price_init);
 
   if (GetInterfaceForAddress(source) != -1) {
@@ -1564,7 +1583,13 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
 
     priheader.wfq_weight = virtual_pkt_length;
-    priheader.residue = (store_prio[flowkey] - current_netw_price);
+   
+    if(alpha_fair_rcp) {
+		priheader.residue = flow_rtt[flowkey];
+	} else {
+	    priheader.residue = (store_prio[flowkey] - current_netw_price);
+	}
+
     
 
  /*   if(flowids[flowkey] == 8) {
@@ -1574,11 +1599,13 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
     uint32_t flow_num_hops = 1;
  //   if(host_compensate) {
+	 if(!alpha_fair_rcp) {
       if(num_hops.find(flowkey) != num_hops.end()) {
       	flow_num_hops = num_hops[flowkey];
       } else {
     	flow_num_hops = 4;
       }	
+	}
 //   }
 
     if(price_valid[flowkey]) {
@@ -1587,7 +1614,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 //      std::cout<<"putting highest residue in pkt since we don't yet know the rates "<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" flow "<<flowkey<<std::endl;
       priheader.residue = 50000.0; // basically invalid value
     }
-    priheader.netw_price = 0.0;  // start the network price at zero
+    priheader.netw_price = netw_price_init;  // start the network price at zero
 //  std::cout<<"NETW_PRICE "<<Simulator::Now().GetSeconds()<<" AddPrioHeader node "<<m_node->GetId()<<" flowid "<<flowids[flowkey] <<" store_prio "<<store_prio[flowkey]<<" current_netw_price "<<current_netw_price<<" margin_util "<<priheader.residue<<" wfq_weight "<<priheader.wfq_weight<<" flowkey "<<flowkey<<" host_compensate "<<host_compensate<<" "<<flowkey<<std::endl; 
 
  

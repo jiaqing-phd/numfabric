@@ -195,6 +195,16 @@ TypeId PrioQueue::GetTypeId (void)
                    DoubleValue(0.0000000003),
                    MakeDoubleAccessor (&PrioQueue::m_alpha),
                    MakeDoubleChecker <double> ())
+    .AddAttribute ("rcp_beta", 
+                   "beta value for RCP",
+                   DoubleValue(0.0000001),
+                   MakeDoubleAccessor (&PrioQueue::m_rcp_beta),
+                   MakeDoubleChecker <double> ())
+    .AddAttribute ("rcp_alpha", 
+                   "alpha value for RCP",
+                   DoubleValue(0.1),
+                   MakeDoubleAccessor (&PrioQueue::m_rcp_alpha),
+                   MakeDoubleChecker <double> ())
     .AddAttribute ("gamma1", 
                    "Value of gamma1 for xfabric",
                    DoubleValue(10.0),
@@ -216,6 +226,11 @@ TypeId PrioQueue::GetTypeId (void)
                    MakeDoubleAccessor (&PrioQueue::xfabric_beta),
                    MakeDoubleChecker <double>())
 	
+      .AddAttribute ("alpha_fair_rcp", 
+                   "Alpha Fair RCP",
+                   BooleanValue (true),
+                   MakeBooleanAccessor (&PrioQueue::alpha_fair_rcp),
+                   MakeBooleanChecker ())
 ;
   return tid;
 }
@@ -239,7 +254,18 @@ PrioQueue::PrioQueue () :
   previous_departure = 1.0 * 1.0e+9; // in ns
   //want to make sure that previous departure is start of simulation
   averaged_ratio = 0;
+  avg_rtt = 0.000016; //alpha_fair_rcp - fix this
+  switch_fsr = -1.0; // TBD : alpha_fair_rcp fix this to capacity of the link
   g = 1.0/8.0;
+
+  //rcp_a = 0.1; //this ratio works but is too slow
+  //rcp_b = 0.0000001;
+
+  //rcp_a = 0.01;
+  //rcp_b = 0.000001;
+
+
+//  switch_fsr = m_bps.GetBitRate()/1000000.0;
  
   double start_time = 1.0;
   /*if(m_desynchronize) {
@@ -323,14 +349,15 @@ PrioQueue::getRateDifference(Time time_interval)
 {
     double link_incoming_rate = (8.0 * incoming_bytes) /(1000000.0 * time_interval.GetSeconds());
 
+	last_link_rate = link_incoming_rate;
+
     //double available_capacity = 0.98* (m_bps.GetBitRate() / 1000000.0); // units -Megabits per Second
     double available_capacity = m_bps.GetBitRate() / 1000000.0; // units -Megabits per Second
     double rate_difference = link_incoming_rate - available_capacity;
 
-    incoming_bytes = 0.0;
 
-//  std::cout<<"DGD: rate_difference "<<rate_difference<<std::endl;
-//    std::cout<<" DGD UTIL "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<std::endl;
+    //std::cout<<Simulator::Now().GetSeconds()<<" DGD UTIL "<<linkid_string<<" capacity "<<available_capacity<<" rate "<<link_incoming_rate<<" rate_difference "<<(rate_difference*-1.0)<<" incoming_bytes "<<incoming_bytes<<std::endl;
+    incoming_bytes = 0.0;
     return rate_difference;
 }
 
@@ -376,9 +403,70 @@ PrioQueue::getCurrentUtilTerm(void)
   return current_util;
 }
 
+double 
+PrioQueue::meanQueueSize(double rate_difference)
+{
+	if(rate_difference <= 0.0) {
+		rate_difference = 0.00001;
+	}
+	double mqs = last_link_rate / (2.0 * rate_difference);
+	return mqs;
+}	
+
+double
+PrioQueue::getAvgRtt(void)
+{
+	return avg_rtt;	 // TODO implement this function
+}
+
+void
+PrioQueue::updateAvgRtt(double rtt)
+{
+	if(rtt > 10000) { return; } //invalid sample
+	if(rtt < 0.000016) { return; } //sample from ack pkts which don't carry rtt
+    //std::cout<<"RTTSAMPLE "<<linkid_string<<" avg_rtt "<<avg_rtt<<" current sample "<<rtt<<std::endl;
+	avg_rtt = 0.5*avg_rtt + 0.5*rtt;
+	return;
+}
+
 void
 PrioQueue::updateLinkPrice(void)
 {
+
+  if(alpha_fair_rcp) {
+	
+	if(switch_fsr == -1.0) {
+		//first time
+		switch_fsr = m_bps.GetBitRate()/1000000.0;
+	}
+	// update the 
+    double rate_difference = -1.0*getRateDifference(m_updatePriceTime); // (C_j - y_j(t)) after multiplying with -1 // multiplying with 10^6 to make it bits/sec
+	//double mean_queue_size = meanQueueSize(rate_difference);
+	double instant_queue_size = GetCurSize();
+
+	double avg_rtt = getAvgRtt();
+    double capacity = m_bps.GetBitRate()/1000000.0;
+	double ratio = (1.0 + ((m_updatePriceTime.GetSeconds()/avg_rtt) * (m_rcp_alpha * (rate_difference) - m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))))/capacity);
+	double fair_share_rate = switch_fsr * ratio;
+
+	if(fair_share_rate > capacity*10.0) {
+		fair_share_rate = capacity*10.0;
+	} 
+
+    if(fair_share_rate < 0.0) {
+        fair_share_rate = 0.0001; // this many mpbs
+    }
+	
+	switch_fsr = fair_share_rate;
+	current_price = 1.0/switch_fsr;
+	//current_price = switch_fsr;
+   
+    std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/1000000.0*avg_rtt)<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<std::endl;
+  	m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
+	return;
+  }
+	
+     
 
   if(!xfabric_price) 
   {
@@ -481,10 +569,6 @@ PrioQueue::updateLinkPrice(void)
    update_minimum = false;
    Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
   }
-  uint32_t currentQSize = GetCurSize();
- //  if(!xfabric_price) {
-//  std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<0<<" "<<0<<" "<<currentQSize<<std::endl;
-//	}
 
   m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
  
@@ -922,7 +1006,7 @@ PrioQueue::sort_by_priority(std::map<std::string, double> prios)
   
   return sorted_flows;
 }
-  
+
 
 
 bool 
@@ -971,6 +1055,10 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
      running_min_prio = p_residue;
    }
 
+   if(alpha_fair_rcp) {
+		updateAvgRtt(p_residue); 
+	}
+
   if(m_pkt_tagged && !m_pfabricdequeue) {
     MyTag tag;
     std::string flowkey = GetFlowKey(min_pp);
@@ -997,6 +1085,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   /* Also store time of arrival for each packet */
   //pkt_arrival[pkt_uid] = Simulator::Now().GetNanoSeconds();
   incoming_bytes += min_pp->GetSize(); 
+//  std::cout<<"pkt arrival of size "<<min_pp->GetSize()<<" linkid_string "<<linkid_string<<" flow "<<GetFlowKey(min_pp)<<std::endl;
     
 
   // Now, enqueue    
@@ -1047,7 +1136,7 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
         } // if pfabric == 1 
     } /* if queue is going to be full */
 
-  else if (!xfabric_price && ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue >= m_ECNThreshBytes)) ||
+  else if (!alpha_fair_rcp && !xfabric_price && ((m_mode == QUEUE_MODE_BYTES && (m_bytesInQueue >= m_ECNThreshBytes)) ||
         (m_mode == QUEUE_MODE_PACKETS && m_packets.size() >= m_ECNThreshPackets))) 
     {
           // NS_LOG_UNCOND("Queue size greater than ECNThreshold. Marking packet");
@@ -1291,7 +1380,18 @@ PrioQueue::DoDequeue (void)
     }
 
    PriHeader ph = temp_pheader.GetData();
-   ph.netw_price += current_price;
+
+ //  if(alpha_fair_rcp) {
+	    //std::cout<<" link "<<linkid_string<<" time "<<Simulator::Now().GetSeconds()<<" ph.netw_price "<<ph.netw_price<<" current_price "<<current_price<<std::endl;
+//		if (ph.netw_price > current_price) {
+//			ph.netw_price = current_price;
+//		}
+//	} else {
+   
+	   ph.netw_price += current_price;
+//	}
+
+	
    temp_pheader.SetData(ph);
 
 

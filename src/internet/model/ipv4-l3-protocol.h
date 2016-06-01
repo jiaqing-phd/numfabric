@@ -113,6 +113,7 @@ public:
   };
 
   double SetTargetRateDGD(double current_netw_price, std::string flowkey);
+  double SetFlowRtt(double rtt, std::string fkey);
 
   /* Data structures required for priority kanthi */
   typedef std::map< std::string, uint32_t> FlowId_;
@@ -120,6 +121,7 @@ public:
   typedef std::map< std::string, double> FlowRP_;
   typedef std::map< std::string, double>::iterator FlowRPIter_;
   bool m_pfabric;
+  bool alpha_fair_rcp;
   
   std::map<uint32_t, double> fsizes_copy;
   std::map<uint32_t, double> fweights_copy;
@@ -210,6 +212,7 @@ public:
   double deq_bytes;
   std::map<std::string, double> cnp;
   std::map<std::string, double> flow_target_rate;
+  std::map<std::string, double> flow_rtt;
   double sample_deadline;
   double utilInverse(std::string s, double y, int method);
   double utilInverse(std::string s, double y);

@@ -121,16 +121,6 @@ plt.legend(loc='upper right')
 plt.savefig('%s/%s.%s.png' %(pre,pre,"datasentdiff"))
 plt.draw()
 
-plt.figure(5)
-plt.title("DCTCP alpha")
-plt.xlabel('Time in seconds')
-plt.ylabel("alpha")
-for key in dctcp_times:
-      print key
-      plt.plot(dctcp_times[key], dctcp_alphas[key], label=str(key))
-plt.legend(loc='upper right')
-plt.draw()
-plt.savefig("%s/%s.%s.png" %(pre,pre,"dctcp_alphas"))
 
 #cwndx = {}
 #cwndy = {}

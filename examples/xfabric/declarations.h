@@ -65,6 +65,9 @@ extern double flow3_starttime;
 extern double dgd_alpha ;
 extern double target_queue ;
 
+extern double rcp_alpha;
+extern double rcp_beta;
+
 /* Deadline variables */
 extern bool deadline_mode;
 extern bool scheduler_mode_edf;
@@ -186,6 +189,7 @@ void startflowwrapper(std::vector<uint32_t>, std::vector<uint32_t>);
 extern std::vector<uint32_t> sourcenodes;//(max_system_flows, 0);
 extern std::vector<uint32_t> sinknodes;//(max_system_flows, 0);
 extern uint32_t ninety_fifth;
+extern bool alpha_fair_rcp;
 
 extern double LastEventTime;
 extern std::vector<Ptr<PacketSink> >sink_objects;
