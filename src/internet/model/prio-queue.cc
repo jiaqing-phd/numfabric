@@ -1086,10 +1086,11 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
         Ipv4Header min_ipheader;
         PrioHeader pheader;
         PppHeader ppp;
-        Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-        double rand_num = uv->GetValue(0.0, 1.0);
+        //Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+        //double rand_num = uv->GetValue(0.0, 1.0);
 
-        if(min_pp && rand_num > 0.5)
+        //if(min_pp && rand_num > 0.5)
+        if(min_pp)
         {
           min_pp->RemoveHeader(ppp);
           min_pp->RemoveHeader(pheader);

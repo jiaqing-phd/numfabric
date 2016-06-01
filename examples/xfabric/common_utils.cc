@@ -488,7 +488,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
   double current_rate = 0.0;
   std::vector<double> error_vector;
   std::vector<double> nonerror_vector;
-
+/*
   // iterate over all the sinkapp objects
   for(unsigned int i=0; i<sink_objects.size(); i++) {
       Ptr<PacketSink> sobj = sink_objects[i];
@@ -496,7 +496,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
       double ideal_rate = opt_drates[epoch_number][sobj->m_flowID] * 10000.0;
       std::cout<<"sinkdata "<<Simulator::Now().GetSeconds()<<" flowid "<<sobj->m_flowID<<" totalRx "<<sobj->GetTotalRx()*8<<" epoch "<<epoch_num<<" ideal_rate "<<ideal_rate<<std::endl;
   }
-
+*/
 
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
@@ -545,20 +545,20 @@ CheckIpv4Rates (NodeContainer &allNodes)
     }
   }
   uint32_t total_flows = error_vector.size() + nonerror_vector.size();
-  std::cout<<" error_vector size "<<error_vector.size()<<std::endl;
+  std::cout<<" flows less than 0.1 error "<<error_vector.size()<<std::endl;
   if(error_vector.size() >= 0.95 * total_flows) {
     // 95th percentile reached.. how many epochs since 95th percentile reached?
-    std::cout<<" 95th percentil flows match "<<ninety_fifth<<std::endl;
+    std::cout<<" 95th percentil flows match continuous count "<<ninety_fifth<<" epoch "<<getEpochNumber()<<std::endl;
     ninety_fifth++;
   } else {
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth > 500) {
-    std::cout<<" More than 10 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-10.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
+  if(ninety_fifth > 50) {
+    std::cout<<" More than 50 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-50.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
-    //move_to_next();
+    move_to_next();
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   

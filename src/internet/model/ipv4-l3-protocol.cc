@@ -314,7 +314,8 @@ Ipv4L3Protocol::QueueWithUs (Ptr<Packet> packet,
   if(m_sendEvent[flowkey].IsRunning()) {
     /* nothing to do.. it will send when it can */
   } else {
-    Simulator::ScheduleNow(&Ipv4L3Protocol::CheckToSend, this, flowkey);
+//    Simulator::ScheduleNow(&Ipv4L3Protocol::CheckToSend, this, flowkey);
+    CheckToSend(flowkey);
   }
   deq_bytes += packet->GetSize() + 46;
   
@@ -1577,9 +1578,9 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
       if(num_hops.find(flowkey) != num_hops.end()) {
       	flow_num_hops = num_hops[flowkey];
       } else {
-    	flow_num_hops = 4;
+   	    flow_num_hops = 4;
       }	
-//   }
+//  }
 
     if(price_valid[flowkey]) {
       priheader.residue = priheader.residue / (1.0*flow_num_hops);

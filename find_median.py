@@ -11,4 +11,4 @@ with open(sys.argv[1]) as f:
 
 if(len(numbers) > 0):
 	median = numbers[len(numbers)/2]
-	print("%f %d\n" %(median, len(numbers)))
+	print("%f %d" %(median, len(numbers)))

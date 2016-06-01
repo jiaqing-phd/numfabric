@@ -390,7 +390,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
   if(Simulator::Now().GetSeconds() - LastEventTime >= 0.09999999) { 
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<epoch_number<<std::endl;
    }
-  double delay = 0.001;
+  double delay = 0.1;
   next_epoch_event = Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
   epoch_number++;
   ninety_fifth = 0;
