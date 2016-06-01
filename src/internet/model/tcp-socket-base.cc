@@ -1309,6 +1309,18 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
 }
 
 double
+TcpSocketBase::updateFlowRTT(double rtt)
+{
+    //this is the source
+     std::stringstream ss;
+     ss<<m_endPoint->GetLocalAddress()<<":"<<m_endPoint->GetPeerAddress()<<":"<<m_endPoint->GetPeerPort();
+     std::string flowkey = ss.str();
+     Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
+     double tr = ipv4->SetFlowRtt(rtt, flowkey);
+     return tr;
+}
+
+double
 TcpSocketBase::updateDGDTargetRate(double netw_price)
 {
     //this is the source
@@ -2275,6 +2287,7 @@ TcpSocketBase::EstimateRtt (const TcpHeader& tcpHeader)
     m_lastRtt = nextRtt;
     lastRtt_copy = m_lastRtt;
 //    std::cout<<"node "<<m_node->GetId()<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<std::endl;
+	updateFlowRTT(lastRtt_copy.GetSeconds());
     
     NS_LOG_FUNCTION(this << m_lastRtt);
   }

@@ -8,9 +8,9 @@ namespace ns3 {
 class PriHeader
 {
   public:
-    double wfq_weight;
+          double wfq_weight;
 	  double residue;
-	  double netw_price;
+	  double netw_price; // or the fairshare rate
     PriHeader(double wfq_weight, double res, double price);
 };
 

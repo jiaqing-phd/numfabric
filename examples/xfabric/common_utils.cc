@@ -226,6 +226,10 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("desynchronize", "desynchronize", desynchronize);
   cmd.AddValue ("dgd_m", "dgd_m", multiplier);
   cmd.AddValue ("opt_rates_file", "opt_rates_file", opt_rates_file);
+
+  cmd.AddValue ("rcp_alpha", "rcp_alpha", rcp_alpha);
+  cmd.AddValue ("rcp_beta", "rcp_beta", rcp_beta);
+  cmd.AddValue ("alpha_fair_rcp", "alpha_fair_rcp", alpha_fair_rcp);
   std::cout<<"desync is "<<desynchronize<<std::endl;
 
   return cmd;
@@ -253,6 +257,10 @@ void dump_config(void)
   std::cout<<"beta_val "<<xfabric_beta<<std::endl;
   std::cout<<"host_compensate "<<host_compensate<<std::endl;
 
+  std::cout<<"rcp alpha "<<rcp_alpha<<std::endl;
+  std::cout<<"rcp beta "<<rcp_beta<<std::endl;
+  std::cout<<"alpha fair rcp "<<alpha_fair_rcp<<std::endl;
+
   std::string::size_type sz;
   double edge_data = atof(get_datarate(edge_datarate).c_str());
   double fabric_data = atof(get_datarate(fabric_datarate).c_str())/edge_data; 
@@ -266,6 +274,9 @@ void common_config(void)
   // get link rate from edge_datarate string
   link_rate = ONEG * atof(get_datarate(edge_datarate).c_str());
   double total_rtt = link_delay * 8.0 *2.0; 
+  if(alpha_fair_rcp == true) {
+	total_rtt *= 2.0;  //testing
+  }
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
@@ -304,6 +315,11 @@ void common_config(void)
     Config::SetDefault("ns3::Ipv4L3Protocol::m_pkt_tag", BooleanValue(pkt_tag));
   }
   Config::SetDefault("ns3::PrioQueue::desynchronize" , BooleanValue(desynchronize));
+	
+  Config::SetDefault("ns3::PrioQueue::rcp_alpha", DoubleValue(rcp_alpha));
+  Config::SetDefault("ns3::PrioQueue::rcp_beta", DoubleValue(rcp_beta));
+  Config::SetDefault("ns3::PrioQueue::alpha_fair_rcp",BooleanValue(alpha_fair_rcp));
+  Config::SetDefault("ns3::Ipv4L3Protocol::alpha_fair_rcp", BooleanValue(alpha_fair_rcp));
 
   Config::SetDefault("ns3::Ipv4L3Protocol::wfq_testing", BooleanValue(wfq));
     

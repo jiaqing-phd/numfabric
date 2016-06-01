@@ -67,6 +67,7 @@ public:
   bool need_echo;
   void setFlows(void);
   double updateDGDTargetRate(double);
+  double updateFlowRTT(double rtt);
   Ipv4EndPoint*       m_endPoint;   //!< the IPv4 endpoint made public 12/21 Kanthi:
   /**
    * Get the type ID.

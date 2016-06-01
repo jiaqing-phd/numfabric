@@ -119,11 +119,22 @@ public:
   std::map<uint32_t, double>flow_weights;
   bool init_reset;
   double m_gamma, m_gamma1, m_alpha; // TBD - initialize these
+  double m_rcp_beta, m_rcp_alpha;
   double m_target_queue;
 
   bool update_minimum;
   void enableUpdates(void);
   bool host_compensate;
+  bool alpha_fair_rcp;
+
+  void updateAvgRtt(double);
+  double getAvgRtt(void);
+  double meanQueueSize(double);
+  double last_link_rate;
+  double switch_fsr;
+  //double rcp_a;
+  //double rcp_b;
+  double avg_rtt;
 
   EventId m_updateEvent;
 

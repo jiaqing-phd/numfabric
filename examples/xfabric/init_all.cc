@@ -56,6 +56,9 @@ double multiplier = 0.0000000001;
 double dgd_gamma = 1.0;
 double dgd_alpha = 0.3;
 
+double rcp_alpha = 0.1;
+double rcp_beta = 0.0000001;
+
 
 double dt_val = 0.000012;  // should be in seconds
 double target_queue = 15000.0; // DGD parameter
@@ -83,6 +86,7 @@ bool delay_mark_value = false;
 uint32_t vpackets = 1;
 
 bool host_compensate;
+bool rcp;
 
 /* TCP variables */
 uint32_t max_segment_size = 1410; // reduced further to allow for 1 bytes counter
@@ -185,6 +189,7 @@ double LastEventTime;
 std::list<uint32_t> flows_to_start;
 std::list<uint32_t> flows_to_stop;
 std::list<uint32_t> event_list;
+bool alpha_fair_rcp;
 
 
 #endif 
