@@ -445,7 +445,7 @@ PrioQueue::updateLinkPrice(void)
 	double instant_queue_size = GetCurSize();
 
 	double avg_rtt = getAvgRtt();
-    double capacity = m_bps.GetBitRate()/1000000.0;
+  double capacity = m_bps.GetBitRate()/1000000.0;
 	double ratio = (1.0 + ((m_updatePriceTime.GetSeconds()/avg_rtt) * (m_rcp_alpha * (rate_difference) - m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))))/capacity);
 	double fair_share_rate = switch_fsr * ratio;
 
@@ -453,15 +453,15 @@ PrioQueue::updateLinkPrice(void)
 		fair_share_rate = capacity*10.0;
 	} 
 
-    if(fair_share_rate < 0.0) {
-        fair_share_rate = 0.0001; // this many mpbs
-    }
+  if(fair_share_rate < 0.0) {
+     fair_share_rate = 1000000.0*12000.0/(1000000.0*avg_rtt); // minimum 10 pkts per rtt
+  }
 	
 	switch_fsr = fair_share_rate;
 	current_price = 1.0/switch_fsr;
 	//current_price = switch_fsr;
    
-    std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/1000000.0*avg_rtt)<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<std::endl;
+/*    std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/1000000.0*avg_rtt)<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<std::endl; */
   	m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
 	return;
   }
@@ -1175,10 +1175,11 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
         Ipv4Header min_ipheader;
         PrioHeader pheader;
         PppHeader ppp;
-        Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-        double rand_num = uv->GetValue(0.0, 1.0);
+        //Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+        //double rand_num = uv->GetValue(0.0, 1.0);
 
-        if(min_pp && rand_num > 0.5)
+        //if(min_pp && rand_num > 0.5)
+        if(min_pp)
         {
           min_pp->RemoveHeader(ppp);
           min_pp->RemoveHeader(pheader);

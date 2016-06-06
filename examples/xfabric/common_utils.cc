@@ -561,18 +561,18 @@ CheckIpv4Rates (NodeContainer &allNodes)
     }
   }
   uint32_t total_flows = error_vector.size() + nonerror_vector.size();
-  std::cout<<" error_vector size "<<error_vector.size()<<std::endl;
+  std::cout<<" flows less than 0.1 error "<<error_vector.size()<<std::endl;
   if(error_vector.size() >= 0.95 * total_flows) {
     // 95th percentile reached.. how many epochs since 95th percentile reached?
-    std::cout<<" 95th percentil flows match "<<ninety_fifth<<std::endl;
+    std::cout<<" 95th percentil flows match continuous count "<<ninety_fifth<<" epoch "<<getEpochNumber()<<std::endl;
     ninety_fifth++;
   } else {
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth > 50) {
+  if(ninety_fifth > 100) {
     std::cout<<" More than 50 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-50.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-100.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
     //move_to_next();
   }

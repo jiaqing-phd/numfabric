@@ -151,10 +151,9 @@ double Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string f
   if(alpha_fair_rcp) {
 	  flow_target_rate[flowkey] = 1.0/current_netw_price;
 	  //flow_target_rate[flowkey] = current_netw_price;
-      if(flow_target_rate[flowkey]*1000000.0 > line_rate) {
-		flow_target_rate[flowkey] = line_rate/1000000.0;
+    if(flow_target_rate[flowkey]*1000000.0 > line_rate) {
+		  flow_target_rate[flowkey] = line_rate/1000000.0;
 	  }
-//  std::cout<<" Node "<<m_node->GetId()<<" flow "<<flowids[flowkey]<<" target_rate_dgd = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
    }
   return target_rate;
 }
@@ -1603,7 +1602,7 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
       if(num_hops.find(flowkey) != num_hops.end()) {
       	flow_num_hops = num_hops[flowkey];
       } else {
-    	flow_num_hops = 4;
+   	    flow_num_hops = 4;
       }	
 	}
 //   }

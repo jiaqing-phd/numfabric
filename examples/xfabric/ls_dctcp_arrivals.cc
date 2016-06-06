@@ -410,7 +410,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
     std::cout<<Simulator::Now().GetSeconds()<<" start_flows because less"<<std::endl;
     start_flows(sourcenodes, sinknodes);
   } 
-  if(Simulator::Now().GetSeconds() - LastEventTime >= 0.04999) { 
+  if(Simulator::Now().GetSeconds() - LastEventTime >= 0.04999999) {  // make this equivalent to delay parameter below
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<epoch_number<<std::endl;
    }
   double delay = 0.05;
