@@ -125,6 +125,7 @@ public:
   
   std::map<uint32_t, double> fsizes_copy;
   std::map<uint32_t, double> fweights_copy;
+  double my_fct_alpha;
   
   double stop_time;
   void addToDropList(uint32_t id);

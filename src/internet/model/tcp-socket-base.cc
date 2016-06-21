@@ -929,8 +929,10 @@ TcpSocketBase::DoForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t port
       NS_LOG_ERROR ("Bytes removed: " << bytesRemoved << " invalid");
       return; // Discard invalid packet
     }
-
-  current_netw_price = tcpHeader.GetPrice();
+  
+   current_netw_price = tcpHeader.GetPrice();
+  
+  
   updateDGDTargetRate(current_netw_price);
 
   ReadOptions (tcpHeader);
@@ -1255,7 +1257,7 @@ TcpSocketBase::ProcessSynSent (Ptr<Packet> packet, const TcpHeader& tcpHeader)
 
   current_netw_price = tcpHeader.GetPrice(); //added recently 1/9
   double tr = updateDGDTargetRate(current_netw_price);
-  resetCW(tr);
+  //resetCW(tr);
 
 //  std::cout<<Simulator::Now().GetSeconds()<<" Node "<<m_node->GetId()<<" ProcessSynRecvd price "<<current_netw_price<<" target_rate "<<tr<<std::endl;
 

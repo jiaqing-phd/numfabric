@@ -18,7 +18,7 @@ weight_index=8
 ecmp_hash_index=9
 event_epoch=0.1
 
-max_sim_time=1.199
+max_sim_time=100.0
 num_flow_index = 1
 num_port_index = 1
 

@@ -9,6 +9,8 @@ import numpy as np
 pre = sys.argv[1];
 dir = sys.argv[1]
 
+max_epochs = 99
+
 if not os.path.exists(dir):
   os.makedirs(dir)
 
@@ -215,9 +217,10 @@ def get_epoch_data(epoch_num, flows_changed):
 #dead_flow_sizes = get_deadflows(sys.argv[1])
 ninety_fifths = []
 
-for epochs in range(1, 100):
+for epochs in range(1, max_epochs):
     flows_changed = find_change(epochs)
     (flow_diff_times, flow_diffs, flow_data) = get_epoch_data(epochs, flows_changed)
+    print("num_flows_changed epoch %d %d" %(epochs, len(flow_diffs)))
 
     # when did 95% of them come down to 10% and stay there for 10 instances
     below_10_data = []

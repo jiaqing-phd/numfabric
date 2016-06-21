@@ -4,6 +4,14 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+#min_time = 1.30194
+#max_time = 1.36509
+
+min_time = 1.0
+max_time = 10.0
+
+excess_sums = []
+
 f = open(sys.argv[1]+".out")
 pre = sys.argv[1];
 dir = sys.argv[1]
@@ -40,6 +48,7 @@ def ewma(values, g=1.0/8):
         ret.append(prev)
     return ret
 
+excess_sum = 0.0
 
 for line in f:
   l1 = line.rstrip();
@@ -54,11 +63,18 @@ for line in f:
         y[nid] = []
     (x[nid]).append(float(xy[2]));
     (y[nid]).append(float(xy[3]));
-  if(xy[0] == "RatePrio"):
+  if(xy[0] == "DestRate"):
     flow_id=int(xy[2])
     t1 = float(xy[3])
     rate=float(xy[4])
     prio= float(xy[5])
+    epoch = int(xy[7])
+
+    if(t1 < min_time or t1 > max_time):
+      continue
+
+    #if(epoch > 1):
+    #  break
 
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
@@ -67,7 +83,13 @@ for line in f:
 
     dtimes[flow_id].append(t1)
     drates[flow_id].append(rate)
-    dprios[flow_id].append(prio)
+    dprios[flow_id].append((rate-prio)/prio)
+    #if((rate-prio)/prio < -0.3):
+    #  print flow_id
+    #print("%d %f %f excess %f" %(flow_id, rate, prio, (rate-prio)))
+    if(rate > prio):
+      excess_sum += (rate-prio)
+    excess_sums.append(excess_sum)
   if(len(xy)> 2 and xy[1] == "TotalRate"):
     rtime.append(float(xy[0]))
     trate.append(float(xy[2])/total_capacity)
@@ -108,16 +130,17 @@ for line in f:
 colors = ['r','b','g', 'm', 'c', 'y','k']
 
 plt.figure(1)
-plt.title("Sending rates")
+plt.title("Sending rates"+sys.argv[1])
 i=0
 for key in dtimes:
-  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key)) 
+#  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key)) 
+  plt.plot(dtimes[key], ewma(dprios[key], 1.0), colors[i], label=str(key)) 
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')
 plt.ylabel('Fraction of total capacity')
-plt.legend(loc='upper right')
-plt.savefig('%s/%s.%s.jpg' %(pre,pre,"load"))
+#plt.legend(loc='upper right')
+#plt.savefig('%s/%s.%s.jpg' %(pre,pre,"load"))
 
 plt.draw()
 
@@ -128,13 +151,14 @@ for f in qtimes:
   plt.plot(qtimes[f], qsizes[f], label=str(f))
 plt.xlabel("Time in seconds")
 plt.ylabel("Bytes")
-plt.legend(loc='upper right')
-plt.savefig("%s/%s.png" %(pre,"queue_sizes"))
+#plt.legend(loc='upper right')
+#plt.savefig("%s/%s.png" %(pre,"queue_sizes"))
+
+#print(excess_sums)
 plt.draw()
 
 plt.show()
 
-f.close()
 
 #cwndx = {}
 #cwndy = {}

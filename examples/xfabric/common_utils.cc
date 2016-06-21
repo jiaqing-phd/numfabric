@@ -159,7 +159,7 @@ CheckQueueSize (Ptr<Queue> queue)
   }
 
   
-//    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
+    Simulator::Schedule (Seconds (sampling_interval), &CheckQueueSize, queue);
     if(Simulator::Now().GetSeconds() >= sim_time+1.0) {
       Simulator::Stop();
     }
@@ -274,10 +274,8 @@ void common_config(void)
   // get link rate from edge_datarate string
   link_rate = ONEG * atof(get_datarate(edge_datarate).c_str());
   double total_rtt = link_delay * 8.0 *2.0; 
-  if(alpha_fair_rcp == true) {
-	total_rtt *= 2.0;  //testing
-  }
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
+
   uint32_t initcwnd = (bdproduct / max_segment_size) +1;
   uint32_t ssthresh = initcwnd * max_segment_size;
   LastEventTime = 1.0;
@@ -318,6 +316,7 @@ void common_config(void)
 	
   Config::SetDefault("ns3::PrioQueue::rcp_alpha", DoubleValue(rcp_alpha));
   Config::SetDefault("ns3::PrioQueue::rcp_beta", DoubleValue(rcp_beta));
+  Config::SetDefault("ns3::PrioQueue::fct_alpha", DoubleValue(fct_alpha));
   Config::SetDefault("ns3::PrioQueue::alpha_fair_rcp",BooleanValue(alpha_fair_rcp));
   Config::SetDefault("ns3::Ipv4L3Protocol::alpha_fair_rcp", BooleanValue(alpha_fair_rcp));
 
@@ -505,6 +504,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
   std::vector<double> error_vector;
   std::vector<double> nonerror_vector;
 
+/*
   // iterate over all the sinkapp objects
   for(unsigned int i=0; i<sink_objects.size(); i++) {
       Ptr<PacketSink> sobj = sink_objects[i];
@@ -512,7 +512,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
       double ideal_rate = opt_drates[epoch_number][sobj->m_flowID] * 10000.0;
       std::cout<<"sinkdata "<<Simulator::Now().GetSeconds()<<" flowid "<<sobj->m_flowID<<" totalRx "<<sobj->GetTotalRx()*8<<" epoch "<<epoch_num<<" ideal_rate "<<ideal_rate<<std::endl;
   }
-
+*/
 
   uint32_t N = allNodes.GetN(); 
   for(uint32_t nid=0; nid < N ; nid++)
@@ -571,7 +571,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
   }
 
   if(ninety_fifth > 100) {
-    std::cout<<" More than 50 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<" More than 100 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-100.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
     //move_to_next();

@@ -27,7 +27,11 @@ for line in f:
 orig_prefix=arguments["prefix"]
 
 print(orig_prefix)
-for pupdate_time in (0.000016, 0.000032, 0.000048, 0.000064):
+#for pupdate_time in (0.000016, 0.000032, 0.000048, 0.000064, 0.000080, 0.000096, 0.000192):
+for pupdate_time in (0.00032, 0.00064):
+#for pupdate_time in (0.00005, 0.05):
+    if(pupdate_time == 0.05):
+      continue
     arguments["price_update_time"] = str(pupdate_time)
     prefix_str=orig_prefix
     prefix_str=prefix_str+"_"+arguments["price_update_time"]

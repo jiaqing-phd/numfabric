@@ -231,6 +231,12 @@ TypeId PrioQueue::GetTypeId (void)
                    BooleanValue (true),
                    MakeBooleanAccessor (&PrioQueue::alpha_fair_rcp),
                    MakeBooleanChecker ())
+    .AddAttribute ("fct_alpha",
+                   "Value of fct_alpha for xfabric",
+                   DoubleValue(1.0),
+                   MakeDoubleAccessor (&PrioQueue::fct_alpha),
+                   MakeDoubleChecker <double>())
+	
 ;
   return tid;
 }
@@ -294,6 +300,7 @@ PrioQueue::dropFlowPackets(std::string arg_flowkey)
         std::string flowkey = GetFlowKey(*pp);
         if(flowkey == arg_flowkey) {
  //           std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" erasing packet of flow "<<flowkey<<std::endl;
+            m_bytesInQueue -= (*pp)->GetSize();
             pp = m_packets.erase(pp);
         } else {
 //            std::cout<<Simulator::Now().GetSeconds()<<" Q "<<linkid_string<<" NOTerasing packet of flow "<<flowkey<<std::endl;
@@ -436,32 +443,37 @@ PrioQueue::updateLinkPrice(void)
   if(alpha_fair_rcp) {
 	
 	if(switch_fsr == -1.0) {
-		//first time
-		switch_fsr = m_bps.GetBitRate()/1000000.0;
+		//first time ; set the fair share to link rate
+		switch_fsr = m_bps.GetBitRate()/1000000.0;  // Mbps
 	}
 	// update the 
-    double rate_difference = -1.0*getRateDifference(m_updatePriceTime); // (C_j - y_j(t)) after multiplying with -1 // multiplying with 10^6 to make it bits/sec
-	//double mean_queue_size = meanQueueSize(rate_difference);
+    double rate_difference = -1.0*getRateDifference(m_updatePriceTime); // (C_j - y_j(t)) after multiplying with -1; the function returns (y_j(t) - C_j)
 	double instant_queue_size = GetCurSize();
 
 	double avg_rtt = getAvgRtt();
-  double capacity = m_bps.GetBitRate()/1000000.0;
-	double ratio = (1.0 + ((m_updatePriceTime.GetSeconds()/avg_rtt) * (m_rcp_alpha * (rate_difference) - m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))))/capacity);
+  double capacity = m_bps.GetBitRate()/1000000.0; //Mbps
+	double ratio = (1.0 + ((m_updatePriceTime.GetSeconds()/avg_rtt) * (m_rcp_alpha * (rate_difference) - m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))))/capacity);  // all in Mbps
 	double fair_share_rate = switch_fsr * ratio;
 
 	if(fair_share_rate > capacity*10.0) {
+    // Note: setting fair_share_rate to 1 * capacity caused
+    // sources to underutilize the links
 		fair_share_rate = capacity*10.0;
 	} 
 
-  if(fair_share_rate < 0.0) {
-     fair_share_rate = 1000000.0*12000.0/(1000000.0*avg_rtt); // minimum 10 pkts per rtt
+  if(fair_share_rate < 120.0) {
+     fair_share_rate = 120.0; //Mbps
   }
 	
 	switch_fsr = fair_share_rate;
-	current_price = 1.0/switch_fsr;
+  current_price = pow(switch_fsr, -1.0*fct_alpha);
+  std::cout<<"alpha at Q"<<fct_alpha<<std::endl;
+
+
+//	current_price = 1.0/switch_fsr;
 	//current_price = switch_fsr;
    
-/*    std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/1000000.0*avg_rtt)<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<std::endl; */
+  //  std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" fct_alpha "<<fct_alpha<<std::endl; 
   	m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
 	return;
   }
@@ -543,7 +555,7 @@ PrioQueue::updateLinkPrice(void)
    }
    //current_price = new_price;
    //
-   if(!host_compensate) {
+   if(!host_compensate) { // ALWAYS AVERAGE
      current_price = (1-xfabric_beta)*new_price + xfabric_beta*current_price;
    } else {
      current_price = new_price;
@@ -1085,7 +1097,8 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
   /* Also store time of arrival for each packet */
   //pkt_arrival[pkt_uid] = Simulator::Now().GetNanoSeconds();
   incoming_bytes += min_pp->GetSize(); 
-//  std::cout<<"pkt arrival of size "<<min_pp->GetSize()<<" linkid_string "<<linkid_string<<" flow "<<GetFlowKey(min_pp)<<std::endl;
+  //if(linkid_string == "23_129_23")
+  //std::cout<<Simulator::Now().GetSeconds()<<" pkt arrival of size "<<min_pp->GetSize()<<" linkid_string "<<linkid_string<<" flow "<<GetFlowKey(min_pp)<<std::endl;
     
 
   // Now, enqueue    
@@ -1175,11 +1188,11 @@ PrioQueue::DoEnqueue (Ptr<Packet> p)
         Ipv4Header min_ipheader;
         PrioHeader pheader;
         PppHeader ppp;
-        //Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
-        //double rand_num = uv->GetValue(0.0, 1.0);
+        Ptr<UniformRandomVariable> uv = CreateObject<UniformRandomVariable> ();
+        double rand_num = uv->GetValue(0.0, 1.0);
 
-        //if(min_pp && rand_num > 0.5)
-        if(min_pp)
+        if(min_pp && rand_num > 0.5)
+        //if(min_pp)
         {
           min_pp->RemoveHeader(ppp);
           min_pp->RemoveHeader(pheader);
@@ -1400,6 +1413,10 @@ PrioQueue::DoDequeue (void)
    ret_packet->AddHeader(temp_ip_header);
    ret_packet->AddHeader(temp_pheader);
    ret_packet->AddHeader(temp_ppp);
+
+   if(linkid_string == "23_129_23") {
+     //std::cout<<Simulator::Now().GetSeconds()<<"instant_queue_size "<<GetCurSize()<<std::endl;
+   }
 
    return ret_packet;
 }

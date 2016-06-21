@@ -84,8 +84,9 @@ for line in f:
       drates[flow_id] = []
 
     #drates[flow_id].append(rate)
-    if(abs((rate-ideal)/ideal) > 0.1):
-      dtimes[flow_id].append(t1)
+    #if(abs((rate-ideal)/ideal) > 0.1):
+    if(epoch == 25 and flow_id == 974):
+      dtimes[flow_id].append(rate)
       drates[flow_id].append((rate-ideal)/ideal)
     
 

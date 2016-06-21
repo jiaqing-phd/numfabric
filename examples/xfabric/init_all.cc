@@ -91,7 +91,7 @@ bool rcp;
 /* TCP variables */
 uint32_t max_segment_size = 1410; // reduced further to allow for 1 bytes counter
 uint32_t ssthresh_value = 3000;
-uint32_t recv_buf_size = 1310720;
+uint32_t recv_buf_size = 1310720; 
 uint32_t send_buf_size = 1310720;
 bool xfabric = true;
 bool xfabric_price = true;

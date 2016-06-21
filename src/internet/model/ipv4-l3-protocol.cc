@@ -149,12 +149,20 @@ double Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string f
   
   flow_target_rate[flowkey] = target_rate;
   if(alpha_fair_rcp) {
-	  flow_target_rate[flowkey] = 1.0/current_netw_price;
+//	  flow_target_rate[flowkey] = 1.0/current_netw_price;
+    flow_target_rate[flowkey] = pow(current_netw_price, -1.0/my_fct_alpha);
+    std::cout<<"fct_alpha "<<my_fct_alpha<<std::endl;
+//    std::cout<<" alpha hrere "<<my_fct_alpha<<std::endl;
+    
 	  //flow_target_rate[flowkey] = current_netw_price;
     if(flow_target_rate[flowkey]*1000000.0 > line_rate) {
 		  flow_target_rate[flowkey] = line_rate/1000000.0;
 	  }
    }
+  
+   if(flow_target_rate[flowkey] < 120.0) {
+      flow_target_rate[flowkey] = 120.0;
+  }
   return target_rate;
 }
 
@@ -281,7 +289,6 @@ void Ipv4L3Protocol::CheckToSend(std::string flowkey)
     uint32_t tcphsize = tcph.GetSerializedSize();
     if((p->GetSize() - tcphsize) == 0) {
         // it's an ack
-        //std::cout<<"control packet - godspeed"<<std::endl;
         trate = line_rate;
     }
     
@@ -1430,6 +1437,9 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   double pkt_rate = 10000.0;
   if(inter_arrival == -1) {  //invalid
 //    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<std::endl;
+    long_term_ewma_rate[flowkey] = line_rate/1000000.0;
+    short_term_ewma_rate[flowkey] = line_rate/1000000.0;
+    measurement_rate[flowkey] = line_rate/1000000.0;
     return;
   }
 //    std::cout<<Simulator::Now().GetSeconds()<<" updating average node "<<m_node->GetId()<<" flowkey "<<flowkey<<" inter_arrival "<<inter_arrival<<std::endl;
@@ -1449,7 +1459,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   // first time we got a rate feedback
 
   // print all long_term_ewma entries here
-
+/*
   if (long_term_ewma_rate.find(flowkey) == long_term_ewma_rate.end() || long_term_ewma_rate[flowkey] == 0.0) { // first time
 //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<std::endl;
     long_term_ewma_rate[flowkey] = pkt_rate;
@@ -1457,7 +1467,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
     measurement_rate[flowkey] = pkt_rate;
     return;
   }
-    
+ */   
 
   if(inter_arrival > 8000000) { // for a flow that was inactive for along time - 8 ms
 //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<" inter_arrival "<<inter_arrival<<std::endl;
@@ -1597,15 +1607,15 @@ PriHeader Ipv4L3Protocol::AddPrioHeader(Ptr<Packet> packet, Ipv4Header &ipHeader
 
 
     uint32_t flow_num_hops = 1;
- //   if(host_compensate) {
+ //  if(host_compensate) {
 	 if(!alpha_fair_rcp) {
       if(num_hops.find(flowkey) != num_hops.end()) {
       	flow_num_hops = num_hops[flowkey];
       } else {
    	    flow_num_hops = 4;
-      }	
-	}
-//   }
+     }	
+	 } 
+   //} 
 
     if(price_valid[flowkey]) {
       priheader.residue = priheader.residue / (1.0*flow_num_hops);
@@ -1706,6 +1716,7 @@ void Ipv4L3Protocol::setFlow(std::string flow, uint32_t flowid, double fsize, ui
 void Ipv4L3Protocol::setfctAlpha(double fct_alpha)
 {
   flowutil.SetFCTAlpha(fct_alpha);
+  my_fct_alpha = fct_alpha;
 }
 
 void

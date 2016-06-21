@@ -17,7 +17,7 @@ if not os.path.exists(dir):
 epoch_time = 0.1 #50 ms
 sample_time = 0.0001
 window = 10
-max_epochs = 2
+max_epochs = 100
 
 def find_change(epoch_num, old_rate, new_rate):
   flow_changed = {}

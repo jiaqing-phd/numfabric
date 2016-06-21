@@ -101,6 +101,7 @@ public:
   Time m_guardTime;
   double xfabric_beta;
   double latest_avg_prio, running_avg_prio;
+  double fct_alpha;
   int total_samples;
   double latest_min_prio, running_min_prio;
   void updateMinPrio(void);

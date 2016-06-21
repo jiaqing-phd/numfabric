@@ -60,13 +60,14 @@ fig_series=-1
 #    for rtime in (20000, 40000, 60000, 80000):
 #        if (rtime != 80000):# or rtime== 60000):  
 #            continue
-for rtime in (20000, 40000, 80000):
-#for pupdate_time in (0.000064, 0.000048):
+for pupdate_time in (0.000016, 0.000032, 0.000048, 0.000064, 0.00008, 0.00016, 0.00032, 0.00064):
+
+    rtime = 40000
     gupdate_time = 0.000005
-    pupdate_time = 0.000016
     ptime = rtime
+    mtime = ptime
+    eta_val = 5.0
     dt_val = 0.000006
-    eta_val = 10.0
 
     arguments["price_update_time"] = str(pupdate_time)
     arguments["guardtime"] = str(gupdate_time)
@@ -74,6 +75,7 @@ for rtime in (20000, 40000, 80000):
     arguments["kvalue_rate"] = str(rtime)
     arguments["kvalue_price"] = str(ptime)
     arguments["xfabric_eta"] = str(eta_val)
+    arguments["measurement_ewma"]=str(ptime)
     prefix_str=orig_prefix
     prefix_str=prefix_str+"_"+arguments["price_update_time"]+"_"+arguments["guardtime"]+"_"+arguments["dt_val"]+"_"+arguments["kvalue_price"]+"_"+arguments["xfabric_eta"]
     final_args=""
