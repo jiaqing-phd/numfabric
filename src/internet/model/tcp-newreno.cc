@@ -96,7 +96,7 @@ TcpNewReno::TcpNewReno (void)
 void
 TcpNewReno::init_values(void)
 {
-  d0 = 0.0010; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
+  d0 = 0.000016; //setting it at 200us. But, we need to set it to right value link_delay*max_links*2 from command line
 //  dt = 0.000048;
   m_dt = 0.00048;
   highest_ack_recvd = 0;
@@ -405,8 +405,12 @@ TcpNewReno::processRate(const TcpHeader &tcpHeader)
           Ptr<Ipv4L3Protocol> ipv4 = StaticCast<Ipv4L3Protocol > (m_node->GetObject<Ipv4> ());
           ipv4->updateAverages(flowkey, inter_arrival, getBytesAcked(tcpHeader));
           /* Now get the short term average for setting window */
-          double target_rate = ipv4->GetShortTermRate(flowkey);
-          unquantized_window = target_rate * (1000000.0/8.0) * (d0+m_dt);
+          double estimated_rate = ipv4->GetShortTermRate(flowkey);
+          if(estimated_rate < 0.0) {
+            estimated_rate = 0.0;
+//            return;
+          }
+          unquantized_window = estimated_rate * (1000000.0/8.0) * (d0+m_dt);
         
       //    std::cout<<"processRate flow "<<flowkey<<" node "<<m_node->GetId()<<" d0+dt "<<d0+m_dt<<" m_cWnd "<<m_cWnd<<" inter_arrival "<<inter_arrival<<" "<<Simulator::Now().GetNanoSeconds()<<" bytes_acked "<<bytes_acked<<" rtt "<<lastRtt_copy.GetNanoSeconds()<<" new cwnd "<<unquantized_window<<" using dt "<<m_dt<<std::endl; 
       

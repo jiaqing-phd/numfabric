@@ -151,7 +151,6 @@ double Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string f
   if(alpha_fair_rcp) {
 //	  flow_target_rate[flowkey] = 1.0/current_netw_price;
     flow_target_rate[flowkey] = pow(current_netw_price, -1.0/my_fct_alpha);
-    std::cout<<"fct_alpha "<<my_fct_alpha<<std::endl;
 //    std::cout<<" alpha hrere "<<my_fct_alpha<<std::endl;
     
 	  //flow_target_rate[flowkey] = current_netw_price;
@@ -162,7 +161,10 @@ double Ipv4L3Protocol::SetTargetRateDGD(double current_netw_price, std::string f
   
    if(flow_target_rate[flowkey] < 120.0) {
       flow_target_rate[flowkey] = 120.0;
-  }
+     }
+
+  //std::cout<<Simulator::Now().GetSeconds()<<" flow "<<flowkey<<" price "<<current_netw_price<<" rate "<<flow_target_rate[flowkey]<<std::endl;
+
   return target_rate;
 }
 
@@ -1157,12 +1159,21 @@ double Ipv4L3Protocol::GetMeasurementRate(std::string fkey)
 double Ipv4L3Protocol::GetRate(std::string fkey, Term term)
 {
   if(term == LONGER) { 
+    if (long_term_ewma_rate.find(fkey) == long_term_ewma_rate.end()) {
+      return -1;
+    }
     return long_term_ewma_rate[fkey];
   }
   if(term == SHORTER) {
+    if (short_term_ewma_rate.find(fkey) == short_term_ewma_rate.end()) {
+      return -1;
+    }
     return short_term_ewma_rate[fkey];
   }
   if(term == MEASUREMENT) {
+    if (measurement_rate.find(fkey) == measurement_rate.end()) {
+      return -1;
+    }
     return measurement_rate[fkey];
   }
   return -1;
@@ -1437,18 +1448,19 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   double pkt_rate = 10000.0;
   if(inter_arrival == -1) {  //invalid
 //    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<std::endl;
-    long_term_ewma_rate[flowkey] = line_rate/1000000.0;
+ /*   long_term_ewma_rate[flowkey] = line_rate/1000000.0;
     short_term_ewma_rate[flowkey] = line_rate/1000000.0;
-    measurement_rate[flowkey] = line_rate/1000000.0;
+    measurement_rate[flowkey] = line_rate/1000000.0; */
     return;
   }
 //    std::cout<<Simulator::Now().GetSeconds()<<" updating average node "<<m_node->GetId()<<" flowkey "<<flowkey<<" inter_arrival "<<inter_arrival<<std::endl;
 
-  if(inter_arrival == 0.0) {
+/*  if(inter_arrival == 0.0) {
 //    std::cout<<Simulator::Now().GetSeconds()<<" invalid inter-arrival - returning node "<<m_node->GetId()<<" flowkey "<<flowkey<<std::endl;
    inter_arrival = 0.0000000001; //shouldn't happen - fixing something I don't understand
    return;
   }
+*/
 
   // else calculate instant rate
   if(inter_arrival > 0.000000000001) { // bug fix - verify later
@@ -1459,7 +1471,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
   // first time we got a rate feedback
 
   // print all long_term_ewma entries here
-/*
+
   if (long_term_ewma_rate.find(flowkey) == long_term_ewma_rate.end() || long_term_ewma_rate[flowkey] == 0.0) { // first time
 //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<std::endl;
     long_term_ewma_rate[flowkey] = pkt_rate;
@@ -1467,7 +1479,7 @@ void Ipv4L3Protocol::updateAverages(std::string flowkey, double inter_arrival, d
     measurement_rate[flowkey] = pkt_rate;
     return;
   }
- */   
+    
 
   if(inter_arrival > 8000000) { // for a flow that was inactive for along time - 8 ms
 //    std::cout<<Simulator::Now().GetSeconds()<<" node "<<m_node->GetId()<<" first ewma update for flow "<<flowkey<<" with pkt rate "<<pkt_rate<<" inter_arrival "<<inter_arrival<<std::endl;

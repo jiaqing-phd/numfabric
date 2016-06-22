@@ -448,6 +448,7 @@ PrioQueue::updateLinkPrice(void)
 	}
 	// update the 
     double rate_difference = -1.0*getRateDifference(m_updatePriceTime); // (C_j - y_j(t)) after multiplying with -1; the function returns (y_j(t) - C_j)
+	//double instant_queue_size = GetCurSize() - 20000;
 	double instant_queue_size = GetCurSize();
 
 	double avg_rtt = getAvgRtt();
@@ -455,11 +456,14 @@ PrioQueue::updateLinkPrice(void)
 	double ratio = (1.0 + ((m_updatePriceTime.GetSeconds()/avg_rtt) * (m_rcp_alpha * (rate_difference) - m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))))/capacity);  // all in Mbps
 	double fair_share_rate = switch_fsr * ratio;
 
-	if(fair_share_rate > capacity*10.0) {
+  double upper_limit = capacity * pow(4.0, 1/fct_alpha) * 2.0;
+	if(fair_share_rate > upper_limit) {
     // Note: setting fair_share_rate to 1 * capacity caused
     // sources to underutilize the links
-		fair_share_rate = capacity*10.0;
-	} 
+		fair_share_rate = upper_limit;
+	}
+
+   
 
   if(fair_share_rate < 120.0) {
      fair_share_rate = 120.0; //Mbps
@@ -467,13 +471,12 @@ PrioQueue::updateLinkPrice(void)
 	
 	switch_fsr = fair_share_rate;
   current_price = pow(switch_fsr, -1.0*fct_alpha);
-  std::cout<<"alpha at Q"<<fct_alpha<<std::endl;
 
 
 //	current_price = 1.0/switch_fsr;
 	//current_price = switch_fsr;
    
-  //  std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" fct_alpha "<<fct_alpha<<std::endl; 
+//  std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" fct_alpha "<<fct_alpha<<std::endl; 
   	m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
 	return;
   }

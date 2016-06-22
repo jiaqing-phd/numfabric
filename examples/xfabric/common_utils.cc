@@ -273,10 +273,20 @@ void common_config(void)
 
   // get link rate from edge_datarate string
   link_rate = ONEG * atof(get_datarate(edge_datarate).c_str());
-  double total_rtt = link_delay * 8.0 *2.0; 
+  double total_rtt = link_delay * 8.0 *1.0; 
   uint32_t bdproduct = link_rate *total_rtt/(1000000.0* 8.0);
 
-  uint32_t initcwnd = (bdproduct / max_segment_size) +1;
+  //uint32_t initcwnd = (bdproduct / max_segment_size) +1;
+  uint32_t initcwnd = 0;
+
+  if(alpha_fair_rcp || strawmancc) {
+    initcwnd = bdproduct * 2.0;
+  } else {
+    initcwnd = bdproduct/4;
+  }
+
+  initcwnd = initcwnd / max_segment_size;
+
   uint32_t ssthresh = initcwnd * max_segment_size;
   LastEventTime = 1.0;
   pkt_tag = xfabric; 
@@ -570,11 +580,12 @@ CheckIpv4Rates (NodeContainer &allNodes)
     ninety_fifth = 0;
   }
 
-  if(ninety_fifth > 100) {
-    std::cout<<" More than 100 iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
-    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-100.0*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
+  double max_iterations= 250.0;
+  if(ninety_fifth > max_iterations) {
+    std::cout<<" More than "<<max_iterations<<" iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
+    std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-max_iterations*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
-    //move_to_next();
+    move_to_next();
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   
