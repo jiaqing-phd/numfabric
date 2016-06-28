@@ -196,6 +196,8 @@ extern std::vector<Ptr<PacketSink> >sink_objects;
 extern std::list<uint32_t> flows_to_start;
 extern std::list<uint32_t> flows_to_stop;
 extern std::list<uint32_t> event_list;
+extern bool mptcp;
+extern uint32_t num_subflows;
 
 
 #endif 

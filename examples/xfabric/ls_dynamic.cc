@@ -409,13 +409,21 @@ Ptr<EmpiricalRandomVariable>  SetUpEmpirical(std::string fname)
   if (myfile.is_open())
   {
     double val, one, prob;
+    if(fname.compare("ENTERPRISE_CDF") == 0) {
+        while(myfile >> val >> prob)
+        {
+          std::cout<<"EmpiricalRandSetup val = "<<val<<" prob = "<<prob<<std::endl;
+          x->CDF(val, prob); 
+        }
+     } else {
 
-    while(myfile >> val >> one >> prob)
-    {
+        while(myfile >> val >> one >> prob)
+        {
       
-      std::cout<<"EmpiricalRandSetup val = "<<val<<" prob = "<<prob<<" one "<<one<<std::endl;
-      x->CDF(val, prob); 
-    }
+          std::cout<<"EmpiricalRandSetup val = "<<val<<" prob = "<<prob<<" one "<<one<<std::endl;
+          x->CDF(val, prob); 
+        }
+     }
     myfile.close();
   } else {
     NS_LOG_UNCOND("EmpiricalRandSetup. File not found "<<fname );

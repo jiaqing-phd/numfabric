@@ -170,6 +170,8 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;  
+  cmd.AddValue ("num_subflows", "num_subflows", num_subflows);
+  cmd.AddValue ("mptcp", "mptcp",mptcp);
   cmd.AddValue ("measurement_ewma", "measurement_ewma", kvalue_measurement);
   cmd.AddValue ("wfq_testing", "wfq_testing", wfq);
   cmd.AddValue ("fct_alpha", "fctalpha for utility", fct_alpha);
@@ -482,6 +484,8 @@ void setUpMonitoring(void)
      StaticCast<Ipv4L3Protocol> (ipv4)->setlong_ewma_const(kvalue_price);
      StaticCast<Ipv4L3Protocol> (ipv4)->setshort_ewma_const(kvalue_rate);
      StaticCast<Ipv4L3Protocol> (ipv4)->setmeasurement_ewma_const(kvalue_measurement);
+     StaticCast<Ipv4L3Protocol> (ipv4)->setMPTCP(mptcp);
+
      
      //StaticCast<Ipv4L3Protocol> (ipv4)->setEpochUpdate(epoch_update_time);
      StaticCast<Ipv4L3Protocol> (ipv4)->setfctAlpha(fct_alpha);

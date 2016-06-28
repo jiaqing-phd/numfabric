@@ -21,6 +21,11 @@ def build(bld):
     obj = bld.create_ns3_program('ls_less_arrivals', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
     obj.source = ['ls_less_arrivals.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 
+    obj = bld.create_ns3_program('mptcp_toy', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['mptcp_toy.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+    obj = bld.create_ns3_program('mptcp_flows', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
+    obj.source = ['mptcp_flows.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
+
 #   obj = bld.create_ns3_program('random_traffic', ['core', 'internet' , 'network' , 'applications' , 'point-to-point', 'topology-read'])
 #   obj.source = ['random_traffic.cc', 'common_utils.cc', 'sending_app.cc', 'init_all.cc']
 

@@ -389,6 +389,11 @@ void Ipv4L3Protocol::setAlpha(double qtime)
   alpha = qtime;
 } 
 
+void Ipv4L3Protocol::setMPTCP(bool mptcp)
+{
+   m_mptcp = mptcp;
+}
+
 void Ipv4L3Protocol::setEpochUpdate(double qtime)
 {
   epoch_update_time = qtime;
@@ -1201,11 +1206,25 @@ double Ipv4L3Protocol::GetStorePrio(std::string fkey)
   return store_prio[fkey];
 }
 
-void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate)
+void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate1)
 {
   uint32_t fid = 0;
   fid = flowids[fkey];
   double pri = 0.0;
+
+  double cur_rate = 0.0;
+  if(m_mptcp) {
+    std::map<std::string, uint32_t>::iterator it;
+    for (it=flowids.begin(); it!=flowids.end(); ++it) {
+       //if(it->second != 0 && it->second != fid) {
+       if(it->second != 0) {
+     //     std::cout<<" Marginal utility adding subflow "<<it->first<<" with id "<<it->second<<" on node "<<m_node->GetId()<<" my id "<<fid<<" my rate "<<cur_rate1<<" adding "<<GetRate(it->first, SHORTER)<<" my key "<<fkey<<std::endl;
+         cur_rate += GetRate(it->first, SHORTER);
+       }
+    }
+  } else {
+    cur_rate = cur_rate1;
+  }
 
   /* This check to update priorities only at the source.. Not at a forwarding node */
     if(fid != 0) {
@@ -1322,7 +1341,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
    // the price was calculated using rates that were in Mbps. So, this rate is in Mbps
    // TODO: this number is link_rate
    double link_rate = line_rate;
-   double limit_tr = 10.0;
+   //double limit_tr = 10.0;
+   double limit_tr = 1.5; //change !!!
    double target_rate = limit_tr* link_rate;
    if(current_netw_price > 0.0) {
       if(m_method == 1) {
@@ -1333,56 +1353,44 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
         target_rate = utilInverse(flowkey, current_netw_price, ALPHA1UTILITY);
       }
     }
+
+
+	if(m_mptcp) {
+       /* sum up rates of all other subflows */
+       /* this flow's id */
+      uint32_t own_id = flowids[flowkey];
+      double subflow_sum = 0.0;
+      std::map<std::string, uint32_t>::iterator it;
+      for (it=flowids.begin(); it!=flowids.end(); ++it) {
+ //        if(own_id == it->second || it->second == 0) {
+         if(it->second == 0) {
+           continue;
+         }
+     //   std::cout<<" Target rate adding subflow "<<it->first<<" with id "<<it->second<<" on node "<<m_node->GetId()<<" my id "<<own_id<<std::endl;
+        subflow_sum += GetRate(it->first, SHORTER);
+       }
+
+       // subtract this from target rate
+     //  double final_rate = target_rate - subflow_sum;
+      // target_rate -= subflow_sum;
+      double final_rate = target_rate;
+       if(subflow_sum > 0.0)
+         final_rate = GetRate(flowkey, SHORTER) * (target_rate / subflow_sum);
+       std::cout<<" target_rate_debug node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds     ()<<" flow "<<own_id<<" target_rate "<<target_rate<<" final_rate "<<final_rate<<" subflow_sum      "<<subflow_sum<<std::endl;
+       target_rate = final_rate;
+     }
     
-//    std::cout<<" Node "<<m_node->GetId()<<" target_rate = "<<target_rate<<" for price "<<current_netw_price<<" "<<Simulator::Now().GetSeconds()<<std::endl;
     // Do we need to cap this ? 
     if(target_rate > (limit_tr* link_rate)) {
       target_rate = limit_tr* link_rate;
     } 
 
 
-    if(target_rate == 0.0) {
+    if(target_rate <= 0.0) {
       /* This happens for unknown flows - currently for the ACK packets. They must get the highest priority
        * So, their deadlines are closest - in the past ! */
       return 0.0;
     }
-
-
-/*
-    if(Simulator::Now().GetSeconds() < 1.02) {
-      if(flowids[flowkey] == 1)
-        target_rate = 1.0; //kanthicn test 
-      if(flowids[flowkey] == 2)
-        target_rate = 1.0; //kanthicn test 
-      if(flowids[flowkey] == 3)
-        target_rate = 8.0; //kanthicn test 
-    } else {
-      if(flowids[flowkey] == 1)
-        target_rate = 1.0; //kanthicn test 
-      if(flowids[flowkey] == 2)
-        target_rate = 2.0; //kanthicn test 
-      if(flowids[flowkey] == 3)
-        target_rate = 1.0; //kanthicn test 
-    }
-*/
-
-
-   /* if(flowids[flowkey] == 1) {
-      target_rate = 4.0;
-    }
-
-    if(flowids[flowkey] == 3) {
-      if(Simulator::Now().GetSeconds() > 1.01 && Simulator::Now().GetSeconds() <= 1.02) {
-        target_rate = 4.0 * 19.0; //kanthicn test 
-      } else {
-        target_rate = 1.0; //kanthicn test 
-      }
-    }
-  */ 
-
-    
-//    NS_LOG_LOGIC("getVirtualPktLength "<<packet->GetSize()<<" node "<<m_node->GetId());
-    // how long will it take to send this pkt out ?
 
 
     uint32_t pkt_dur = ((packet->GetSize() + 46) * 8.0 * 1000.0) / target_rate;  //in us since target_rate is in Mbps - multiplying by 1000 to get it in nanoseconds
@@ -1395,7 +1403,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
     }
     if(m_pfabric) {
       current_deadline = getflowsize(flowkey);
-      std::cout<<"pfabric true - flowid "<<flowids[flowkey]<<" flowsize "<<current_deadline<<std::endl;
+      //std::cout<<"pfabric true - flowid "<<flowids[flowkey]<<" flowsize "<<current_deadline<<std::endl;
     }
 
     last_deadline = current_deadline;

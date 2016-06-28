@@ -190,6 +190,8 @@ std::list<uint32_t> flows_to_start;
 std::list<uint32_t> flows_to_stop;
 std::list<uint32_t> event_list;
 bool alpha_fair_rcp;
+bool mptcp;
+uint32_t num_subflows;
 
 
 #endif 

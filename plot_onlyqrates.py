@@ -83,7 +83,7 @@ for line in f:
 
     dtimes[flow_id].append(t1)
     drates[flow_id].append(rate)
-    dprios[flow_id].append((rate-prio)/prio)
+    #dprios[flow_id].append((rate-prio)/prio)
     #if((rate-prio)/prio < -0.3):
     #  print flow_id
     #print("%d %f %f excess %f" %(flow_id, rate, prio, (rate-prio)))
@@ -133,8 +133,8 @@ plt.figure(1)
 plt.title("Sending rates"+sys.argv[1])
 i=0
 for key in dtimes:
-#  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key)) 
-  plt.plot(dtimes[key], ewma(dprios[key], 1.0), colors[i], label=str(key)) 
+  plt.plot(dtimes[key], ewma(drates[key], 1.0), colors[i], label=str(key)) 
+#  plt.plot(dtimes[key], ewma(dprios[key], 1.0), colors[i], label=str(key)) 
   i = (i+1)%len(colors)
 
 plt.xlabel('Time in seconds')

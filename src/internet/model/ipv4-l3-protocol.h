@@ -122,6 +122,7 @@ public:
   typedef std::map< std::string, double>::iterator FlowRPIter_;
   bool m_pfabric;
   bool alpha_fair_rcp;
+  bool m_mptcp;
   
   std::map<uint32_t, double> fsizes_copy;
   std::map<uint32_t, double> fweights_copy;
@@ -145,6 +146,7 @@ public:
   void setshort_ewma_const(double kvalue);
   void setmeasurement_ewma_const(double kvalue);
   void setLineRate(double d);
+  void setMPTCP(bool b);
 
   void setKay(double kvalue);
   void updateAverages(std::string flowkey, double inter_arrival, double pktsize);
