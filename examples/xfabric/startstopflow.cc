@@ -377,3 +377,4 @@ main (int argc, char *argv[])
 
   return 0;
 }
+void startflowwrapper(std::vector<uint32_t>, std::vector<uint32_t>){}

@@ -1206,6 +1206,114 @@ double Ipv4L3Protocol::GetStorePrio(std::string fkey)
   return store_prio[fkey];
 }
 
+double getInterpolation(double fvalue, double x_vec[], double y_vec[], uint32_t num_points ){
+
+    int i=0;
+    double output;
+     while( fvalue > x_vec[i]){
+        i++;
+        if (i > num_points){
+            i = num_points-1;
+            break;
+        }
+     }
+     if (i==0){
+      return 0.0;
+    }
+    if (fvalue > x_vec[num_points-1]){
+      return y_vec[num_points-1];
+    }
+    output=(fvalue - x_vec[i-1])*(y_vec[i] - y_vec[i-1])/(x_vec[i] - x_vec[i-1]) + y_vec[i-1];
+    return output;
+}
+
+double Bf(uint32_t fid, double fvalue){
+
+    double output;
+    
+    const int num_points=5;
+    double  x_vec1 []= {0, 1.0,   2.0, 3.0 , 5.0};
+    double  y_vec1 []=  {0, 10, 10.5, 20.0 , 20.5};
+    double  x_vec2 []= {0, 2.0,  2.5 , 3.5, 5.0};
+    double  y_vec2 []= {0, 0.5,  10.0 , 15.0, 15.5};
+    
+    /*const int num_points=4;
+    double  x_vec1 []= {0, 0.25,  .75 , 1.0000};
+    double  y_vec1 []=  {0, 0.25,  .75 , 1.0000};
+    double  x_vec2 []= {0, 0.25,  .75 , 1.0000};
+    double  y_vec2 []= {0, 0.5,  1.5 , 2.0000};
+    */
+    
+    /*
+    double  x_vec1 []= {0, 0.999900000000000 ,  1.999900000000000 , 99.999899999999997};
+    double  y_vec1 []= {0,  0.004999500000000 ,  0.014999000000000,  9.814990000000000};
+    double  x_vec2 []= {0, 0.999900000000000 ,  1.999900000000000 , 99.999899999999997};
+    double  y_vec2 []= {0,  0.004999500000000 ,  0.014999000000000,  9.814990000000000};
+    */
+    for(uint32_t i=0; i<num_points; i++) {
+        y_vec1[i] = y_vec1[i]*1e+03;
+        y_vec2[i] = y_vec2[i]*1e+03;
+    }
+
+    int i;
+    if (fid ==101){
+        output= getInterpolation(fvalue,x_vec1,y_vec1,num_points);
+        std::cout<<"BF OUTPUT fid "<<fid<<" output "<<output<<" fvalue "<<fvalue<<std::endl;
+    }
+
+    if (fid ==201){
+        output= getInterpolation(fvalue,x_vec2,y_vec2,num_points);
+        std::cout<<"BF OUTPUT fid "<<fid<<" output "<<output<<" fvalue "<<fvalue<<std::endl;
+    }
+
+    return output;
+
+}
+
+
+double Bf_inverse(uint32_t fid, double fvalue){
+
+    double output;
+    const int num_points=5;
+    double  y_vec1 []= {0, 1.0,   2.0, 3.0 , 5.0};
+    double  x_vec1 []=  {0, 10, 10.5, 20.0 , 20.5};
+    double  y_vec2 []= {0, 2.0,  2.5 , 3.5, 5.0};
+    double  x_vec2 []= {0, 0.5,  10.0 , 15, 15.5};
+    
+    /* 
+    const int num_points=4;
+
+    double  x_vec1 []= {0, 0.25,  .75 , 1.0000};
+    double  y_vec1 []=  {0, 0.25,  .75 , 1.0000};
+    double  x_vec2 []= {0, 0.5,  1.5 , 2.0000};
+    double  y_vec2 []= {0, 0.25,  .75 , 1.0000};
+    */
+
+/*    double  x_vec1 []= {0, 0.999900000000000 ,  1.999900000000000 , 99.999899999999997};
+    double  y_vec1 []= {0,  0.004999500000000 ,  0.014999000000000,  9.814990000000000};
+    double  x_vec2 []= {0, 0.999900000000000 ,  1.999900000000000 , 99.999899999999997};
+    double  y_vec2 []= {0,  0.004999500000000 ,  0.014999000000000,  9.814990000000000};
+  */  
+    for(uint32_t i=0; i<num_points; i++) {
+        x_vec1[i] = x_vec1[i]*1e+03;
+        x_vec2[i] = x_vec2[i]*1e+03;
+    }
+
+    int i;
+    if (fid ==101){
+        output= getInterpolation(fvalue,x_vec1,y_vec1,num_points);
+        std::cout<<"BFOUTPUT_INVERSE fid "<<fid<<" output "<<output<<" fvalue "<<fvalue<<std::endl;
+    }
+
+    if (fid ==201){
+        output= getInterpolation(fvalue,x_vec2,y_vec2,num_points);
+       std::cout<<"BFOUTPUT_INVERSE fid "<<fid<<" output "<<output<<" fvalue "<<fvalue<<std::endl;
+    }
+
+     return output;
+}
+
+
 void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate1)
 {
   uint32_t fid = 0;
@@ -1235,6 +1343,8 @@ void Ipv4L3Protocol::updateMarginalUtility(std::string fkey, double cur_rate1)
         pri = flowutil.getFCTUtilDerivative(fid, cur_rate);
       } else if(m_method == 3) {
         pri = flowutil.getAlpha1UtilByFlowID(fid, cur_rate);
+      } else if(m_method == 4) {
+        pri = flowutil.getAlpha1UtilByFlowID(fid, Bf_inverse( fid, cur_rate));
       }
         
     } else {
@@ -1351,6 +1461,8 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
         target_rate = utilInverse(flowkey, current_netw_price, FCTUTILITY);
       } else if(m_method == 3) {
         target_rate = utilInverse(flowkey, current_netw_price, ALPHA1UTILITY);
+      } else if(m_method == 4) {
+        target_rate =  Bf( flowids[flowkey]  ,utilInverse(flowkey, current_netw_price, ALPHA1UTILITY));
       }
     }
 
@@ -1376,7 +1488,7 @@ double Ipv4L3Protocol::getVirtualPktLength(Ptr<Packet> packet, Ipv4Header &ipHea
       double final_rate = target_rate;
        if(subflow_sum > 0.0)
          final_rate = GetRate(flowkey, SHORTER) * (target_rate / subflow_sum);
-       std::cout<<" target_rate_debug node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds     ()<<" flow "<<own_id<<" target_rate "<<target_rate<<" final_rate "<<final_rate<<" subflow_sum      "<<subflow_sum<<std::endl;
+//       std::cout<<" target_rate_debug node "<<m_node->GetId()<<" "<<Simulator::Now().GetSeconds     ()<<" flow "<<own_id<<" target_rate "<<target_rate<<" final_rate "<<final_rate<<" subflow_sum      "<<subflow_sum<<std::endl;
        target_rate = final_rate;
      }
     

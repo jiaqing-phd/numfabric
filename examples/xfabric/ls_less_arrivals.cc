@@ -24,7 +24,7 @@ uint32_t flow_started[maxx] = {0};
 Ptr<MyApp> sending_apps[maxx];
 uint32_t num_flows = 0;
 uint32_t min_flows_allowed = 2;
-uint32_t max_flows_allowed = 4;
+uint32_t max_flows_allowed = 5;
 std::map<uint32_t, std::string> flowkeys;
 
 void dropFlowFromQueues(uint32_t f)
@@ -314,7 +314,7 @@ void startFlowsStatic(void)
 void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_stopped = 0;
-  while (num_flows_stopped < 2) {
+  while (num_flows_stopped < 1) {
     UniformVariable urand;
     uint32_t i = urand.GetInteger(1, max_system_flows);
     std::cout<<"picked "<<i<<" to stop"<<std::endl;
@@ -353,7 +353,7 @@ void stop_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknod
 void start_flows(std::vector<uint32_t> sourcenodes, std::vector<uint32_t> sinknodes)
 {
   uint32_t num_flows_started = 0;
-    while(num_flows_started < 2) 
+    while(num_flows_started < 1) 
     {
      UniformVariable urand;
      uint32_t i = urand.GetInteger(1, max_system_flows-1);
@@ -393,7 +393,7 @@ void startflowwrapper( std::vector<uint32_t> sourcenodes, std::vector<uint32_t> 
         stop_flows(sourcenodes, sinknodes);
       }
   }
-  double delay = 0.1; //100ms
+  double delay = 0.05; //100ms
   Simulator::Schedule (Seconds (delay), &startflowwrapper, sourcenodes, sinknodes);
   epoch_number++;
   ninety_fifth = 0;

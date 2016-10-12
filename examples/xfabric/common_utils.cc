@@ -169,7 +169,8 @@ CheckQueueSize (Ptr<Queue> queue)
 CommandLine addCmdOptions(void)
 {
   
-  CommandLine cmd;  
+  CommandLine cmd;
+  cmd.AddValue ("bwe_enable" , "bwe_enable", bwe_enable);  
   cmd.AddValue ("num_subflows", "num_subflows", num_subflows);
   cmd.AddValue ("mptcp", "mptcp",mptcp);
   cmd.AddValue ("measurement_ewma", "measurement_ewma", kvalue_measurement);
@@ -589,7 +590,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
     std::cout<<" More than "<<max_iterations<<" iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-max_iterations*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
-    move_to_next();
+    //move_to_next();
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   

@@ -192,6 +192,7 @@ std::list<uint32_t> event_list;
 bool alpha_fair_rcp;
 bool mptcp;
 uint32_t num_subflows;
+bool bwe_enable;
 
 
 #endif 

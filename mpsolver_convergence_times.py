@@ -650,8 +650,10 @@ class Simulation:
   def update_rates_wrapper(self):
     if(self.method == "mp" or self.method == "maxmin"):
       rates = self.umax_mp.updateRates()
+      print rates
     if(self.method == "maxthroughput"):
       rates = self.update_maxthr_rates()
+      print rates
     return rates
 
   def sort_flows_on_arrivaltime(self):
@@ -675,7 +677,7 @@ class Simulation:
        self.execute_next_event()
        num_events+=1
        print( "num events taken %d" %(num_events))
-       if (num_events==100):
+       if (num_events==1):
          num_events=0
          rates = self.update_rates_wrapper()
          idx = 0

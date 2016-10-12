@@ -77,17 +77,17 @@ for line in f:
     rate=float(xy[4])
     ideal=float(xy[5])
     epoch = int(xy[7])
-    if( epoch > 1):
-        break
+    #if( epoch > 1):
+    #    break
     if(flow_id not in dtimes):
       dtimes[flow_id] = []
       drates[flow_id] = []
 
     #drates[flow_id].append(rate)
     #if(abs((rate-ideal)/ideal) > 0.1):
-    if(epoch == 25 and flow_id == 974):
-      dtimes[flow_id].append(rate)
-      drates[flow_id].append((rate-ideal)/ideal)
+    #if(epoch == 25 and flow_id == 974):
+    dtimes[flow_id].append(t1)
+    drates[flow_id].append(rate)
     
 
 colors = ['r','b','g', 'm', 'c', 'y','k']

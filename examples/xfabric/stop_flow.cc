@@ -329,6 +329,35 @@ main (int argc, char *argv[])
   cmd.AddValue ("deadline_mean", "deadline_mean", deadline_mean);
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
 
+  cmd.AddValue ("util_method", "util_method", util_method);
+  cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
+  cmd.AddValue ("dgd_alpha", "dgd_alpha", dgd_alpha);
+  cmd.AddValue ("dgd_gamma", "dgd_gamma", dgd_gamma);
+  cmd.AddValue ("target_queue", "target_queue", target_queue);
+  cmd.AddValue ("guardtime", "guardtime", guard_time);
+  cmd.AddValue ("pfabric_util", "pfabric_util",pfabric_util);
+  cmd.AddValue ("num_spines", "num_spines", num_spines);
+  cmd.AddValue ("num_leafs", "num_leafs", num_leafs);
+  cmd.AddValue ("num_hosts_per_leaf", "num_hosts_per_leaf", num_hosts_per_leaf);
+  cmd.AddValue ("fabric_datarate", "fabric_datarate", fabric_datarate);
+  cmd.AddValue ("edge_datarate", "edge_datarate", edge_datarate);
+  cmd.AddValue ("application_datarate", "application_datarate", application_datarate);
+  cmd.AddValue ("flow_ecmp", "flow_ecmp", flow_ecmp);
+  cmd.AddValue ("packet_spraying", "packet_spraying", packet_spraying);
+  cmd.AddValue ("dt_val", "dt_value", dt_val);
+  cmd.AddValue ("price_multiply", "price_multiply", price_multiply);
+  cmd.AddValue ("cdf_file", "cdf_file", empirical_dist_file);
+  cmd.AddValue ("num_flows", "num_flows", number_flows); 
+  cmd.AddValue ("desynchronize", "desynchronize", desynchronize);
+  cmd.AddValue ("dgd_m", "dgd_m", multiplier);
+  cmd.AddValue ("opt_rates_file", "opt_rates_file", opt_rates_file);
+
+  cmd.AddValue ("rcp_alpha", "rcp_alpha", rcp_alpha);
+  cmd.AddValue ("rcp_beta", "rcp_beta", rcp_beta);
+  cmd.AddValue ("alpha_fair_rcp", "alpha_fair_rcp", alpha_fair_rcp);
+  std::cout<<"desync is "<<desynchronize<<std::endl;
+
+
 
 
   cmd.Parse (argc, argv);
