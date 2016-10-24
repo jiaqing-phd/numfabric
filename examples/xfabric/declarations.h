@@ -54,7 +54,6 @@ extern double xfabric_eta;
 extern double xfabric_beta;
 extern double guard_time;
 extern double rate_update_time ;
-extern double dgd_gamma;
 extern double flow2_stoptime;
 extern double flow1_stoptime;
 extern double flow3_stoptime;
@@ -62,7 +61,8 @@ extern double flow2_starttime;
 extern double flow1_starttime;
 extern double flow3_starttime;
 
-extern double dgd_alpha ;
+extern double dgd_a;
+extern double dgd_b ;
 extern double target_queue ;
 
 extern double rcp_alpha;

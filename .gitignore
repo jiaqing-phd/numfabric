@@ -12,8 +12,6 @@
 *.npz
 *.npy
 
-opt_rates_*
-
 *.0_ct
 
 # Compiled Object files

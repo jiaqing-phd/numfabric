@@ -119,7 +119,7 @@ public:
   std::map<std::string, uint32_t>flow_ids;
   std::map<uint32_t, double>flow_weights;
   bool init_reset;
-  double m_gamma, m_gamma1, m_alpha; // TBD - initialize these
+  double m_dgd_a, m_numfabric_eta, m_dgd_b; 
   double m_rcp_beta, m_rcp_alpha;
   double m_target_queue;
 

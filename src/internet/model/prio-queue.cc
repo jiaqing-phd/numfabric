@@ -185,15 +185,15 @@ TypeId PrioQueue::GetTypeId (void)
                   MakeDoubleChecker <double> ())
 
 
-    .AddAttribute ("dgd_gamma", 
+    .AddAttribute ("dgd_a", 
                    "gamma value for DGD",
                    DoubleValue(0.000000001),
-                   MakeDoubleAccessor (&PrioQueue::m_gamma),
+                   MakeDoubleAccessor (&PrioQueue::m_dgd_a),
                    MakeDoubleChecker <double> ())
-    .AddAttribute ("dgd_alpha", 
+    .AddAttribute ("dgd_b", 
                    "alpha value for DGD",
                    DoubleValue(0.0000000003),
-                   MakeDoubleAccessor (&PrioQueue::m_alpha),
+                   MakeDoubleAccessor (&PrioQueue::m_dgd_b),
                    MakeDoubleChecker <double> ())
     .AddAttribute ("rcp_beta", 
                    "beta value for RCP",
@@ -205,10 +205,10 @@ TypeId PrioQueue::GetTypeId (void)
                    DoubleValue(0.1),
                    MakeDoubleAccessor (&PrioQueue::m_rcp_alpha),
                    MakeDoubleChecker <double> ())
-    .AddAttribute ("gamma1", 
-                   "Value of gamma1 for xfabric",
-                   DoubleValue(10.0),
-                   MakeDoubleAccessor (&PrioQueue::m_gamma1),
+    .AddAttribute ("numfabric_eta", 
+                   "Value of eta for NUMFabric",
+                   DoubleValue(5.0),
+                   MakeDoubleAccessor (&PrioQueue::m_numfabric_eta),
                    MakeDoubleChecker <double>())
     .AddAttribute ("PriceUpdateTime", 
                    "The time after which to update priority",
@@ -440,7 +440,7 @@ void
 PrioQueue::updateLinkPrice(void)
 {
 
-  if(alpha_fair_rcp) {
+  if(alpha_fair_rcp) {  /* IF THE SWITCH IS IMPLEMENTING ALPHA_FAIR_RCP */
 	
 	if(switch_fsr == -1.0) {
 		//first time ; set the fair share to link rate
@@ -452,11 +452,11 @@ PrioQueue::updateLinkPrice(void)
 	double instant_queue_size = GetCurSize();
 
 	double avg_rtt = getAvgRtt();
-  double capacity = m_bps.GetBitRate()/1000000.0; //Mbps
+    double capacity = m_bps.GetBitRate()/1000000.0; //Mbps
 	double ratio = (1.0 + ((m_updatePriceTime.GetSeconds()/avg_rtt) * (m_rcp_alpha * (rate_difference) - m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))))/capacity);  // all in Mbps
 	double fair_share_rate = switch_fsr * ratio;
 
-  double upper_limit = capacity * pow(4.0, 1/fct_alpha) * 2.0;
+    double upper_limit = capacity * pow(4.0, 1/fct_alpha) * 2.0;
 	if(fair_share_rate > upper_limit) {
     // Note: setting fair_share_rate to 1 * capacity caused
     // sources to underutilize the links
@@ -465,37 +465,28 @@ PrioQueue::updateLinkPrice(void)
 
    
 
-  if(fair_share_rate < 120.0) {
+    if(fair_share_rate < 120.0) {
      fair_share_rate = 120.0; //Mbps
-  }
+    }
 	
 	switch_fsr = fair_share_rate;
-  current_price = pow(switch_fsr, -1.0*fct_alpha);
+    current_price = pow(switch_fsr, -1.0*fct_alpha);
 
-
-//	current_price = 1.0/switch_fsr;
-	//current_price = switch_fsr;
-   
 //  std::cout<<"alpha_fair_rcp: "<<Simulator::Now().GetSeconds()<<" link "<<linkid_string<<" avg_rtt "<<avg_rtt<<" switch_fsr "<<switch_fsr<<" rate_difference "<<rate_difference<<" instant_queue_size "<<instant_queue_size<<" rate term "<<m_rcp_alpha*(rate_difference)<<" queue term "<<m_rcp_beta*(instant_queue_size*8.0/(1000000.0*avg_rtt))<<" last_link_rate "<<last_link_rate<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" ratio "<<ratio<<" current_price "<<current_price<<" rcp_alpha "<<m_rcp_alpha<<" rcp_beta "<<m_rcp_beta<<" capacity "<<capacity<<" priceupdatetime "<<m_updatePriceTime.GetSeconds()<<" fct_alpha "<<fct_alpha<<std::endl; 
   	m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);
 	return;
-  }
+  }  /* END ALPHA_FAIR_RCP */
 	
      
 
-  if(!xfabric_price) 
+  if(!xfabric_price)   /* IF IT IS DGD */
   {
 
-    //NS_LOG_UNCOND("Using updateLinkPrice");
-
-    // TBD - incoming_bytes should be really input rate 
-    // 30KB
     double current_queue = m_bytesInQueue; //GetCurSize();
     double rate_term = getRateDifference(m_updatePriceTime);
     double queue_term = current_queue - m_target_queue;
     
-    double price_hike = m_gamma * rate_term + m_alpha * queue_term;
-    //double price_hike = m_gamma * rate_term + m_alpha * queue_term;
+    double price_hike = m_dgd_a * rate_term + m_dgd_b * queue_term;
     current_price = current_price + price_hike;
     // cap it to positive value
     current_price = std::max(current_price, 0.0);
@@ -508,7 +499,7 @@ PrioQueue::updateLinkPrice(void)
       //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<< " current price "<<current_price<<" node "<<nodeid<<" price_raise "<<price_hike<<" queue_term "<< (m_alpha *(current_queue - m_target_queue))<<" rate_term "<<price_hike<<" current_queue "<<current_queue<<" target_queue "<<m_target_queue);
  //   } 
 //    std::cout<<Simulator::Now().GetSeconds()<<" NOXFABRIC Queue_id "<<linkid_string<<" price "<<current_price<<" price_hike "<<price_hike<<" m_gamma "<<m_gamma<<" m_alpha "<<m_alpha<<std::endl;
-  } else {
+  } else {  /* IF ITS NUMFABRIC */
 //    std::cout<<"ERROR !!"<<std::endl;
     if(running_min_prio != MAX_DOUBLE) {
       latest_min_prio = running_min_prio;
@@ -519,7 +510,7 @@ PrioQueue::updateLinkPrice(void)
     if(total_samples > 0) {
       latest_avg_prio = running_avg_prio/(total_samples*1.0);
     } else {
-      latest_avg_prio = 0.0;
+      latest_avg_prio = 0.0;  /// unused currently
     }
 
 
@@ -530,10 +521,6 @@ PrioQueue::updateLinkPrice(void)
 
     NS_LOG_LOGIC("running_min_prio_log nodeid "<<nodeid<<" "<<latest_min_prio);
     
-    //if(m_is_switch) {
-     //NS_LOG_UNCOND(Simulator::Now().GetSeconds()<<" queueu_id "<<nodeid<<" copied running_min_prio "<<latest_min_prio<<" as latest");
-    //}
-  
   
     double old_price = current_price;
     double min_price_inc = old_price + latest_min_prio;
@@ -541,17 +528,13 @@ PrioQueue::updateLinkPrice(void)
 
     double incr = std::max(rate_increase, 0.0); // we don't want this term to increase price
 
-  /* if(GetCurSize() > 1) {
-        incr = 0;
-     } */
   
-    double new_price = min_price_inc - m_gamma1*incr; // TODO : try different gamma 
+    double new_price = min_price_inc - m_numfabric_eta*incr; 
     
     if(m_price_multiply) {
-       new_price = min_price_inc - m_gamma1*incr*current_price;
+       new_price = min_price_inc - m_numfabric_eta*incr*current_price;
     }
 
-//    std::cout<<" eta value "<<m_gamma1<<std::endl;
     
    if(new_price < 0.0) {
     new_price = 0.0;
@@ -563,26 +546,12 @@ PrioQueue::updateLinkPrice(void)
    } else {
      current_price = new_price;
    }
-   uint32_t currentQSize = GetCurSize();
-//   std::cout<<"QUEUESTATS "<<Simulator::Now().GetSeconds()<<" "<<GetLinkIDString()<<" "<<current_price<<" "<<rate_increase<<" "<<latest_min_prio<<" "<<currentQSize<<std::endl;
-
-//    set  optimal price - testing
-/*   if(GetLinkIDString() == "0_0_1") {
-    current_price = 0.001343;
-   }
-   if(GetLinkIDString() == "1_1_3") {
-    current_price = 0.000662;
-   }
-   if(GetLinkIDString() == "3_3_5") {
-    current_price = 0.002293;
-   }
- */  
   
     NS_LOG_LOGIC(Simulator::Now().GetSeconds()<<" XFABRIC nodeid "<<nodeid<<" price "<<current_price<<" min_price_inc "<<min_price_inc<<" new_price "<<new_price<<" rate_increase "<<rate_increase);
-//   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" lastest_min_prio "<<latest_min_prio<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_gamma1 "<<m_gamma1<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
+//   std::cout<<Simulator::Now().GetSeconds()<<" Queue_id "<<GetLinkIDString()<<" old_price "<<old_price<<" lastest_min_prio "<<latest_min_prio<<" rate_increase "<<incr<<" new_price "<<new_price<<" current_price "<<current_price<<" current_virtualtime "<<current_virtualtime<<" m_numfabric_eta "<<m_numfabric_eta<<" latest_min_prio "<<latest_min_prio<<" hcompensate "<<host_compensate<<std::endl;
    // when you update the price - set a timer to not update the minimum for an interval
    update_minimum = false;
-   Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // 10ms
+   Simulator::Schedule(m_guardTime, &ns3::PrioQueue::enableUpdates, this); // don't update min residue for m_guardTime
   }
 
   m_updateEvent = Simulator::Schedule(m_updatePriceTime, &ns3::PrioQueue::updateLinkPrice, this);

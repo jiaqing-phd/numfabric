@@ -209,8 +209,8 @@ CommandLine addCmdOptions(void)
   cmd.AddValue ("host_compensate", "host_compensate", host_compensate);
   cmd.AddValue ("util_method", "util_method", util_method);
   cmd.AddValue ("strawmancc", "strawmancc", strawmancc);
-  cmd.AddValue ("dgd_alpha", "dgd_alpha", dgd_alpha);
-  cmd.AddValue ("dgd_gamma", "dgd_gamma", dgd_gamma);
+  cmd.AddValue ("dgd_b", "dgd_b", dgd_b);
+  cmd.AddValue ("dgd_a", "dgd_a", dgd_a);
   cmd.AddValue ("target_queue", "target_queue", target_queue);
   cmd.AddValue ("guardtime", "guardtime", guard_time);
   cmd.AddValue ("pfabric_util", "pfabric_util",pfabric_util);
@@ -294,10 +294,10 @@ void common_config(void)
   LastEventTime = 1.0;
   pkt_tag = xfabric; 
   
-  dgd_gamma = dgd_gamma*multiplier;
-  dgd_alpha = dgd_alpha*multiplier;
+  dgd_a = dgd_a*multiplier;
+  dgd_b = dgd_b*multiplier;
 
-  std::cout<<"dgd_alpha "<<dgd_alpha<<" dgd_gamma "<<dgd_gamma<<" multiplier "<<multiplier<<std::endl;
+  std::cout<<"dgd_b "<<dgd_b<<" dgd_a "<<dgd_a<<" multiplier "<<multiplier<<std::endl;
 
   std::cout<<"Setting ssthresh = "<<ssthresh<<" initcwnd = "<<initcwnd<<" link_delay  "<<link_delay<<" bdproduct "<<bdproduct<<" total_rtt "<<total_rtt<<" link_rate "<<link_rate<<std::endl;  
 
@@ -340,12 +340,12 @@ void common_config(void)
   Config::SetDefault ("ns3::PrioQueue::ECNThreshBytes", UintegerValue (max_ecn_thresh));
   Config::SetDefault ("ns3::PrioQueue::delay_mark", BooleanValue(delay_mark_value));
   Config::SetDefault("ns3::PrioQueue::xfabric_price",BooleanValue(xfabric));
-  Config::SetDefault("ns3::PrioQueue::dgd_gamma", DoubleValue(dgd_gamma));
-  Config::SetDefault("ns3::PrioQueue::dgd_alpha",DoubleValue(dgd_alpha));
+  Config::SetDefault("ns3::PrioQueue::dgd_a", DoubleValue(dgd_a));
+  Config::SetDefault("ns3::PrioQueue::dgd_b",DoubleValue(dgd_b));
   Config::SetDefault("ns3::PrioQueue::target_queue", DoubleValue(target_queue));
   Config::SetDefault("ns3::PrioQueue::guardTime",TimeValue(Seconds(guard_time)));
   Config::SetDefault("ns3::PrioQueue::PriceUpdateTime",TimeValue(Seconds(price_update_time)));
-  Config::SetDefault("ns3::PrioQueue::gamma1",DoubleValue(xfabric_eta));
+  Config::SetDefault("ns3::PrioQueue::numfabric_eta",DoubleValue(xfabric_eta));
   Config::SetDefault("ns3::PrioQueue::xfabric_beta",DoubleValue(xfabric_beta));
   Config::SetDefault("ns3::PrioQueue::price_multiply",BooleanValue(price_multiply));
 
@@ -384,7 +384,10 @@ void common_config(void)
   flowTracker = new Tracker();
   flowTracker->register_callback(scheduler_wrapper);
 
-  std::ifstream ORfile (opt_rates_file.c_str(), std::ifstream::in);
+  std::stringstream opt_rates_full; 
+  opt_rates_full<<"./opt_rates/"<<opt_rates_file;
+  std::ifstream ORfile (opt_rates_full.str(), std::ifstream::in);
+  std::cout<<" opening optimal rates file "<<opt_rates_full.str()<<std::endl;
   if(ORfile.is_open()) {
     int epoch, flowid;
     double datarate;
@@ -394,7 +397,7 @@ void common_config(void)
       //dRate.flowid = flowid;
       //dRate.datarate = datarate;
       opt_drates[epoch][flowid]= datarate;
-      //std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
+      std::cout<<" at epoch "<<epoch<<" datarate "<<datarate<<" flow "<<flowid<<std::endl;
     }
   }
       
@@ -590,7 +593,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
     std::cout<<" More than "<<max_iterations<<" iterations of goodness.. moving on "<<Simulator::Now().GetSeconds()<<std::endl;
     std::cout<<"95TH CONVERGED TIME "<<Simulator::Now().GetSeconds()-LastEventTime-max_iterations*sampling_interval<<" "<<Simulator::Now().GetSeconds()<<" epoch "<<getEpochNumber()<<std::endl;
     std::cout<<"Details "<<Simulator::Now().GetSeconds()<<" Lastevent "<<LastEventTime<<std::endl;
-    //move_to_next();
+    move_to_next();
   }
   std::cout<<Simulator::Now().GetSeconds()<<" TotalRate "<<current_rate<<std::endl;
   

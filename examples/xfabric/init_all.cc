@@ -53,8 +53,8 @@ double dgd_alpha = 3*1e-10;
 */
 
 double multiplier = 0.0000000001;
-double dgd_gamma = 1.0;
-double dgd_alpha = 0.3;
+double dgd_a = 1.0;
+double dgd_b = 0.3;
 
 double rcp_alpha = 0.1;
 double rcp_beta = 0.0000001;
