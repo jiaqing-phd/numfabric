@@ -263,6 +263,7 @@ void dump_config(void)
   std::cout<<"rcp alpha "<<rcp_alpha<<std::endl;
   std::cout<<"rcp beta "<<rcp_beta<<std::endl;
   std::cout<<"alpha fair rcp "<<alpha_fair_rcp<<std::endl;
+  std::cout<<"sim_time "<<sim_time<<std::endl;
 
   std::string::size_type sz;
   double edge_data = atof(get_datarate(edge_datarate).c_str());
@@ -386,7 +387,7 @@ void common_config(void)
 
   std::stringstream opt_rates_full; 
   opt_rates_full<<"./opt_rates/"<<opt_rates_file;
-  std::ifstream ORfile (opt_rates_full.str(), std::ifstream::in);
+  std::ifstream ORfile (opt_rates_full.str().c_str(), std::ifstream::in);
   std::cout<<" opening optimal rates file "<<opt_rates_full.str()<<std::endl;
   if(ORfile.is_open()) {
     int epoch, flowid;
@@ -599,9 +600,9 @@ CheckIpv4Rates (NodeContainer &allNodes)
   
   // check queue size every sampling_interval seconds
   Simulator::Schedule (Seconds (sampling_interval), &CheckIpv4Rates, allNodes);
-  if(Simulator::Now().GetSeconds() >= sim_time) {
+  /*if(Simulator::Now().GetSeconds() >= sim_time) {
     Simulator::Stop();
-  }
+  }*/
 }
 
 void printlink(Ptr<Node> n1, Ptr<Node> n2)
