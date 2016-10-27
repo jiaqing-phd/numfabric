@@ -170,6 +170,7 @@ CommandLine addCmdOptions(void)
 {
   
   CommandLine cmd;
+  cmd.AddValue ("num_events", "num_events", num_events);
   cmd.AddValue ("bwe_enable" , "bwe_enable", bwe_enable);  
   cmd.AddValue ("num_subflows", "num_subflows", num_subflows);
   cmd.AddValue ("mptcp", "mptcp",mptcp);
@@ -264,6 +265,7 @@ void dump_config(void)
   std::cout<<"rcp beta "<<rcp_beta<<std::endl;
   std::cout<<"alpha fair rcp "<<alpha_fair_rcp<<std::endl;
   std::cout<<"sim_time "<<sim_time<<std::endl;
+  std::cout<<"num_events "<<num_events<<std::endl;
 
   std::string::size_type sz;
   double edge_data = atof(get_datarate(edge_datarate).c_str());
@@ -552,7 +554,7 @@ CheckIpv4Rates (NodeContainer &allNodes)
       /* check if this flowid is from this source */
       if (std::find((source_flow[nid]).begin(), (source_flow[nid]).end(), s)!=(source_flow[nid]).end()) {
      int epoch_number = getEpochNumber();
-	 if(epoch_number == 100) 
+	 if(epoch_number == num_events || epoch_number == 100) 
 	 { 
 	    std::cout<<" LAST EPOCH "<<Simulator::Now().GetSeconds()<<std::endl; 
 	    Simulator::Stop();

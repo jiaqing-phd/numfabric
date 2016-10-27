@@ -199,6 +199,6 @@ extern std::list<uint32_t> event_list;
 extern bool mptcp;
 extern uint32_t num_subflows;
 extern bool bwe_enable;
-
+extern uint32_t num_events;
 
 #endif 

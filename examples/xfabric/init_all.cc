@@ -193,6 +193,7 @@ bool alpha_fair_rcp;
 bool mptcp;
 uint32_t num_subflows;
 bool bwe_enable;
+uint32_t num_events = 10;
 
 
 #endif 

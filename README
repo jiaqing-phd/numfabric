@@ -1,3 +1,10 @@
+----------------------------------- NUMFabric ns-3 CODE ------------------------------
+This code simulates NUMFabric algorithms in ns-3. 
+
+If you want an insight into the code, read the README-code.
+If you want to generate the plots in the graph, read the README-plots
+
+For any questions regarding the NUMFabric implementation, send an email to kanthicn@stanford.edu
 
     The Network Simulator, Version 3
     --------------------------------
