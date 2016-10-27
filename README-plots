@@ -1,0 +1,18 @@
+To generate the plot in figure 4(a) of the NUMFabric paper, run the script
+./generate_semidynamic_plots.sh
+
+NOTE :: 
+(a) The default runs simulate 100 events and run very long (hours) and consume lot of system memory. We always ran them on powerful ec2 instances. To reduce the running time, you can reduce number of events that the system simulates from the config files.
+(b) The config files for NUMFabric, DGD and RCP are stored in semi_dynamic_configs
+
+
+To generate the plot in the figure 5(a) and 5(b), run the script
+./generate_websearch_comparison.sh (for 5(a))
+and 
+./generate_enterprise_comparison.sh (for 5(b))
+
+NOTE ::
+(a) The defaule configuration runs for 11 seconds, which takes several hours to complete. To reduce the number of seconds, use the sim_time in config files. The minimum time for this experiment is 5 seconds.
+
+
+
