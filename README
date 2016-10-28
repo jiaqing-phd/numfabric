@@ -1,4 +1,18 @@
-NUMFabric Public Release
+# NUMFabric public release #
+### Getting the code ###
+To checkout the NUMFabric simulation code
+git clone https://knagaraj@bitbucket.org/knagaraj/numfabric.git
 
-Code will appear soon. Please contact kanthicn@stanford.edu, if you have any questions
+and then
+git fetch && git checkout sig16camera
 
+### Running the code ###
+This is based on ns-3. So, system requirements to run the code are same as running ns-3. Please read standard ns-3 README for configuring and compiling instructions.
+
+### Generating plots in the paper ###
+For a small guidance into the code structure, please read the numfabric/README-code.
+
+For instructions on how to generate the plots in the paper, please read the numfabric/README-plots
+### Questions ###
+
+For any doubts, questions or concerns, please email kanthicn@stanford.edu
