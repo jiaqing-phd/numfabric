@@ -1,0 +1,14 @@
+The NUMFabric simulation code is mainly in two broad areas (also includes DCTCP implementation, RCP and DGD implementation as well)
+
+1. The example application codes are in examples/xfabric ; creating topologies, links, configuring the network parameters and the flows are all done in the files in this folder. The application generating packets (sending_app.cc) is in this folder as well.
+
+Static flow arrivals is in : 
+examples/xfabric/ls_dctcp_arrivals.cc (generates fixed set of flows read off from event_list, flow_arrivals and flow_departures files) 
+examples/xfabric/ls_more_arrivals.cc (generates 100 flow arrivals and 100 flow departures every event)
+examples/xfabric/common_utils.cc (common utilities)
+examples/xfabric/ls_dynamic.cc (dynamic flow arrivals based on configured workload)
+
+2. The code that runs the IP and TCP stack are in the directory ; src/internet/model. The simulation touches many files but most of the logic is in the following files:
+	(a) src/internet/model/prio-queue.cc - it implements the switch functionality for NUMFabric. The price update logic and WFQ implementation.
+	(b) src/internet/model/ipv4-l3-protocol.cc - stamping packet headers with additional headers for NUMFabric
+	(c) src/internet/mode/tcp-newreno.cc - TCP implementation modified for different algorithms
