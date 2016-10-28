@@ -72,7 +72,7 @@ for line in f:
     #time_taken = (float(elems[11]) + error_correction)/1000  # get it in seconds
     time_taken = float(elems[11])/1000000.0   # get it in milli-seconds
     flow_size = int(elems[13])
-    print("tt %f %f %f" %(time_taken, error_correction, (flow_size*1.0/1500.0)*0.018))
+    #print("tt %f %f %f" %(time_taken, error_correction, (flow_size*1.0/1500.0)*0.018))
     if(flow_size <= 1500):
         time_taken = time_taken + error_correction+(flow_size*1.0/1500.0)*0.0018
     else:

@@ -1,0 +1,4 @@
+python get_rate_error_vectors.py rcp_congo.out conga_ideal_store > rcp_congo_errors
+python get_rate_error_vectors.py dgd_congo.out conga_ideal_store > dgd_congo_errors
+python get_rate_error_vectors.py xf_congo.out conga_ideal_store > xf_congo_errors
+python combined_err_bdp.py xf_congo_errors dgd_congo_errors rcp_congo_errors conga_errors
