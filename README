@@ -1,5 +1,6 @@
-**# NUMFabric public release #
-**### Getting the code ###
+****# NUMFabric public release #****
+
+### Getting the code ###
 To checkout the NUMFabric simulation code
 git clone https://knagaraj@bitbucket.org/knagaraj/numfabric.git
 
