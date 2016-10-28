@@ -97,7 +97,6 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
         print("num_events %d" %num_events)
         num_epoch = 1
 
-        output = open("dummy", "w")
         for line in fh:
           l1 = line.rstrip();
           elems = l1.split(' ')
@@ -185,6 +184,8 @@ def get_optimal_rates(log_file, method, alpha, g, num_events):
         #print(" length %d time %f" %( len(opt_rates) ,event_time))
         #pickle.dump(OptRates,savefile)  
         #output.close()
-## log_file, 
+### first argument : log file
+### second argument : alpha value
+### third argument : number of simultaneous arrivals/departures
 get_optimal_rates(sys.argv[1], "mp", sys.argv[2], 0.0, int(sys.argv[3]))
 #def get_optimal_rates(log_file, method, alpha, g, num_events): 
