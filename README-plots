@@ -8,7 +8,7 @@ NOTE ::
 
 
 To generate the plot in the figure 5(a), run the script
-./generate_websearch_comparison.sh (for 5(a))
+./generate_dynamic_plots.sh (for 5(a))
 
 The config files for generating 5(b) are in the dynamic_configs.
 
